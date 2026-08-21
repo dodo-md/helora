@@ -148,6 +148,10 @@ class YouTubeMusicRepository @Inject constructor(
         searchItems(query, YoutubeSearchQueryHandlerFactory.MUSIC_SONGS)
             .filterIsInstance<StreamInfoItem>()
             .mapNotNull { it.toSong() }
+            // YouTube lists the same recording once per album edition — searching "Numb"
+            // returns it three times over Meteora, the anniversary edition and a reissue.
+            // Results are ranked, so the first of each group is the one to keep.
+            .distinctBy { trackKey(it.title, it.artist) }
 
     suspend fun searchAlbums(query: String): List<Album> =
         searchItems(query, YoutubeSearchQueryHandlerFactory.MUSIC_ALBUMS)
@@ -406,6 +410,44 @@ class YouTubeMusicRepository @Inject constructor(
     }
 
     /**
+     * Finds the official distributed release of a track.
+     *
+     * Mixes hand back whatever upload YouTube feels like, often the music video. Those are cut
+     * differently from the release that goes to streaming services — extra intros, held endings
+     * — so synced lyrics, which are timed against the distributed version, drift out.
+     *
+     * A `MUSIC_SONGS` search only ever returns catalogue entries ("- Topic" art tracks), so
+     * looking the track up again is enough to pin the station to the version lyrics expect.
+     * Returns null unless both title and artist match, so a bad search cannot silently swap in
+     * a different song.
+     */
+    suspend fun resolveArtTrack(song: Song): Song? {
+        val title = song.title.takeIf { it.isNotBlank() } ?: return null
+        val artist = song.artist.takeIf { it.isNotBlank() } ?: return null
+
+        val expectedTitle = normalizeForMatching(title)
+        val expectedArtist = normalizeForMatching(artist)
+        if (expectedTitle.isBlank() || expectedArtist.isBlank()) return null
+
+        val candidates = runCatching { searchSongs("$title $artist") }.getOrElse { return null }
+        return candidates.firstOrNull { candidate ->
+            // A radio edit and its album version differ by a minute or so, and correcting that
+            // is the point. A ten-minute live cut or extended remix under the same title is a
+            // different recording, and swapping it in would change what the user is hearing.
+            val durationDelta = kotlin.math.abs(candidate.duration - song.duration)
+            if (song.duration > 0 && durationDelta > MAX_ART_TRACK_DRIFT_MS) return@firstOrNull false
+            val candidateTitle = normalizeForMatching(candidate.title)
+            val candidateArtist = normalizeForMatching(candidate.artist)
+            val titleMatches = candidateTitle == expectedTitle ||
+                candidateTitle.contains(expectedTitle) ||
+                expectedTitle.contains(candidateTitle)
+            val artistMatches = candidateArtist.contains(expectedArtist) ||
+                expectedArtist.contains(candidateArtist)
+            titleMatches && artistMatches
+        }
+    }
+
+    /**
      * Finds the YouTube track matching a local file, for starting a station from the user's own
      * library.
      *
@@ -601,6 +643,9 @@ class YouTubeMusicRepository @Inject constructor(
             Regex("^(Album|Single|EP)\\s*[\u2013-]\\s*", RegexOption.IGNORE_CASE)
 
         private const val TOPIC_SUFFIX = " - Topic"
+
+        /** Widest gap still treated as the same recording in a different cut. */
+        private const val MAX_ART_TRACK_DRIFT_MS = 90_000L
         private const val MUSIC_MIX_PREFIX = "RDAMVM"
         private const val MIX_PREFIX = "RD"
 

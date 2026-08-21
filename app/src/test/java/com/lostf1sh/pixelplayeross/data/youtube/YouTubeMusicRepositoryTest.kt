@@ -120,4 +120,14 @@ class YouTubeMusicRepositoryTest {
         assertThat(trackKey("Creep", "Radiohead"))
             .isNotEqualTo(trackKey("Creep", "Taylor Swift"))
     }
+
+    @Test
+    fun `track key groups album editions of one recording`() {
+        // A search for "Numb" returns it once per album edition — Meteora, the anniversary
+        // edition, a reissue — all the same recording. The key is what collapses them.
+        assertThat(trackKey("Numb", "Linkin Park"))
+            .isEqualTo(trackKey("numb", "LINKIN PARK"))
+        assertThat(trackKey("Numb", "Linkin Park"))
+            .isNotEqualTo(trackKey("Numb / Encore", "Jay-Z"))
+    }
 }

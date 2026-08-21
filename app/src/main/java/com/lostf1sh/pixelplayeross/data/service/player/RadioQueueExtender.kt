@@ -147,14 +147,18 @@ class RadioQueueExtender @Inject constructor(
         if (index == C.INDEX_UNSET) return
         if (player.mediaItemCount - 1 - index > EXTEND_WHEN_REMAINING_AT_MOST) return
 
-        // Buffered tracks are free; only go to the network once the buffer is dry.
+        val token = current.token
+
+        // Buffered tracks skip the mix fetch, but appending still resolves each one to its
+        // distributed release, so this runs off the main thread like the fetch path does.
         if (current.pending.isNotEmpty()) {
-            appendFromBuffer(player, current)
+            fetchJob = scope.launch {
+                if (token == tokenGenerator.get()) appendFromBuffer(player, current)
+            }
             return
         }
         if (!connectivityStateHolder.isOnline.value) return
 
-        val token = current.token
         fetchJob = scope.launch {
             val fetched = fetchMore(current)
             if (token != tokenGenerator.get()) return@launch
@@ -229,12 +233,27 @@ class RadioQueueExtender @Inject constructor(
         newUpload && newRecording
     }
 
-    private fun appendFromBuffer(player: Player, current: Session) {
-        val batch = ArrayList<Song>(BATCH_SIZE)
-        while (batch.size < BATCH_SIZE && current.pending.isNotEmpty()) {
-            batch.add(current.pending.removeFirst())
+    private suspend fun appendFromBuffer(player: Player, current: Session) {
+        val queued = ArrayList<Song>(BATCH_SIZE)
+        while (queued.size < BATCH_SIZE && current.pending.isNotEmpty()) {
+            queued.add(current.pending.removeFirst())
         }
-        if (batch.isEmpty()) return
+        if (queued.isEmpty()) return
+
+        // Pin the station to the releases that went to streaming services. Mixes often hand
+        // back the music video, which is cut differently and makes synced lyrics drift. Bounded
+        // to one lookup per appended track, so a top-up costs at most BATCH_SIZE searches every
+        // few songs. A failed lookup keeps the original rather than dropping the track.
+        val batch = queued.map { song ->
+            val replacement = repository.resolveArtTrack(song)
+            if (replacement != null && replacement.ytVideoId != song.ytVideoId &&
+                current.seen.add(replacement.ytVideoId.orEmpty())
+            ) {
+                replacement
+            } else {
+                song
+            }
+        }
 
         remoteTrackCache.putAll(batch)
         remoteTrackCache.pin(batch.map { it.id })
