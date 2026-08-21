@@ -109,6 +109,8 @@
     <string name="setcat_export_backup_subtitle">%1$s Создаёт файл резервной копии .pxpl.</string>
     <string name="setcat_export_backup_title">Экспорт резервной копии</string>
     <string name="setcat_external_artist_images_subtitle">Разрешить загрузку недостающих изображений исполнителей из Deezer и их кэширование локально.</string>
+    <string name="setcat_youtube_genre_lookup_title">Жанры для потоковых треков</string>
+    <string name="setcat_youtube_genre_lookup_subtitle">Ищет жанр в Deezer для воспроизводимых треков YouTube. Загрузки помечаются всегда.</string>
     <string name="setcat_external_artist_images_title">Изображения исполнителей из Deezer</string>
     <string name="setcat_external_lyrics_subtitle">Разрешить поиск и ручную загрузку с lrclib.net, когда локального текста нет.</string>
     <string name="setcat_external_lyrics_title">Онлайн-тексты из LRCLIB</string>

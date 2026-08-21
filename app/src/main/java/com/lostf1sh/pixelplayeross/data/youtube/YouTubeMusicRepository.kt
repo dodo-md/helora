@@ -564,7 +564,9 @@ class YouTubeMusicRepository @Inject constructor(
             albumArtUriString = thumbnails.bestUrl(),
             // NewPipe reports seconds; the rest of the app works in milliseconds.
             duration = duration.coerceAtLeast(0L) * 1000L,
-            genre = DEFAULT_GENRE,
+            // YouTube publishes no genre. Left null rather than filed under a placeholder,
+            // which used to collapse the entire catalogue into one bucket and one theme colour.
+            genre = null,
             mimeType = null,
             bitrate = null,
             sampleRate = null,
@@ -606,7 +608,6 @@ class YouTubeMusicRepository @Inject constructor(
 
     companion object {
         const val URI_SCHEME = "ytmusic"
-        const val DEFAULT_GENRE = "YouTube Music"
 
         /**
          * Loose tracks (search results, radio) have no album of their own. Grouping them under

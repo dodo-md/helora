@@ -204,3 +204,25 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         db.execSQL("DROP TABLE IF EXISTS downloaded_tracks")
     }
 }
+
+/**
+ * Clears the "YouTube Music" placeholder genre off tracks that were only streamed.
+ *
+ * The placeholder is gone from the writer, but rows written before that keep it, and one of
+ * them is enough to leave the whole bucket standing in the genre list. Restricted to
+ * source_type 7 so a downloaded track, which is published as an ordinary local song, is never
+ * touched, and to rows the user has not edited themselves.
+ */
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            UPDATE songs
+            SET genre = NULL
+            WHERE genre = 'YouTube Music'
+            AND source_type = 7
+            AND genre_user_edited = 0
+            """.trimIndent()
+        )
+    }
+}

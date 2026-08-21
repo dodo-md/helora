@@ -80,6 +80,7 @@ data class SettingsUiState(
     val autoScanLrcFiles: Boolean = false,
     val externalLyricsEnabled: Boolean = false,
     val externalArtistImagesEnabled: Boolean = false,
+    val youTubeGenreLookupEnabled: Boolean = false,
     val blockedDirectories: Set<String> = emptySet(),
     val appRebrandDialogShown: Boolean = false,
     val fullPlayerLoadingTweaks: FullPlayerLoadingTweaks = FullPlayerLoadingTweaks(),
@@ -389,6 +390,12 @@ class SettingsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            userPreferencesRepository.youTubeGenreLookupEnabledFlow.collect { enabled ->
+                _uiState.update { it.copy(youTubeGenreLookupEnabled = enabled) }
+            }
+        }
+
+        viewModelScope.launch {
             userPreferencesRepository.backupInfoDismissedFlow.collect { dismissed ->
                 _uiState.update { it.copy(backupInfoDismissed = dismissed) }
             }
@@ -674,6 +681,12 @@ class SettingsViewModel @Inject constructor(
     fun setExternalArtistImagesEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setExternalArtistImagesEnabled(enabled)
+        }
+    }
+
+    fun setYouTubeGenreLookupEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setYouTubeGenreLookupEnabled(enabled)
         }
     }
 

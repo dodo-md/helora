@@ -109,6 +109,8 @@
     <string name="setcat_export_backup_subtitle">%1$s .pxpl 백업 파일을 생성합니다.</string>
     <string name="setcat_export_backup_title">백업 내보내기</string>
     <string name="setcat_external_artist_images_subtitle">없는 아티스트 이미지를 Deezer에서 가져와 로컬에 캐시하도록 허용합니다.</string>
+    <string name="setcat_youtube_genre_lookup_title">스트리밍 트랙 장르</string>
+    <string name="setcat_youtube_genre_lookup_subtitle">재생한 YouTube 트랙의 장르를 Deezer에서 찾습니다. 다운로드에는 항상 태그가 지정됩니다.</string>
     <string name="setcat_external_artist_images_title">Deezer의 아티스트 이미지</string>
     <string name="setcat_external_lyrics_subtitle">로컬에 가사가 없을 때 lrclib.net에서 검색하고 직접 가져올 수 있도록 허용합니다.</string>
     <string name="setcat_external_lyrics_title">LRCLIB의 온라인 가사</string>

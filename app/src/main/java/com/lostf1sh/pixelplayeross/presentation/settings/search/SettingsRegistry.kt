@@ -113,6 +113,18 @@ object SettingsRegistry {
                 onToggle = { viewModel, checked -> viewModel.setExternalArtistImagesEnabled(checked) }
             ),
             SettingSpec(
+                id = "library_youtube_genre_lookup",
+                itemKey = "item_library_youtube_genre_lookup",
+                titleRes = R.string.setcat_youtube_genre_lookup_title,
+                subtitleRes = R.string.setcat_youtube_genre_lookup_subtitle,
+                category = SettingsCategory.LIBRARY,
+                subscreenRoute = Screen.SettingsCategory.createRoute("library"),
+                type = SettingType.SWITCH,
+                keywordsStatic = listOf("deezer", "genre", "youtube", "streaming", "tags"),
+                getValue = { it.youTubeGenreLookupEnabled },
+                onToggle = { viewModel, checked -> viewModel.setYouTubeGenreLookupEnabled(checked) }
+            ),
+            SettingSpec(
                 id = "library_lyrics_source_priority",
                 itemKey = "item_library_lyrics_source_priority",
                 titleRes = R.string.setcat_lyrics_source_priority_label,

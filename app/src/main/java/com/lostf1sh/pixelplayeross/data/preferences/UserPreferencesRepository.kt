@@ -205,6 +205,7 @@ constructor(
         val AUTO_SCAN_LRC_FILES = booleanPreferencesKey("auto_scan_lrc_files")
         val EXTERNAL_LYRICS_ENABLED = booleanPreferencesKey("external_lyrics_enabled")
         val EXTERNAL_ARTIST_IMAGES_ENABLED = booleanPreferencesKey("external_artist_images_enabled")
+        val YOUTUBE_GENRE_LOOKUP_ENABLED = booleanPreferencesKey("youtube_genre_lookup_enabled")
 
         val ALBUM_ART_QUALITY = stringPreferencesKey("album_art_quality")
         val ALBUM_ART_CACHE_LIMIT_MB = intPreferencesKey("album_art_cache_limit_mb")
@@ -620,6 +621,24 @@ constructor(
             dataStore.data.map { preferences ->
                 preferences[PreferencesKeys.EXTERNAL_ARTIST_IMAGES_ENABLED] ?: false
             }.distinctUntilChanged()
+
+    /**
+     * Whether a streamed YouTube track may have its genre looked up online.
+     *
+     * Off by default: a track the user only listened to is not in their library in any real
+     * sense, and filling one in costs a request per new album. Downloads are separate and
+     * always tagged, since those are files the user keeps.
+     */
+    val youTubeGenreLookupEnabledFlow: Flow<Boolean> =
+            dataStore.data.map { preferences ->
+                preferences[PreferencesKeys.YOUTUBE_GENRE_LOOKUP_ENABLED] ?: false
+            }.distinctUntilChanged()
+
+    suspend fun setYouTubeGenreLookupEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.YOUTUBE_GENRE_LOOKUP_ENABLED] = enabled
+        }
+    }
 
     suspend fun setExternalArtistImagesEnabled(enabled: Boolean) {
         dataStore.edit { preferences ->

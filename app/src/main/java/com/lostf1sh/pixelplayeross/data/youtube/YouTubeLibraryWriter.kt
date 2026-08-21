@@ -6,7 +6,10 @@ import com.lostf1sh.pixelplayeross.data.database.MusicDao
 import com.lostf1sh.pixelplayeross.data.database.SourceType
 import com.lostf1sh.pixelplayeross.data.database.SongEntity
 import com.lostf1sh.pixelplayeross.data.model.Song
+import com.lostf1sh.pixelplayeross.data.preferences.UserPreferencesRepository
+import com.lostf1sh.pixelplayeross.data.repository.DeezerGenreRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -27,11 +30,19 @@ import javax.inject.Singleton
  *
  * Downloaded tracks are not written here. Those are published into the shared Music folder and
  * the ordinary media scan picks them up as local songs, which is the point of downloading.
+ *
+ * A row written here has no genre. YouTube does not publish one, and the placeholder that used
+ * to stand in put every track the user had ever played into a single "YouTube Music" bucket,
+ * which also meant a single player theme colour. Looking a real one up is opt-in through
+ * [UserPreferencesRepository.youTubeGenreLookupEnabledFlow], because a track that was merely
+ * streamed is not a file the user keeps and the lookup costs a request per new album.
  */
 @Singleton
 class YouTubeLibraryWriter @Inject constructor(
     private val musicDao: MusicDao,
-    private val remoteTrackCache: RemoteTrackCache
+    private val remoteTrackCache: RemoteTrackCache,
+    private val deezerGenreRepository: DeezerGenreRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) {
 
     /** Resolves [songId] through the in-flight cache; a no-op for anything not from YouTube. */
@@ -49,6 +60,7 @@ class YouTubeLibraryWriter @Inject constructor(
         runCatching {
             val artistName = song.artist.ifBlank { UNKNOWN_ARTIST }
             val albumName = song.album.ifBlank { YouTubeMusicRepository.DEFAULT_ALBUM_NAME }
+            val genre = resolveGenre(song)
 
             // Order matters: songs has foreign keys onto both of these.
             musicDao.insertArtistsIgnoreConflicts(
@@ -88,7 +100,7 @@ class YouTubeLibraryWriter @Inject constructor(
                         contentUriString = song.contentUriString,
                         albumArtUriString = song.albumArtUriString,
                         duration = song.duration,
-                        genre = song.genre ?: YouTubeMusicRepository.DEFAULT_GENRE,
+                        genre = genre,
                         filePath = "",
                         parentDirectoryPath = PARENT_DIRECTORY,
                         isFavorite = false,
@@ -103,7 +115,25 @@ class YouTubeLibraryWriter @Inject constructor(
                     )
                 )
             )
+
+            // Insert ignores conflicts, so a track already in the library would keep its empty
+            // genre forever. Written separately, and only where there is none.
+            if (genre != null) {
+                musicDao.fillMissingGenre(YouTubeIds.songId(videoId), genre)
+            }
         }.onFailure { Timber.w(it, "Could not add %s to the library", song.title) }
+    }
+
+    /**
+     * The track's own genre if it somehow has one, otherwise Deezer, otherwise nothing.
+     *
+     * Never throws and never blocks the write: the lookup answers null on any failure, and a
+     * row with no genre is the normal outcome rather than an error.
+     */
+    private suspend fun resolveGenre(song: Song): String? {
+        song.genre?.takeIf { it.isNotBlank() }?.let { return it }
+        if (!userPreferencesRepository.youTubeGenreLookupEnabledFlow.first()) return null
+        return deezerGenreRepository.genreFor(song.artist, song.title)
     }
 
     private companion object {

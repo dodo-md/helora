@@ -109,6 +109,8 @@
     <string name="setcat_export_backup_subtitle">%1$s Crea un file di backup .pxpl.</string>
     <string name="setcat_export_backup_title">Esporta backup</string>
     <string name="setcat_external_artist_images_subtitle">Consenti il recupero da Deezer delle immagini artista mancanti e il loro salvataggio nella cache locale.</string>
+    <string name="setcat_youtube_genre_lookup_title">Generi per i brani in streaming</string>
+    <string name="setcat_youtube_genre_lookup_subtitle">Cerca un genere su Deezer per i brani YouTube che ascolti. I download vengono sempre etichettati.</string>
     <string name="setcat_external_artist_images_title">Immagini artista da Deezer</string>
     <string name="setcat_external_lyrics_subtitle">Consenti ricerche e recuperi manuali da lrclib.net quando i testi non sono disponibili in locale.</string>
     <string name="setcat_external_lyrics_title">Testi online da LRCLIB</string>

@@ -109,6 +109,8 @@
     <string name="setcat_export_backup_subtitle">يقوم بإنشاء ملف نسخة احتياطية بصيغة %1$s .pxpl.</string>
     <string name="setcat_export_backup_title">تصدير النسخة الاحتياطية</string>
     <string name="setcat_external_artist_images_subtitle">السماح بجلب صور الفنانين المفقودة من Deezer وتخزينها محلياً.</string>
+    <string name="setcat_youtube_genre_lookup_title">أنواع المقاطع المُبثّة</string>
+    <string name="setcat_youtube_genre_lookup_subtitle">يبحث عن النوع في Deezer لمقاطع YouTube التي تشغّلها. يتم دائمًا وسم الملفات التي تنزّلها.</string>
     <string name="setcat_external_artist_images_title">صور الفنانين من Deezer</string>
     <string name="setcat_external_lyrics_subtitle">السماح بالبحث والجلب اليدوي من lrclib.net عند عدم توفر الكلمات محلياً.</string>
     <string name="setcat_external_lyrics_title">كلمات الأغاني عبر الإنترنت من LRCLIB</string>

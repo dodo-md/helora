@@ -109,6 +109,8 @@
     <string name="setcat_export_backup_subtitle">%1$s Oppretter en .pxpl-fil.</string>
     <string name="setcat_export_backup_title">Eksporter sikkerhetskopi</string>
     <string name="setcat_external_artist_images_subtitle">Tillat at manglende artistbilder hentes fra Deezer og lagres lokalt i cachen.</string>
+    <string name="setcat_youtube_genre_lookup_title">Sjangere for strømmede spor</string>
+    <string name="setcat_youtube_genre_lookup_subtitle">Slår opp sjanger fra Deezer for YouTube-spor du spiller. Nedlastinger merkes alltid.</string>
     <string name="setcat_external_artist_images_title">Artistbilder fra Deezer</string>
     <string name="setcat_external_lyrics_subtitle">Tillat søk og manuell henting fra lrclib.net når sangtekster mangler lokalt.</string>
     <string name="setcat_external_lyrics_title">Sangtekster fra nett via LRCLIB</string>

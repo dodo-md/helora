@@ -519,6 +519,14 @@ fun SettingsCategoryScreen(
                                     leadingIcon = { Icon(painterResource(R.drawable.rounded_artist_24), null, tint = MaterialTheme.colorScheme.secondary) },
                                     modifier = Modifier.settingHighlight("item_library_external_artist_images", highlightKey)
                                 )
+                                SwitchSettingItem(
+                                    title = stringResource(R.string.setcat_youtube_genre_lookup_title),
+                                    subtitle = stringResource(R.string.setcat_youtube_genre_lookup_subtitle),
+                                    checked = uiState.youTubeGenreLookupEnabled,
+                                    onCheckedChange = { settingsViewModel.setYouTubeGenreLookupEnabled(it) },
+                                    leadingIcon = { Icon(painterResource(R.drawable.rounded_library_music_24), null, tint = MaterialTheme.colorScheme.secondary) },
+                                    modifier = Modifier.settingHighlight("item_library_youtube_genre_lookup", highlightKey)
+                                )
                             }
 
                             SettingsSubsection(

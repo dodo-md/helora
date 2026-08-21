@@ -57,6 +57,8 @@
     <string name="setcat_external_lyrics_subtitle">本地无歌词时允许从 lrclib.net 搜索、手动获取歌词</string>
     <string name="setcat_external_artist_images_title">来自 Deezer 的歌手封面</string>
     <string name="setcat_external_artist_images_subtitle">歌手图片缺失时从 Deezer 获取并缓存到本地</string>
+    <string name="setcat_youtube_genre_lookup_title">流媒体曲目的流派</string>
+    <string name="setcat_youtube_genre_lookup_subtitle">为你播放的 YouTube 曲目从 Deezer 查找流派。下载的曲目始终会写入标签。</string>
     <string name="setcat_lyrics_management">歌词管理</string>
     <string name="setcat_lyrics_source_priority_label">歌词来源优先级</string>
     <string name="setcat_lyrics_source_priority_desc">获取歌词时选择优先尝试的来源</string>

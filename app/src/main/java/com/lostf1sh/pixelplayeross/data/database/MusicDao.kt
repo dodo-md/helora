@@ -1582,10 +1582,16 @@ interface MusicDao {
         applyDirectoryFilter: Boolean
     ): Flow<List<SongEntity>>
 
+    // source_type 7 is a streamed YouTube track, which carries no genre unless the user turned
+    // the lookup on. Those are deliberately kept out of Unknown: a genre belongs to a file the
+    // user actually has, and letting every stream fall in here would refill the bucket that
+    // removing the "YouTube Music" placeholder was meant to empty. A downloaded track is
+    // published as an ordinary local song, so it is source_type 0 and unaffected.
     @Query("""
         SELECT * FROM songs
         WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
         AND (genre IS NULL OR genre = '')
+        AND source_type != 7
         ORDER BY title ASC
     """)
     fun getSongsWithNullGenre(
@@ -1607,11 +1613,13 @@ interface MusicDao {
         applyDirectoryFilter: Boolean
     ): Flow<List<String>>
 
+    /** Matches [getSongsWithNullGenre]: no rows, no Unknown entry in the genre list. */
     @Query("""
         SELECT EXISTS(
             SELECT 1 FROM songs
             WHERE (:applyDirectoryFilter = 0 OR id < 0 OR parent_directory_path IN (:allowedParentDirs))
             AND (genre IS NULL OR genre = '')
+            AND source_type != 7
         )
     """)
     fun hasUnknownGenre(
@@ -1654,6 +1662,22 @@ interface MusicDao {
         setFavoriteStatus(songId, newStatus)
         return newStatus
     }
+
+    /**
+     * Fills in a genre only where there is none.
+     *
+     * [YouTubeLibraryWriter] inserts with conflicts ignored, so a track already in the library
+     * would keep its empty genre forever once the lookup is switched on. Guarded on
+     * genre_user_edited so this never overwrites a genre the user typed themselves.
+     */
+    @Query("""
+        UPDATE songs
+        SET genre = :genre
+        WHERE id = :songId
+        AND (genre IS NULL OR genre = '')
+        AND genre_user_edited = 0
+    """)
+    suspend fun fillMissingGenre(songId: Long, genre: String): Int
 
     @Query("""
         UPDATE songs
