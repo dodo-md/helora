@@ -1,216 +1,183 @@
+<p align="center">
+  <img src="assets/icon.png" alt="Helora" width="120"/>
+</p>
+
+<h1 align="center">Helora</h1>
 
 <p align="center">
-  <img src="assets/pixelplayeross_header.png" alt="PixelPlayerOSS — open-source music player for Android"/>
+  A music player for Android that plays <b>your files</b> and <b>YouTube Music</b> — without an account, ads, or tracking.
 </p>
 
 <p align="center">
-  <a href="https://github.com/PixelPlayerHQ/PixelPlayerOSS/releases/latest">
-    <img src="https://img.shields.io/github/v/release/PixelPlayerHQ/PixelPlayerOSS?include_prereleases&logo=github&style=for-the-badge&label=Latest%20Release" alt="Latest release">
-  </a>
-  <a href="https://f-droid.org/packages/com.lostf1sh.pixelplayeross/">
-    <img src="https://img.shields.io/f-droid/v/com.lostf1sh.pixelplayeross?logo=fdroid&style=for-the-badge&label=F-Droid" alt="F-Droid version">
-  </a>
-  <a href="https://github.com/PixelPlayerHQ/PixelPlayerOSS/releases">
-    <img src="https://img.shields.io/github/downloads/PixelPlayerHQ/PixelPlayerOSS/total?logo=github&style=for-the-badge" alt="Total downloads">
-  </a>
-  <a href="https://github.com/sponsors/lostf1sh">
-    <img src="https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor on GitHub Sponsors">
-  </a>
   <img src="https://img.shields.io/badge/Android-11%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android 11+">
-  <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" alt="GPLv3 license">
+  <img src="https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge" alt="GPLv3">
+  <img src="https://img.shields.io/badge/Kotlin-Compose-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin + Compose">
 </p>
 
 <p align="center">
-  <img src="assets/screenshot1.jpeg" alt="PixelPlayerOSS home screen" width="205"/>
-  <img src="assets/screenshot2.jpeg" alt="PixelPlayerOSS now playing screen" width="205"/>
-  <img src="assets/screenshot3.jpeg" alt="PixelPlayerOSS library screen" width="205"/>
-  <img src="assets/screenshot4.jpeg" alt="PixelPlayerOSS lyrics screen" width="205"/>
+  <img src="assets/screenshot1.jpeg" width="205"/>
+  <img src="assets/screenshot2.jpeg" width="205"/>
+  <img src="assets/screenshot3.jpeg" width="205"/>
+  <img src="assets/screenshot4.jpeg" width="205"/>
 </p>
 
-## What It Is
+---
 
-PixelPlayerOSS is an Android music player maintained by [@lostf1sh](https://github.com/lostf1sh). It focuses on local playback, self-hosted music libraries, expressive Material 3 UI, and user-controlled online lookups.
+## What is this?
 
-The app works offline by default. Optional online services are disabled until you enable them in setup or settings.
+Helora is a fork of [**PixelPlayerOSS**](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [@lostf1sh](https://github.com/lostf1sh) — a genuinely nice offline music player — with one big thing bolted on: **YouTube Music**.
 
-Package name: `com.lostf1sh.pixelplayeross`
+So you get both halves. Your own MP3s and FLACs, scanned from the device like any local player. And a search box that reaches into YouTube Music, plays anything, builds radio stations, and saves tracks to your phone for offline listening.
 
-## Why This Exists
+No login. No API key. Nothing to sign up for.
 
-PixelPlayerOSS keeps the player FOSS-oriented and removes integrations that are not part of that direction.
+Everything upstream does — Navidrome, Jellyfin, lyrics, tag editing, widgets, backup — still works exactly as before. This fork adds, it doesn't remove.
 
-Removed integrations include Telegram, NetEase, QQ Music, Google Drive, Gemini, Cast, Wear OS, Play Store billing, Firebase, Crashlytics, and Google Play Services runtime dependencies.
+---
 
-Cloud playback is limited to self-hosted sources: Navidrome/Subsonic and Jellyfin.
+## For users
 
-## Features
+### Playing your own music
 
-| Area | Highlights |
-| --- | --- |
-| Playback | Media3 playback engine, FFmpeg support, gapless playback, crossfade, custom transitions, queue controls, shuffle, repeat, sleep timer, external file playback |
-| Library | Local scanning for MP3, FLAC, AAC, OGG, WAV, M4A, albums, artists, genres, folders, favorites, playlists, stats, metadata editing |
-| Self-hosted | Navidrome/Subsonic and Jellyfin login, sync, streaming, artwork, and app-private offline downloads |
-| Lyrics | Embedded lyrics, local `.lrc` files, lyrics import/editing, optional LRCLIB lookup |
-| Artwork | Local artwork, album-art palette extraction, optional Deezer artist image lookup |
-| Metadata | On-demand MusicBrainz matching for recording, release, and artist identifiers |
-| UI | Jetpack Compose, Material 3, dynamic color, light/dark themes, Glance widgets, animated player surfaces |
-| Backup | Preferences, playlists, favorites, lyrics, stats, and app state backup/restore |
+Same as always: drop files on your phone, grant the audio permission, and they show up. MP3, FLAC, AAC, OGG, WAV, M4A. Albums, artists, genres, folders, playlists, favourites, lyrics, tag editing, sleep timer, crossfade, widgets.
 
-## Online Services
+### Playing from YouTube Music
 
-PixelPlayerOSS separates offline playback from network lookups.
+Open **Search**, type something, tap the **YouTube Music** chip. You get songs, albums and artists.
 
-| Service | Purpose | Default |
-| --- | --- | --- |
-| Navidrome/Subsonic | Self-hosted library sync, streaming, and offline downloads | User login required |
-| Jellyfin | Self-hosted library sync, streaming, and offline downloads | User login required |
-| MusicBrainz | On-demand metadata matching and identifier enrichment | Only when requested |
-| LRCLIB | Search online lyrics when local or embedded lyrics are missing | Off |
-| Deezer | Fetch missing artist artwork and cache it locally | Off |
+Tap a song and it plays. Nothing else gets queued behind it — which matters, because if you search "snap" you want *that* song, not fourteen other songs also called "snap".
 
-LRCLIB and Deezer can be enabled during first-run setup or later from `Settings > Music Management > Optional online services`. MusicBrainz searches run only when you choose the lookup action for a track.
+### Radio
 
-## Requirements
+When you tap a YouTube track, a **radio station** starts behind it: more songs like that one, forever. It's the real YouTube Music mix (`RDAMVM`), not the "related videos" sidebar, so you get an actual station rather than re-uploads of the same track.
 
-| Requirement | Version |
-| --- | --- |
-| Android | 11 or newer, API 30+ |
-| JDK | 21 |
-| Android SDK | compile/target 37 |
+Seed Creep and you get Yellow, Wonderwall, Iris, No Surprises, Nothing Else Matters. That kind of thing.
 
-## Build From Source
+The station **stays pinned to the song you picked** rather than drifting with whatever's playing now, because "songs like X" should keep meaning X.
 
-Clone the repository:
+You can also start a station from **any song in your own library** — song menu → **Start radio**. It finds the track on YouTube and builds a station from it. It's deliberately picky: artist *and* title *and* duration have to line up, otherwise it tells you it couldn't find a match instead of seeding a station from some random cover.
 
-```sh
-git clone https://github.com/PixelPlayerHQ/PixelPlayerOSS.git
-cd PixelPlayerOSS
-```
+### Downloads
 
-Build the debug APK:
+Song menu → **Download**. Or grab a whole album, a playlist, or all your liked songs at once.
 
-```sh
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:assembleDebug
-```
+Files land in **`Music/Helora/<Artist>/<Album>/`** as proper `.m4a` files with tags and cover art embedded. That means:
 
-Build one universal debug APK for local installation:
+- Your other music apps and your file manager can see them
+- They survive uninstalling Helora
+- Helora's own library scan picks them up as ordinary local songs — so they work offline like any other file
+
+Downloads go over Wi-Fi only by default. Flip that in **Settings → Downloads**, where you can also watch the queue, retry failures, and delete things.
+
+> M4A is picked over the slightly-higher-bitrate WebM/Opus on purpose. Opus in a `.webm` container confuses a lot of car stereos and third-party players, and these files land in your public Music folder where other things have to open them.
+
+### Heads up
+
+- **YouTube extraction breaks sometimes.** It works by scraping, not by an official API. When YouTube changes something, search and playback can break until [NewPipeExtractor](https://github.com/TeamNewPipe/NewPipeExtractor) ships a fix and this app bumps the dependency. That's the deal with this approach.
+- **Downloading from YouTube is against YouTube's Terms of Service.** This is a personal-use app; what you do with it is on you.
+- **Artist pages are partial.** YouTube Music search returns auto-generated "Topic" channels, which expose no album list at all. You get the artist's tracks, but the albums section will be empty for most artists.
+- **Releases here are unsigned.** There's no signing config in the repo, so `assembleRelease` produces an unsigned APK. See below.
+
+---
+
+## For developers
+
+### Build it
+
+Needs **JDK 21** and **Android SDK 37**. Android 11 (API 30) minimum at runtime.
 
 ```sh
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:assembleDebug -Ppixelplayer.enableAbiSplits=false
+git clone https://github.com/dodo-md/helora.git
+cd helora
+
+# debug APK
+./gradlew :app:assembleDebug
+
+# one universal APK instead of per-ABI splits
+./gradlew :app:assembleDebug -Ppixelplayer.enableAbiSplits=false
+
+# unit tests
+./gradlew :app:testDebugUnitTest
 ```
 
-Build a universal unsigned release APK suitable for F-Droid verification:
+If Gradle can't find your SDK, either export `ANDROID_HOME` or drop a `local.properties` with `sdk.dir=...`.
+
+Release builds come out **unsigned**. To install one locally, sign it with your debug key:
 
 ```sh
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:assembleRelease -Ppixelplayer.enableAbiSplits=false -Ppixelplayer.disableReleaseSigning=true
+./gradlew :app:assembleRelease
+zipalign -f -p 4 app/build/outputs/apk/release/app-arm64-v8a-release-unsigned.apk aligned.apk
+apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android \
+  --key-pass pass:android --ks-key-alias androiddebugkey --out helora.apk aligned.apk
+adb install -r helora.apk
 ```
 
-Run unit tests:
+**Test release builds, not just debug.** R8 is where the YouTube side breaks, and it breaks silently — see below.
 
-```sh
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:testDebugUnitTest
+### How the YouTube part works
+
 ```
-
-Generate the baseline profile with a connected device or emulator:
-
-```sh
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :baselineprofile:generateBaselineProfile
-```
-
-## Download
-
-PixelPlayerOSS is available on F-Droid:
-
-<a href="https://f-droid.org/packages/com.lostf1sh.pixelplayeross/">
-  <img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">
-</a>
-
-GitHub releases are available at:
-
-```text
-https://github.com/PixelPlayerHQ/PixelPlayerOSS/releases
-```
-
-Obtainium app id:
-
-```text
-com.lostf1sh.pixelplayeross
-```
-
-Public releases are planned on a regular weekly cadence when `main` passes the release checklist.
-
-F-Droid listing metadata lives in `fastlane/metadata/android/en-US`; build/release notes for F-Droid are in [docs/FDROID.md](docs/FDROID.md).
-
-> Note: F-Droid builds and signs its own APKs from source, so they may lag behind GitHub releases while the new version works through the F-Droid build cycle. F-Droid and GitHub APK signatures differ — switching between the two requires an uninstall/reinstall.
-
-### Alpha builds
-
-Every merge into `main` automatically publishes a pre-release tagged like `v0.3.0-alpha.N` on the [releases page](https://github.com/PixelPlayerHQ/PixelPlayerOSS/releases). These are cutting-edge builds for testing new changes before they reach a stable release — expect rough edges.
-
-To install one, download the APK for your device from the release assets and sideload it: `arm64-v8a` fits most modern devices, `armeabi-v7a` is for older 32-bit ones.
-
-Alpha builds are signed with a dedicated CI key, so they update over each other, but switching between alpha and a stable or F-Droid install requires an uninstall/reinstall. In Obtainium, enable "Include prereleases" to get alphas automatically.
-
-## Support
-
-If PixelPlayerOSS is useful to you, you can support ongoing development through [GitHub Sponsors](https://github.com/sponsors/lostf1sh).
-
-## Project Structure
-
-```text
 app/src/main/java/com/lostf1sh/pixelplayeross/
-- data/             Room, repositories, preferences, services, workers
-- di/               Hilt modules and qualifiers
-- presentation/     Compose screens, components, navigation, ViewModels
-- ui/               Theme and Glance widgets
-- utils/            Shared utilities
-
-baselineprofile/      Macrobenchmark and baseline profile generation
+├── data/youtube/
+│   ├── YouTubeMusicRepository   search, streams, mixes, artist/album lookup, matching
+│   ├── NewPipeOkHttpDownloader  NewPipe's Downloader over the shared OkHttp client
+│   ├── YouTubeStreamProxy       CloudStreamProxy subclass, scheme "ytmusic"
+│   ├── YouTubeIds               deterministic negative ids for ephemeral tracks
+│   ├── RemoteTrackCache         in-memory home for tracks not in the database
+│   └── YouTubeLibraryWriter     promotes a saved track into the library
+├── data/download/               MediaStore downloader, paths, queue manager
+├── data/service/player/
+│   └── RadioQueueExtender       keeps the station topped up
+└── presentation/screens/search/ the YouTube section of the search screen
 ```
 
-## Tech Stack
+A YouTube track is a `Song` whose `contentUriString` is `ytmusic://<videoId>`. At playback time that's resolved to a **localhost HTTP proxy** which streams the real audio through — exactly how Navidrome and Jellyfin already worked. `YouTubeStreamProxy` just fills in the blanks of the existing `CloudStreamProxy`.
 
-| Area | Technology |
-| --- | --- |
-| Language | Kotlin |
-| UI | Jetpack Compose |
-| Design | Material 3 |
-| Playback | AndroidX Media3, ExoPlayer, FFmpeg |
-| Database | Room |
-| Dependency Injection | Hilt |
-| Preferences | DataStore |
-| Background Work | WorkManager |
-| Networking | Retrofit, OkHttp |
-| Images | Coil |
-| Metadata | TagLib |
+Search results are **ephemeral**: they never touch Room. A track only earns a database row when you favourite it or add it to a playlist. Because `YouTubeIds` hands out deterministic ids up front, that promotion is a plain upsert and any favourite you saved beforehand already points at the right row.
 
-## Contributing
+### Things that will bite you
 
-Contributions are welcome. Open an issue or pull request with a focused change and include test/build results when possible.
+Four traps, all of which cost real debugging time:
 
-Useful local checks:
+**1. Rhino must survive R8.** NewPipe runs YouTube's player JavaScript through Rhino to deobfuscate stream signatures. Anything less than a full keep gives you streams that work in debug and 403 in release. The rules are in `proguard-rules.pro`; to check they held:
 
 ```sh
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:compileDebugKotlin
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:lintDebug
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:testDebugUnitTest
+unzip -p app/.../release.apk classes4.dex | strings | grep -c org/mozilla/javascript
 ```
 
-Release process: [docs/RELEASE.md](docs/RELEASE.md)
+**2. Resolution must happen eagerly.** The `ResolvingDataSource` in `DualPlayerEngine` is synchronous and cache-only — it *cannot* resolve. If a `ytmusic://` URI reaches ExoPlayer unresolved, it just fails. The gate is `buildResolvedPlaybackMediaItem` in `PlayerViewModel`, keyed off `CloudStreamSchemes.PROXIED`. Adding a source means adding it there.
 
-F-Droid notes: [docs/FDROID.md](docs/FDROID.md)
+**3. Flush the proxy.** `CloudStreamProxy` must `flush()` after each chunk. Without it the opening bytes sit in the response buffer while the player waits for its first byte range, and playback hangs on "loading" instead of failing — which looks like a stall, not an error.
 
-Privacy policy: [PRIVACY.md](PRIVACY.md)
+**4. Test methods can't return a value.** A test written as ``fun `x`() = runBlocking { ... }`` whose last expression isn't `Unit` is silently *not discovered* by JUnit — no failure, it just never runs. Use `runBlocking<Unit>`.
 
-Security policy: [SECURITY.md](SECURITY.md)
+### Contributing
+
+PRs welcome. Before opening one:
+
+```sh
+./gradlew :app:compileDebugKotlin
+./gradlew :app:testDebugUnitTest
+./gradlew :app:lintDebug
+```
+
+Note that the test suite has **12 failures inherited from upstream** — they fail on a clean checkout too. If your count is 12, you're fine; if it's 13, look at what you did.
+
+---
+
+## Credit
+
+Almost all of this app is [**PixelPlayerOSS**](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [@lostf1sh](https://github.com/lostf1sh) and its contributors. The player engine, library, UI, self-hosted integrations and general polish are theirs. If you like this, go star the upstream project — and consider [sponsoring them](https://github.com/sponsors/lostf1sh).
+
+YouTube extraction is [**NewPipeExtractor**](https://github.com/TeamNewPipe/NewPipeExtractor) (GPLv3) by Team NewPipe.
 
 ## License
 
-PixelPlayerOSS is licensed under the [GNU General Public License v3.0](LICENSE) (`SPDX-License-Identifier: GPL-3.0-or-later`).
+GPL-3.0-or-later, same as upstream. See [LICENSE](LICENSE).
 
 ```
-PixelPlayerOSS
-Copyright (C) 2026 Theo Vilardo
+Helora — a fork of PixelPlayerOSS
+Copyright (C) 2026 PixelPlayerOSS contributors and Helora contributors
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -226,8 +193,4 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ```
 
-Distributed APKs include third-party components under their own licenses. In particular, the optional FFmpeg decoder dependency `org.jellyfin.media3:media3-ffmpeg-decoder` is GPL-3.0; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-<p align="center">
-  Maintained by <a href="https://github.com/lostf1sh">lostf1sh</a>
-</p>
+Third-party notices: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) · Dependency licences: [docs/DEPENDENCY_LICENSES.md](docs/DEPENDENCY_LICENSES.md)

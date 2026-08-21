@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PixelPlayerOSS</string>
+    <string name="app_name">Helora</string>
     <string name="app_name_change_title">App Name Change</string>
     <string name="app_name_change_message">This app is now PixelPlayerOSS. Keep playing!</string>
     <string name="do_not_show_again">Do not show again</string>
