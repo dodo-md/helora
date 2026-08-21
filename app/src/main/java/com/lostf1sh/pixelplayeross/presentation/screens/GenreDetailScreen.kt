@@ -448,6 +448,7 @@ fun GenreDetailScreen(
                 ) {
                     SongInfoBottomSheet(
                         song = song,
+                        onStartRadio = { playerViewModel.startRadioFor(song) },
                         isFavorite = isFavorite,
                         onToggleFavorite = {
                             playerViewModel.toggleFavoriteSpecificSong(song)

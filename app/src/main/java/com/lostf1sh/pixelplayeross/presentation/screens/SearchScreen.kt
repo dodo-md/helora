@@ -452,6 +452,7 @@ fun SearchScreen(
         if (currentSong != null) {
             SongInfoBottomSheet(
                 song = currentSong,
+                onStartRadio = { playerViewModel.startRadioFor(currentSong) },
                 isFavorite = isFavorite,
                 removeFromListTrigger = removeFromListTrigger,
                 onToggleFavorite = {

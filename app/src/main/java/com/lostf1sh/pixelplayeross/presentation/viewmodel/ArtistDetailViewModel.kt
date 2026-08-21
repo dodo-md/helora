@@ -1,5 +1,8 @@
 package com.lostf1sh.pixelplayeross.presentation.viewmodel
 
+import com.lostf1sh.pixelplayeross.presentation.navigation.RemoteDetailId
+import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.Immutable
@@ -55,6 +58,8 @@ class ArtistDetailViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val musicRepository: MusicRepository,
     private val artistImageRepository: ArtistImageRepository,
+    private val youTubeMusicRepository: YouTubeMusicRepository,
+    private val remoteTrackCache: RemoteTrackCache,
     val themeStateHolder: ThemeStateHolder,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -77,7 +82,10 @@ class ArtistDetailViewModel @Inject constructor(
     init {
         savedStateHandle.getStateFlow<String?>("artistId", null)
             .onEach { idString ->
-                if (idString != null) {
+                val youTubeChannelId = RemoteDetailId.youTubeIdOrNull(idString)
+                if (youTubeChannelId != null) {
+                    loadYouTubeArtist(youTubeChannelId)
+                } else if (idString != null) {
                     val artistId = idString.toLongOrNull()
                     if (artistId != null) {
                         loadArtistData(artistId)
@@ -93,6 +101,83 @@ class ArtistDetailViewModel @Inject constructor(
 
     private var currentLoadJob: Job? = null
     private var loadedArtistId: Long? = null
+
+    /**
+
+     * YouTube Music artist search returns auto-generated "Topic" channels, which expose no tabs
+
+     * at all; the repository falls back to the channel's uploads playlist for those. Topic
+
+     * artists therefore have tracks but no album sections.
+
+     */
+
+    private fun loadYouTubeArtist(channelId: String) {
+
+        viewModelScope.launch {
+
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            val detail = runCatching { youTubeMusicRepository.getArtist(channelId) }.getOrNull()
+
+            if (detail == null || detail.songs.isEmpty()) {
+
+                _uiState.update { it.copy(error = context.getString(R.string.artist_not_found), isLoading = false) }
+
+                return@launch
+
+            }
+
+            remoteTrackCache.putAll(detail.songs)
+
+            detail.songs.firstOrNull()?.ytVideoId?.let(youTubeMusicRepository::prefetchStream)
+
+
+            val effectiveUrl = detail.artist.effectiveImageUrl
+
+            // Pre-warm the palette like the local path does, so the first frame is themed.
+
+            _artistColorScheme.value = if (!effectiveUrl.isNullOrBlank()) {
+
+                runCatching { themeStateHolder.getOrGenerateColorScheme(effectiveUrl) }.getOrNull()
+
+            } else null
+
+
+            _uiState.value = ArtistDetailUiState(
+
+                artist = detail.artist,
+
+                songs = detail.songs,
+
+                albumSections = detail.albums.map { album ->
+
+                    ArtistAlbumSection(
+
+                        albumId = album.id,
+
+                        title = album.title,
+
+                        year = album.year.takeIf { it > 0 },
+
+                        albumArtUriString = album.albumArtUriString,
+
+                        songs = emptyList()
+
+                    )
+
+                },
+
+                effectiveImageUrl = effectiveUrl,
+
+                isLoading = false
+
+            )
+
+        }
+
+    }
+
 
     private fun loadArtistData(id: Long) {
         loadedArtistId = id

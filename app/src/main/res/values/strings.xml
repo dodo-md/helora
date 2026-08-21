@@ -279,4 +279,27 @@
     <string name="search_youtube_songs">Songs on YouTube Music</string>
     <string name="search_youtube_albums">Albums on YouTube Music</string>
     <string name="search_youtube_artists">Artists on YouTube Music</string>
+    <string name="radio_no_match">No similar station found for this song</string>
+    <string name="song_info_start_radio">Start radio</string>
+    <string name="artist_not_found">Artist not found</string>
+    <string name="download_notification_title">Downloading music</string>
+    <string name="download_notification_channel">Downloads</string>
+    <string name="download_action">Download</string>
+    <string name="download_state_downloaded">Downloaded</string>
+    <string name="download_state_starting">Starting…</string>
+    <string name="download_state_in_progress">Downloading %1$d%%</string>
+    <string name="downloads_title">Downloads</string>
+    <string name="downloads_empty">No downloaded songs yet</string>
+    <string name="downloads_liked_action">Download liked songs</string>
+    <string name="downloads_liked_summary">Queues the YouTube tracks among your likes</string>
+    <string name="downloads_wifi_only">Download over Wi-Fi only</string>
+    <string name="downloads_wifi_only_summary">Turn off to allow mobile data</string>
+    <string name="downloads_state_queued">Queued</string>
+    <string name="downloads_state_failed">Download failed</string>
+    <string name="downloads_retry">Retry</string>
+    <string name="downloads_remove">Remove</string>
+    <string name="downloads_enqueued">%1$d song(s) queued for download</string>
+    <string name="downloads_nothing_to_do">Nothing new to download</string>
+    <string name="downloads_settings_subtitle">Songs you keep for offline listening</string>
+    <string name="common_back">Back</string>
 </resources>

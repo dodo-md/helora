@@ -1,5 +1,7 @@
 package com.lostf1sh.pixelplayeross.presentation.viewmodel
 
+import com.lostf1sh.pixelplayeross.data.download.MusicDownloadManager
+import com.lostf1sh.pixelplayeross.data.service.player.RadioQueueExtender
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
 import com.lostf1sh.pixelplayeross.data.stream.CloudStreamSchemes
@@ -272,6 +274,8 @@ class PlayerViewModel @Inject constructor(
     private val remoteTrackCache: RemoteTrackCache,
     private val youTubeSearchStateHolder: YouTubeSearchStateHolder,
     private val youTubeMusicRepository: YouTubeMusicRepository,
+    private val radioQueueExtender: RadioQueueExtender,
+    private val musicDownloadManager: MusicDownloadManager,
     private val folderNavigationStateHolder: FolderNavigationStateHolder,
     private val libraryTabsStateHolder: LibraryTabsStateHolder,
     private val metadataEditStateHolder: MetadataEditStateHolder,
@@ -2734,7 +2738,19 @@ class PlayerViewModel @Inject constructor(
     }
 
 
-    fun playSongs(songsToPlay: List<Song>, startSong: Song, queueName: String = "None", playlistId: String? = null) {
+    /**
+     * @param radioSeedVideoId when set, an endless YouTube station is armed on this track once
+     *   the queue has been handed to the player. Threaded through rather than armed by the
+     *   caller because dispatch stops any running radio, which would cancel a session armed a
+     *   moment earlier.
+     */
+    fun playSongs(
+        songsToPlay: List<Song>,
+        startSong: Song,
+        queueName: String = "None",
+        playlistId: String? = null,
+        radioSeedVideoId: String? = null
+    ) {
         cancelPendingFullQueuePlayback()
         val requestToken = beginDirectPlaybackRequest()
         directPlaybackJob = viewModelScope.launch {
@@ -2774,6 +2790,9 @@ class PlayerViewModel @Inject constructor(
             throwIfDirectPlaybackRequestIsStale(requestToken)
 
             internalPlaySongs(finalSongsToPlay, validStartSong, queueName, playlistId)
+            if (radioSeedVideoId != null) {
+                radioQueueExtender.startRadio(radioSeedVideoId, finalSongsToPlay)
+            }
             if (requestToken == directPlaybackToken) {
                 directPlaybackJob = null
             }
@@ -2968,6 +2987,18 @@ class PlayerViewModel @Inject constructor(
 
 
     private suspend fun internalPlaySongs(songsToPlay: List<Song>, startSong: Song, queueName: String = "None", playlistId: String? = null) {
+
+
+
+        // Every playback start funnels through here and replaces the queue, so an in-flight
+
+
+
+        // radio must not append onto it. Callers that want radio re-arm it afterwards.
+
+
+
+        radioQueueExtender.stopRadio()
         if (songsToPlay.isEmpty()) {
             clearPreparingSongIfMatching()
             return
@@ -3934,10 +3965,62 @@ class PlayerViewModel @Inject constructor(
      * Search results deliberately do not become the queue — that would make a search for "snap"
      * play every other song called "snap" before the station ever got a turn.
      */
+    /**
+     * Queues every YouTube track in [songs] for offline keeping. Local files and other sources
+     * are ignored rather than rejected, so a caller can hand over a whole album unfiltered.
+     */
+    fun downloadSongs(songs: List<Song>) {
+        viewModelScope.launch {
+            val queued = musicDownloadManager.enqueue(songs)
+            sendToast(
+                if (queued > 0) {
+                    context.getString(R.string.downloads_enqueued, queued)
+                } else {
+                    context.getString(R.string.downloads_nothing_to_do)
+                }
+            )
+        }
+    }
+
+    /** Queues every liked song that came from YouTube. */
+    fun downloadLikedSongs() {
+        viewModelScope.launch {
+            val likedIds = favoriteSongIds.value
+            if (likedIds.isEmpty()) {
+                sendToast(context.getString(R.string.downloads_nothing_to_do))
+                return@launch
+            }
+            downloadSongs(musicRepository.getSongsByIds(likedIds.toList()).first())
+        }
+    }
+
     fun playYouTubeSong(song: Song, contextSongs: List<Song> = listOf(song)) {
         val queue = contextSongs.ifEmpty { listOf(song) }
         remoteTrackCache.putAll(queue)
-        playSongs(queue, song, YOUTUBE_QUEUE_NAME)
+        playSongs(queue, song, YOUTUBE_QUEUE_NAME, radioSeedVideoId = song.ytVideoId)
+    }
+
+    /**
+     * Starts a station from any song, including a local file.
+     *
+     * A local track has no video id, so it is matched against YouTube first. The match is
+     * deliberately strict and gives up rather than seeding a station from the wrong recording.
+     */
+    fun startRadioFor(song: Song) {
+        viewModelScope.launch {
+            val seed = song.ytVideoId ?: youTubeMusicRepository.findMatchingVideoId(
+                title = song.title,
+                artist = song.artist,
+                durationMs = song.duration
+            )
+            if (seed == null) {
+                sendToast(context.getString(R.string.radio_no_match))
+                return@launch
+            }
+            remoteTrackCache.put(song)
+            // The chosen song keeps playing; the station is appended behind it.
+            playSongs(listOf(song), song, YOUTUBE_QUEUE_NAME, radioSeedVideoId = seed)
+        }
     }
 
     fun playYouTubeAlbum(album: Album) {

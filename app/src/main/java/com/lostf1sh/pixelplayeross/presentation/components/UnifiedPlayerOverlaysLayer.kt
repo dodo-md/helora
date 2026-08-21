@@ -192,6 +192,7 @@ internal fun UnifiedPlayerSongInfoLayer(
         ) {
             SongInfoBottomSheet(
                 song = liveSong,
+                onStartRadio = { playerViewModel.startRadioFor(liveSong) },
                 isFavorite = liveSong.isFavorite,
                 onToggleFavorite = { playerViewModel.toggleFavoriteSpecificSong(liveSong) },
                 onDismiss = {

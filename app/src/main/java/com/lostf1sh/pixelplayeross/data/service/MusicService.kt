@@ -1,5 +1,6 @@
 package com.lostf1sh.pixelplayeross.data.service
 
+import com.lostf1sh.pixelplayeross.data.service.player.RadioQueueExtender
 import android.app.BackgroundServiceStartNotAllowedException
 import android.app.ForegroundServiceStartNotAllowedException
 import android.app.PendingIntent
@@ -155,6 +156,8 @@ class MusicService : MediaSessionService() {
     lateinit var engine: DualPlayerEngine
     @Inject
     lateinit var controller: TransitionController
+    @Inject
+    lateinit var radioQueueExtender: RadioQueueExtender
     @Inject
     lateinit var musicRepository: MusicRepository
     @Inject
@@ -1098,6 +1101,10 @@ class MusicService : MediaSessionService() {
         }
 
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+
+            // Catches the case where an extension lands but playback is still near the tail.
+
+            radioQueueExtender.onPlaybackPositionChanged(engine.masterPlayer)
             requestWidgetFullUpdate(force = true)
             schedulePlaybackSnapshotPersist(immediate = timeline.isEmpty)
             val player = engine.masterPlayer
@@ -1145,6 +1152,8 @@ class MusicService : MediaSessionService() {
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+
+            radioQueueExtender.onPlaybackPositionChanged(engine.masterPlayer)
             mediaItem?.let(::grantArtworkUriPermissionsToConnectedControllers)
             syncLocalListeningStatsFromPlayer(mediaSession?.player ?: engine.masterPlayer, forceNewSession = true)
             if (isNavidromeMediaItem(mediaItem)) {
@@ -1395,6 +1404,7 @@ class MusicService : MediaSessionService() {
             playWhenReady = playWhenReadyOverride ?: player.playWhenReady,
             repeatMode = safeRepeatMode,
             shuffleEnabled = isManualShuffleEnabled,
+            radioSeedVideoId = radioQueueExtender.currentSeed
         )
     }
 

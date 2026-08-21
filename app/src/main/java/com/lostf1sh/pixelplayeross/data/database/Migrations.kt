@@ -153,3 +153,33 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         )
     }
 }
+
+/** Adds the link between a downloaded file and the YouTube track it came from. */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+                CREATE TABLE IF NOT EXISTS downloaded_tracks (
+                    video_id TEXT NOT NULL PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    artist TEXT NOT NULL,
+                    album TEXT NOT NULL,
+                    album_art_uri TEXT,
+                    duration INTEGER NOT NULL DEFAULT 0,
+                    media_store_uri TEXT,
+                    file_path TEXT,
+                    state INTEGER NOT NULL DEFAULT 0,
+                    total_bytes INTEGER NOT NULL DEFAULT 0,
+                    error_message TEXT,
+                    created_at INTEGER NOT NULL,
+                    completed_at INTEGER
+                )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_downloaded_tracks_state ON downloaded_tracks(state)")
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_downloaded_tracks_media_store_uri " +
+                "ON downloaded_tracks(media_store_uri)"
+        )
+    }
+}

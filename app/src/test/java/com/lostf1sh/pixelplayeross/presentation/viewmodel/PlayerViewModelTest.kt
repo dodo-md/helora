@@ -1,5 +1,7 @@
 package com.lostf1sh.pixelplayeross.presentation.viewmodel
 
+import com.lostf1sh.pixelplayeross.data.download.MusicDownloadManager
+import com.lostf1sh.pixelplayeross.data.service.player.RadioQueueExtender
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
 import android.content.Context
@@ -85,6 +87,8 @@ class PlayerViewModelTest {
     private val remoteTrackCache = RemoteTrackCache()
     private val mockYouTubeSearchStateHolder: YouTubeSearchStateHolder = mockk(relaxed = true)
     private val mockYouTubeMusicRepository: YouTubeMusicRepository = mockk(relaxed = true)
+    private val mockRadioQueueExtender: RadioQueueExtender = mockk(relaxed = true)
+    private val mockMusicDownloadManager: MusicDownloadManager = mockk(relaxed = true)
     private val mockFolderNavigationStateHolder: FolderNavigationStateHolder = mockk(relaxed = true)
     private val mockLibraryTabsStateHolder: LibraryTabsStateHolder = mockk(relaxed = true)
     private val mockMetadataEditStateHolder: MetadataEditStateHolder = mockk(relaxed = true)
@@ -229,6 +233,8 @@ class PlayerViewModelTest {
             remoteTrackCache,
             mockYouTubeSearchStateHolder,
             mockYouTubeMusicRepository,
+            mockRadioQueueExtender,
+            mockMusicDownloadManager,
             mockFolderNavigationStateHolder,
             mockLibraryTabsStateHolder,
             mockMetadataEditStateHolder,

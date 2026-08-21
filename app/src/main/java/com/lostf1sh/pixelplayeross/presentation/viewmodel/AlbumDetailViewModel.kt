@@ -1,5 +1,8 @@
 package com.lostf1sh.pixelplayeross.presentation.viewmodel
 
+import com.lostf1sh.pixelplayeross.presentation.navigation.RemoteDetailId
+import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -35,6 +38,8 @@ class AlbumDetailViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val musicRepository: MusicRepository,
     private val cloudOfflineRepository: CloudOfflineRepository,
+    private val youTubeMusicRepository: YouTubeMusicRepository,
+    private val remoteTrackCache: RemoteTrackCache,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -48,7 +53,11 @@ class AlbumDetailViewModel @Inject constructor(
 
     init {
         val albumIdString: String? = savedStateHandle.get("albumId")
-        if (albumIdString != null) {
+        val youTubeBrowseId = RemoteDetailId.youTubeIdOrNull(albumIdString)
+        if (youTubeBrowseId != null) {
+            // Remote albums ride the same route behind a prefixed id, so this screen serves both.
+            loadYouTubeAlbum(youTubeBrowseId)
+        } else if (albumIdString != null) {
             val albumId = albumIdString.toLongOrNull()
             if (albumId != null) {
                 loadedAlbumId = albumId
@@ -60,6 +69,41 @@ class AlbumDetailViewModel @Inject constructor(
             _uiState.update { it.copy(error = context.getString(R.string.album_id_not_found), isLoading = false) }
         }
     }
+
+    private fun loadYouTubeAlbum(browseId: String) {
+
+        viewModelScope.launch {
+
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            val detail = runCatching { youTubeMusicRepository.getAlbum(browseId) }.getOrNull()
+
+            if (detail == null || detail.songs.isEmpty()) {
+
+                _uiState.update { it.copy(error = context.getString(R.string.album_not_found), isLoading = false) }
+
+                return@launch
+
+            }
+
+            // Cached so the tracks stay resolvable once handed to the player, which cannot
+
+            // look them up in the library.
+
+            remoteTrackCache.putAll(detail.songs)
+
+            detail.songs.firstOrNull()?.ytVideoId?.let(youTubeMusicRepository::prefetchStream)
+
+            _uiState.update {
+
+                it.copy(album = detail.album, songs = detail.songs, isLoading = false, error = null)
+
+            }
+
+        }
+
+    }
+
 
     private fun loadAlbumData(id: Long) {
         viewModelScope.launch {
