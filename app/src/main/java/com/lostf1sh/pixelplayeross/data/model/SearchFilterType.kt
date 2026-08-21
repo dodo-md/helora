@@ -8,5 +8,11 @@ enum class SearchFilterType {
     SONGS,
     ALBUMS,
     ARTISTS,
-    PLAYLISTS
+    PLAYLISTS,
+
+    /**
+     * YouTube Music. Results come from a separate, network-backed holder rather than the local
+     * index, so the local search path returns nothing for this filter.
+     */
+    YOUTUBE
 }

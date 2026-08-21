@@ -254,6 +254,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp)
+    // YouTube Music extraction (anonymous). GPLv3 — matches this project's licence.
+    implementation(libs.newpipe.extractor)
     implementation(libs.logging.interceptor)
     implementation(libs.gson)
     implementation(libs.kotlinx.serialization.json)

@@ -14,7 +14,9 @@ data class Album(
     val dateAdded: Long,
     val albumArtUriString: String?,
     val songCount: Int,
-    val albumArtist: String? = null
+    val albumArtist: String? = null,
+    /** YouTube Music browse (playlist) id when this album is a remote YouTube result. */
+    val ytmBrowseId: String? = null
 ) : Parcelable {
     companion object {
         fun empty() = Album(
@@ -37,7 +39,9 @@ data class Artist(
     val name: String,
     val songCount: Int,
     val imageUrl: String? = null,
-    val customImageUri: String? = null
+    val customImageUri: String? = null,
+    /** YouTube Music channel id when this artist is a remote YouTube result. */
+    val ytmChannelId: String? = null
 ) : Parcelable {
     companion object {
         fun empty() = Artist(

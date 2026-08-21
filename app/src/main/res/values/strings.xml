@@ -272,4 +272,11 @@
     <string name="musicbrainz_match_score">Match confidence: %1$d%%</string>
     <string name="musicbrainz_applied">MusicBrainz identifiers saved. Missing year and placeholder names were enriched.</string>
 
+    <string name="search_filter_youtube_music">YouTube Music</string>
+    <string name="search_youtube_offline">You’re offline. Connect to search YouTube Music.</string>
+    <string name="search_youtube_error">Couldn’t reach YouTube Music.</string>
+    <string name="search_youtube_retry">Retry</string>
+    <string name="search_youtube_songs">Songs on YouTube Music</string>
+    <string name="search_youtube_albums">Albums on YouTube Music</string>
+    <string name="search_youtube_artists">Artists on YouTube Music</string>
 </resources>

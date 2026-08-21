@@ -1,5 +1,8 @@
 package com.lostf1sh.pixelplayeross.presentation.viewmodel
 
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
+import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
+import com.lostf1sh.pixelplayeross.data.stream.CloudStreamSchemes
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.net.Uri
@@ -121,6 +124,7 @@ import androidx.paging.cachedIn
 import coil.memory.MemoryCache
 
 private const val ENABLE_FOLDERS_SOURCE_SWITCHING = true
+private const val YOUTUBE_QUEUE_NAME = "YouTube Music"
 private const val MAX_ALBUM_BATCH_SELECTION = 6
 private const val SONG_ID_QUERY_CHUNK_SIZE = 900
 private const val HOME_MIX_PREVIEW_LIMIT = 48
@@ -265,6 +269,9 @@ class PlayerViewModel @Inject constructor(
     private val sleepTimerStateHolder: SleepTimerStateHolder,
     private val searchStateHolder: SearchStateHolder,
     private val libraryStateHolder: LibraryStateHolder,
+    private val remoteTrackCache: RemoteTrackCache,
+    private val youTubeSearchStateHolder: YouTubeSearchStateHolder,
+    private val youTubeMusicRepository: YouTubeMusicRepository,
     private val folderNavigationStateHolder: FolderNavigationStateHolder,
     private val libraryTabsStateHolder: LibraryTabsStateHolder,
     private val metadataEditStateHolder: MetadataEditStateHolder,
@@ -1636,6 +1643,7 @@ class PlayerViewModel @Inject constructor(
             )
 
             searchStateHolder.initialize(viewModelScope)
+            youTubeSearchStateHolder.initialize(viewModelScope)
 
             viewModelScope.launch {
                 combine(
@@ -2152,6 +2160,9 @@ class PlayerViewModel @Inject constructor(
         val resolvedSong =
             allSongsById?.get(mediaItem.mediaId)
                 ?: libraryStateHolder.allSongsById.value[mediaItem.mediaId]
+                // Streaming tracks that were never saved have no library row; the cache holds
+                // the full Song, which beats both the queue scan and the extras-only rebuild.
+                ?: remoteTrackCache.get(mediaItem.mediaId)
                 ?: _playerUiState.value.currentPlaybackQueue.find { it.id == mediaItem.mediaId }
                 ?: mediaMapper.resolveSongFromMediaItem(mediaItem)
 
@@ -3027,10 +3038,10 @@ class PlayerViewModel @Inject constructor(
         val mediaItem = MediaItemBuilder.build(song)
         val originalUri = mediaItem.localConfiguration?.uri ?: return mediaItem
         val scheme = originalUri.scheme
-        if (
-            scheme != "navidrome" &&
-            scheme != "jellyfin"
-        ) {
+        // Resolution must happen here: the ResolvingDataSource in DualPlayerEngine is
+        // synchronous and cache-only, so a proxied URI that reaches ExoPlayer unresolved
+        // simply fails to play.
+        if (scheme !in CloudStreamSchemes.PROXIED) {
             return mediaItem
         }
 
@@ -3907,6 +3918,48 @@ class PlayerViewModel @Inject constructor(
 
     fun performSearch(query: String) {
         searchStateHolder.performSearch(query)
+        youTubeSearchStateHolder.performSearch(query, searchStateHolder.selectedSearchFilter.value)
+    }
+
+    /** State for the YouTube Music section of the search screen. */
+    val youTubeSearchState = youTubeSearchStateHolder.state
+
+    fun retryYouTubeSearch() {
+        youTubeSearchStateHolder.retry()
+    }
+
+    /**
+     * Plays a YouTube track as a radio station: the track itself, then songs like it.
+     *
+     * Search results deliberately do not become the queue — that would make a search for "snap"
+     * play every other song called "snap" before the station ever got a turn.
+     */
+    fun playYouTubeSong(song: Song, contextSongs: List<Song> = listOf(song)) {
+        val queue = contextSongs.ifEmpty { listOf(song) }
+        remoteTrackCache.putAll(queue)
+        playSongs(queue, song, YOUTUBE_QUEUE_NAME)
+    }
+
+    fun playYouTubeAlbum(album: Album) {
+        val browseId = album.ytmBrowseId ?: return
+        viewModelScope.launch {
+            val songs = runCatching { youTubeMusicRepository.getAlbum(browseId).songs }
+                .getOrElse { emptyList() }
+            if (songs.isEmpty()) return@launch
+            remoteTrackCache.putAll(songs)
+            playSongs(songs, songs.first(), album.title)
+        }
+    }
+
+    fun playYouTubeArtist(artist: Artist) {
+        val channelId = artist.ytmChannelId ?: return
+        viewModelScope.launch {
+            val songs = runCatching { youTubeMusicRepository.getArtist(channelId).songs }
+                .getOrElse { emptyList() }
+            if (songs.isEmpty()) return@launch
+            remoteTrackCache.putAll(songs)
+            playSongs(songs, songs.first(), artist.name)
+        }
     }
 
     fun deleteSearchHistoryItem(query: String) {
@@ -3950,6 +4003,7 @@ class PlayerViewModel @Inject constructor(
         lyricsStateHolder.onCleared()
         themeStateHolder.onCleared()
         searchStateHolder.onCleared()
+        youTubeSearchStateHolder.onCleared()
         libraryStateHolder.onCleared()
         sleepTimerStateHolder.onCleared()
         connectivityStateHolder.onCleared()

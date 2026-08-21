@@ -72,3 +72,29 @@
     public static int d(...);
     public static int i(...);
 }
+
+# =============================================================================
+# NEWPIPE EXTRACTOR (YouTube Music)
+# =============================================================================
+# The extractor discovers services reflectively and binds JSON responses by
+# field name, so its class and member names must survive shrinking.
+-keep class org.schabi.newpipe.extractor.** { *; }
+-dontwarn org.schabi.newpipe.extractor.**
+
+# nanojson - reflective JSON binding used throughout the extractor.
+-keep class com.grack.nanojson.** { *; }
+
+# Rhino evaluates YouTube's player JavaScript to deobfuscate stream signatures
+# (the "nsig" challenge). It reflects on its own classes and generates class
+# files at runtime, so anything short of a full keep produces streams that work
+# in debug and return 403 in release.
+-keep class org.mozilla.javascript.** { *; }
+-keep class org.mozilla.classfile.** { *; }
+-keepclassmembers class org.mozilla.javascript.** { *; }
+-dontwarn org.mozilla.javascript.**
+-dontwarn org.mozilla.classfile.**
+
+# jsoup - HTML fallback parsing.
+-keep class org.jsoup.** { *; }
+
+-dontwarn org.nibor.autolink.**

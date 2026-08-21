@@ -1,0 +1,123 @@
+package com.lostf1sh.pixelplayeross.data.youtube
+
+import com.google.common.truth.Truth.assertThat
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.channelIdOrNull
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.playlistIdOrNull
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.stripReleaseTypePrefix
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.stripTopicSuffix
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.cleanTrackTitle
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.trackKey
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.musicStationUrl
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.genericStationUrl
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.videoIdOrNull
+import org.junit.jupiter.api.Test
+
+/**
+ * Covers the pure parsing/mapping helpers. The extractor calls themselves are not tested
+ * here: they hit the live network and would make the suite flaky.
+ */
+class YouTubeMusicRepositoryTest {
+
+    @Test
+    fun `extracts video ids from watch urls`() {
+        assertThat(videoIdOrNull("https://www.youtube.com/watch?v=9RfVp-GhKfs")).isEqualTo("9RfVp-GhKfs")
+        assertThat(videoIdOrNull("https://music.youtube.com/watch?v=9RfVp-GhKfs&list=RD"))
+            .isEqualTo("9RfVp-GhKfs")
+        assertThat(videoIdOrNull("https://youtu.be/9RfVp-GhKfs")).isEqualTo("9RfVp-GhKfs")
+    }
+
+    @Test
+    fun `rejects malformed video ids`() {
+        assertThat(videoIdOrNull(null)).isNull()
+        assertThat(videoIdOrNull("")).isNull()
+        assertThat(videoIdOrNull("https://www.youtube.com/watch?v=tooshort")).isNull()
+        assertThat(videoIdOrNull("https://www.youtube.com/results?search_query=creep")).isNull()
+    }
+
+    @Test
+    fun `extracts playlist and channel ids`() {
+        assertThat(playlistIdOrNull("https://music.youtube.com/playlist?list=OLAK5uy_abc"))
+            .isEqualTo("OLAK5uy_abc")
+        assertThat(playlistIdOrNull("https://music.youtube.com/browse/xyz")).isNull()
+        assertThat(channelIdOrNull("https://music.youtube.com/channel/UCr_iyUANcn9OX_yy9piYoLw"))
+            .isEqualTo("UCr_iyUANcn9OX_yy9piYoLw")
+        assertThat(channelIdOrNull("https://www.youtube.com/@radiohead")).isNull()
+    }
+
+    @Test
+    fun `strips youtube generated title decorations`() {
+        // YouTube titles album playlists by release type, and auto-generated artist
+        // channels by " - Topic". Both would otherwise leak into the UI.
+        assertThat(stripReleaseTypePrefix("Album – OK Computer")).isEqualTo("OK Computer")
+        assertThat(stripReleaseTypePrefix("Single – Creep")).isEqualTo("Creep")
+        assertThat(stripReleaseTypePrefix("EP - Drill")).isEqualTo("Drill")
+        assertThat(stripReleaseTypePrefix("OK Computer")).isEqualTo("OK Computer")
+        assertThat(stripTopicSuffix("Radiohead - Topic")).isEqualTo("Radiohead")
+        assertThat(stripTopicSuffix("Radiohead")).isEqualTo("Radiohead")
+    }
+
+    @Test
+    fun `song ids are deterministic, negative and per-entity distinct`() {
+        // Determinism is what lets an ephemeral track be promoted into Room by INSERT OR
+        // REPLACE, keeping any favorite or playlist row written beforehand valid.
+        assertThat(YouTubeIds.songId("9RfVp-GhKfs")).isEqualTo(YouTubeIds.songId("9RfVp-GhKfs"))
+        assertThat(YouTubeIds.songId("9RfVp-GhKfs")).isLessThan(0L)
+        assertThat(YouTubeIds.songId("9RfVp-GhKfs")).isNotEqualTo(YouTubeIds.songId("4BX5xpB2DBM"))
+    }
+
+    @Test
+    fun `id blocks do not overlap across entity types`() {
+        val key = "collision-probe"
+        assertThat(setOf(YouTubeIds.songId(key), YouTubeIds.albumId(key), YouTubeIds.artistId(key)))
+            .hasSize(3)
+    }
+
+    @Test
+    fun `ids stay clear of the id blocks used by other cloud sources`() {
+        // Netease/GDrive/QQ/Navidrome/Jellyfin occupy 3T..14T; YouTube starts at 15T.
+        repeat(500) { index ->
+            assertThat(YouTubeIds.songId("video$index")).isLessThan(-15_000_000_000_000L)
+        }
+    }
+
+    @Test
+    fun `station urls carry the mix id and the seed video`() {
+        // RDAMVM is the YouTube Music station; RD is the generic fallback for non-music videos.
+        assertThat(musicStationUrl("9RfVp-GhKfs"))
+            .isEqualTo("https://www.youtube.com/watch?v=9RfVp-GhKfs&list=RDAMVM9RfVp-GhKfs")
+        assertThat(genericStationUrl("9RfVp-GhKfs"))
+            .isEqualTo("https://www.youtube.com/watch?v=9RfVp-GhKfs&list=RD9RfVp-GhKfs")
+    }
+
+    @Test
+    fun `strips upload decoration from station track titles`() {
+        // Mixes pull in ordinary YouTube uploads, so titles arrive decorated.
+        assertThat(cleanTrackTitle("Coldplay - Yellow (Official Video)", "Coldplay"))
+            .isEqualTo("Yellow")
+        assertThat(cleanTrackTitle("Metallica: Nothing Else Matters", "Metallica"))
+            .isEqualTo("Nothing Else Matters")
+        // Channel names are not always exactly the artist name.
+        assertThat(cleanTrackTitle("The Cranberries - Zombie", "TheCranberriesTV"))
+            .isEqualTo("Zombie")
+        assertThat(cleanTrackTitle("Numb [Official Music Video] [4K UPGRADE]", "Linkin Park"))
+            .isEqualTo("Numb")
+    }
+
+    @Test
+    fun `keeps meaningful parentheses`() {
+        // "(Acoustic)" and "(feat. …)" distinguish real recordings and must survive.
+        assertThat(cleanTrackTitle("Creep (Acoustic)", "Radiohead")).isEqualTo("Creep (Acoustic)")
+        assertThat(cleanTrackTitle("Stay (feat. Justin Bieber)", "The Kid LAROI"))
+            .isEqualTo("Stay (feat. Justin Bieber)")
+    }
+
+    @Test
+    fun `track key identifies a recording, not an upload`() {
+        // A station routinely contains the same song twice under different video ids; the key
+        // is what lets the extender drop the duplicate.
+        assertThat(trackKey("Where Is My Mind?", "Pixies"))
+            .isEqualTo(trackKey("where is my mind", "PIXIES"))
+        assertThat(trackKey("Creep", "Radiohead"))
+            .isNotEqualTo(trackKey("Creep", "Taylor Swift"))
+    }
+}

@@ -58,6 +58,7 @@ import javax.inject.Singleton
 import kotlin.coroutines.resume
 
 import com.lostf1sh.pixelplayeross.data.navidrome.NavidromeStreamProxy
+import com.lostf1sh.pixelplayeross.data.stream.CloudStreamSchemes
 
 data class ActiveDecoderInfo(
     val name: String,
@@ -172,15 +173,16 @@ class DualPlayerEngine @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val navidromeStreamProxy: NavidromeStreamProxy,
     private val jellyfinStreamProxy: com.lostf1sh.pixelplayeross.data.jellyfin.JellyfinStreamProxy,
+    private val youTubeStreamProxy: com.lostf1sh.pixelplayeross.data.youtube.YouTubeStreamProxy,
     private val cloudOfflineRepository: CloudOfflineRepository
 ) {
     private companion object {
         private const val AUDIO_OFFLOAD_STALL_FALLBACK_MS = 4_000L
         private const val POST_TRANSITION_OFFLOAD_GUARD_MS = 2_000L
         private const val MAX_AUXILIARY_TIMELINE_ITEMS = 200
-        private val LOCAL_MEDIA_SCHEMES = setOf("content", "file", "android.resource")
-        private val REMOTE_MEDIA_SCHEMES = setOf("http", "https", "navidrome", "jellyfin")
-        private val CLOUD_PROXY_SCHEMES = setOf("navidrome", "jellyfin")
+        private val LOCAL_MEDIA_SCHEMES = CloudStreamSchemes.LOCAL
+        private val REMOTE_MEDIA_SCHEMES = CloudStreamSchemes.REMOTE
+        private val CLOUD_PROXY_SCHEMES = CloudStreamSchemes.PROXIED
     }
 
     data class TransitionTarget(
@@ -994,6 +996,9 @@ class DualPlayerEngine @Inject constructor(
             "jellyfin" -> jellyfinStreamProxy
                 .takeIf { it.isReady() }
                 ?.resolveJellyfinUri(uriString)
+            "ytmusic" -> youTubeStreamProxy
+                .takeIf { it.isReady() }
+                ?.resolveYouTubeUri(uriString)
             else -> null
         }
         return proxyUrl?.let(Uri::parse)
@@ -1050,6 +1055,7 @@ class DualPlayerEngine @Inject constructor(
         val resolved: Uri? = when (uri.scheme) {
             "navidrome" -> resolveNavidromeUriAsync(uriString)
             "jellyfin" -> resolveJellyfinUriAsync(uriString)
+            "ytmusic" -> resolveYouTubeUriAsync(uriString)
             else -> null
         }
 
@@ -1064,6 +1070,14 @@ class DualPlayerEngine @Inject constructor(
         if (!navidromeStreamProxy.ensureReady(5_000L)) return@withContext null
         navidromeStreamProxy.warmUpStreamUrl(uriString)
         navidromeStreamProxy.resolveNavidromeUri(uriString)?.let { Uri.parse(it) }
+    }
+
+    private suspend fun resolveYouTubeUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
+        if (!youTubeStreamProxy.ensureReady(5_000L)) return@withContext null
+        // Warm the URL cache first: extraction is slow enough that the proxy would otherwise
+        // stall ExoPlayer's opening byte-range request.
+        youTubeStreamProxy.warmUpStreamUrl(uriString)
+        youTubeStreamProxy.resolveYouTubeUri(uriString)?.let { Uri.parse(it) }
     }
 
     private suspend fun resolveJellyfinUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {

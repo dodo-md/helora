@@ -76,6 +76,7 @@ truth = "1.4.5"
 
 retrofit = "3.0.0"
 okhttp = "5.4.0"
+newpipeExtractor = "v0.26.5"
 navigationRuntimeKtx = "2.9.8"
 uiautomator = "2.4.0"
 benchmarkMacroJunit4 = "1.4.1"
@@ -161,6 +162,7 @@ reorderables = { group = "sh.calvin.reorderable", name = "reorderable", version.
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+newpipe-extractor = { group = "com.github.TeamNewPipe", name = "NewPipeExtractor", version.ref = "newpipeExtractor" }
 logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }

@@ -1,5 +1,7 @@
 package com.lostf1sh.pixelplayeross.presentation.viewmodel
 
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
+import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
 import android.content.Context
 import app.cash.turbine.test
 import com.lostf1sh.pixelplayeross.data.database.AlbumArtThemeDao
@@ -79,6 +81,10 @@ class PlayerViewModelTest {
     private val mockSleepTimerStateHolder: SleepTimerStateHolder = mockk(relaxed = true)
     private val mockSearchStateHolder: SearchStateHolder = mockk(relaxed = true)
     private val mockLibraryStateHolder: LibraryStateHolder = mockk(relaxed = true)
+    // Real instance: a plain in-memory cache with no collaborators to stub.
+    private val remoteTrackCache = RemoteTrackCache()
+    private val mockYouTubeSearchStateHolder: YouTubeSearchStateHolder = mockk(relaxed = true)
+    private val mockYouTubeMusicRepository: YouTubeMusicRepository = mockk(relaxed = true)
     private val mockFolderNavigationStateHolder: FolderNavigationStateHolder = mockk(relaxed = true)
     private val mockLibraryTabsStateHolder: LibraryTabsStateHolder = mockk(relaxed = true)
     private val mockMetadataEditStateHolder: MetadataEditStateHolder = mockk(relaxed = true)
@@ -220,6 +226,9 @@ class PlayerViewModelTest {
             mockSleepTimerStateHolder,
             mockSearchStateHolder,
             mockLibraryStateHolder,
+            remoteTrackCache,
+            mockYouTubeSearchStateHolder,
+            mockYouTubeMusicRepository,
             mockFolderNavigationStateHolder,
             mockLibraryTabsStateHolder,
             mockMetadataEditStateHolder,
