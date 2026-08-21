@@ -49,7 +49,10 @@ class ArtistImageRepositoryTest {
         coEvery { musicDao.getArtistImageUrl(42L) } returns null
         coEvery { musicDao.getArtistImageUrlByNormalizedName("Artist Name") } returns null
         coJustRun { musicDao.updateArtistImageUrl(42L, any()) }
-        coEvery { deezerApiService.searchArtist("Artist Name", 1) } coAnswers {
+        // The limit is not what this test is about, and pinning it coupled the test to a
+        // constant that had to change: one result is not deep enough to see past the
+        // duplicate entries Deezer leads with.
+        coEvery { deezerApiService.searchArtist("Artist Name", any()) } coAnswers {
             when (searchAttempts.incrementAndGet()) {
                 1 -> {
                     firstAttemptStarted.complete(Unit)

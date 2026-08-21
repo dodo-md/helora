@@ -388,15 +388,27 @@ class YouTubeMusicRepository @Inject constructor(
     }
 
     /**
-     * Last resort when a track has no mix at all: other songs by the same artist. Still closer
-     * to "more like this" than falling back to raw related videos would be.
+     * First step once a track's mix runs out: other songs by the same artist. Still closer to
+     * "more like this" than falling back to raw related videos would be, but it is the same
+     * artist rather than similar music, which is why the radio has a step after it.
      */
-    suspend fun getArtistFallbackSongs(seed: Song): List<Song> = withContext(ytDispatcher) {
+    suspend fun getArtistFallbackSongs(seed: Song): List<Song> {
+        val artistName = seed.artist.takeIf { it.isNotBlank() } ?: return emptyList()
+        return getSongsForArtist(artistName).filter { it.ytVideoId != seed.ytVideoId }
+    }
+
+    /**
+     * Top songs YouTube Music returns for an artist name.
+     *
+     * Split out so the radio can ask the same question about an artist it only has a name for,
+     * such as one Deezer named as similar to the seed.
+     */
+    suspend fun getSongsForArtist(artistName: String): List<Song> = withContext(ytDispatcher) {
         ensureInit()
-        val artistName = seed.artist.takeIf { it.isNotBlank() } ?: return@withContext emptyList()
+        if (artistName.isBlank()) return@withContext emptyList()
         runCatching { searchSongs(artistName) }
             .getOrElse { emptyList() }
-            .filter { it.ytVideoId != null && it.ytVideoId != seed.ytVideoId }
+            .filter { it.ytVideoId != null }
     }
 
     /**

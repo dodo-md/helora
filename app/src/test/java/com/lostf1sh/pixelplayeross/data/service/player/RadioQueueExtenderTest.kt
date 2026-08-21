@@ -5,6 +5,7 @@ import androidx.media3.common.Player
 import com.google.common.truth.Truth.assertThat
 import com.lostf1sh.pixelplayeross.MainCoroutineExtension
 import com.lostf1sh.pixelplayeross.data.model.Song
+import com.lostf1sh.pixelplayeross.data.repository.DeezerRelatedArtistsRepository
 import com.lostf1sh.pixelplayeross.data.youtube.RadioPage
 import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
@@ -14,6 +15,7 @@ import com.lostf1sh.pixelplayeross.utils.MediaItemBuilder
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.coVerify
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -150,11 +152,124 @@ class RadioQueueExtenderTest {
             .inOrder()
     }
 
+    // --- the fallback ladder ---------------------------------------------------------------
+    //
+    // A station used to die one round after its mix ran out: the seed artist was the only
+    // fallback and it was one shot. These cover the step that follows it.
+
+    private fun fallbackFixture() =
+        fixture(queueSize = SHORT_QUEUE, currentIndex = SHORT_QUEUE_INDEX, withStation = false)
+
+    @Test
+    fun `carries on with similar artists once the seed artist has nothing left`() = runTest {
+        val fixture = fallbackFixture()
+        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
+        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
+        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
+            List(RELATED_ARTIST_TRACKS) { song("teoman-$it", videoId = "t$it") }
+
+        fixture.run()
+        advanceUntilIdle()
+
+        // Before this step the round would have ended here with the station marked exhausted.
+        assertThat(fixture.appended(RELATED_ARTIST_TRACKS))
+            .containsExactly("teoman-0", "teoman-1", "teoman-2", "teoman-3", "teoman-4")
+            .inOrder()
+    }
+
+    @Test
+    fun `the seed artist still goes first`() = runTest {
+        val fixture = fallbackFixture()
+        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns
+            List(RELATED_ARTIST_TRACKS) { song("same-$it", videoId = "s$it") }
+        coEvery { fixture.relatedArtists.relatedArtists(any()) } returns listOf("Teoman")
+
+        fixture.run()
+        advanceUntilIdle()
+
+        assertThat(fixture.appended(RELATED_ARTIST_TRACKS)).containsExactly(
+            "same-0", "same-1", "same-2", "same-3", "same-4"
+        ).inOrder()
+        // Nothing asks Deezer while the seed artist still has something to give.
+        coVerify(exactly = 0) { fixture.relatedArtists.relatedArtists(any()) }
+    }
+
+    @Test
+    fun `a related artist that returns nothing does not end the station`() = runTest {
+        val fixture = fallbackFixture()
+        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
+        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns
+            listOf("Nobody", "Teoman")
+        coEvery { fixture.repository.getSongsForArtist("Nobody") } returns emptyList()
+        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
+            List(RELATED_ARTIST_TRACKS) { song("teoman-$it", videoId = "t$it") }
+
+        fixture.run()
+        advanceUntilIdle()
+
+        // One name YouTube cannot find should not read as the station having run out.
+        assertThat(fixture.appended(RELATED_ARTIST_TRACKS)).contains("teoman-0")
+        coVerify { fixture.repository.getSongsForArtist("Nobody") }
+    }
+
+    @Test
+    fun `gives up when there are no similar artists either`() = runTest {
+        val fixture = fallbackFixture()
+        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
+        coEvery { fixture.relatedArtists.relatedArtists(any()) } returns emptyList()
+
+        fixture.run()
+        advanceUntilIdle()
+
+        assertThat(fixture.queueStateHolder.originalQueueOrder).hasSize(SHORT_QUEUE)
+        coVerify(exactly = 0) { fixture.repository.getSongsForArtist(any()) }
+    }
+
+    @Test
+    fun `takes only a few tracks from each similar artist`() = runTest {
+        val fixture = fallbackFixture()
+        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
+        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
+        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
+            List(20) { song("teoman-$it", videoId = "t$it") }
+
+        fixture.run()
+        advanceUntilIdle()
+
+        // A whole search page would turn the round into one artist's greatest hits.
+        assertThat(fixture.queueStateHolder.originalQueueOrder)
+            .hasSize(SHORT_QUEUE + RELATED_ARTIST_TRACKS)
+        assertThat(fixture.appended(RELATED_ARTIST_TRACKS)).doesNotContain("teoman-5")
+    }
+
+    @Test
+    fun `an already queued opener does not waste a round`() = runTest {
+        val fixture = fallbackFixture()
+        val fromSeedArtist = List(RELATED_ARTIST_TRACKS) { song("same-$it", videoId = "s$it") }
+        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns fromSeedArtist
+        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
+        // The related artist leads with tracks the seed artist round already queued, which is
+        // ordinary: a search for a band returns their collaborations too.
+        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
+            fromSeedArtist + List(RELATED_ARTIST_TRACKS) { song("teoman-$it", videoId = "t$it") }
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        // Trimming to five before filtering would have left this round with nothing.
+        assertThat(fixture.appended(RELATED_ARTIST_TRACKS))
+            .containsExactly("teoman-0", "teoman-1", "teoman-2", "teoman-3", "teoman-4")
+            .inOrder()
+    }
+
     private class Fixture(
         val player: Player,
         val queueStateHolder: QueueStateHolder,
         val remoteTrackCache: RemoteTrackCache,
         val repository: YouTubeMusicRepository,
+        val relatedArtists: DeezerRelatedArtistsRepository,
         private val extender: RadioQueueExtender
     ) {
         /** Arms a station and asks for one top-up. Drain with `advanceUntilIdle()`. */
@@ -162,20 +277,46 @@ class RadioQueueExtenderTest {
             extender.startRadio("seed", emptyList())
             extender.onPlaybackPositionChanged(player)
         }
+
+        /**
+         * Asks for another top-up. Only reaches the network when the previous round appended
+         * something: an empty round arms a backoff that blocks the next one.
+         */
+        fun topUp() {
+            extender.onPlaybackPositionChanged(player)
+        }
+
+        /** Ids handed to the queue by the most recent round. */
+        fun appended(count: Int): List<String> =
+            queueStateHolder.originalQueueOrder.takeLast(count).map { it.id }
     }
 
-    private fun fixture(queueSize: Int, currentIndex: Int): Fixture {
+    private fun fixture(
+        queueSize: Int,
+        currentIndex: Int,
+        /** False leaves the track with no mix at all, which is what puts the fallback in play. */
+        withStation: Boolean = true
+    ): Fixture {
         val queueStateHolder = QueueStateHolder()
         queueStateHolder.setOriginalQueueOrder(List(queueSize) { song("old-$it") })
 
         val remoteTrackCache = mockk<RemoteTrackCache>(relaxed = true)
+        // The fallback resolves the seed to find out whose station this is.
+        every { remoteTrackCache.getByVideoId("seed") } returns
+            song("seed-song", videoId = "seed", artist = SEED_ARTIST)
+
+        val relatedArtists = mockk<DeezerRelatedArtistsRepository>(relaxed = true)
 
         val repository = mockk<YouTubeMusicRepository>(relaxed = true)
-        coEvery { repository.getRadioStation(any()) } returns RadioPage(
-            songs = List(STATION_PAGE_SIZE) { song("radio-$it", videoId = "vid$it") },
-            nextPage = null,
-            stationUrl = "https://example.invalid/station"
-        )
+        coEvery { repository.getRadioStation(any()) } returns if (withStation) {
+            RadioPage(
+                songs = List(STATION_PAGE_SIZE) { song("radio-$it", videoId = "vid$it") },
+                nextPage = null,
+                stationUrl = "https://example.invalid/station"
+            )
+        } else {
+            null
+        }
         // Keeping the original track makes the appended ids predictable.
         coEvery { repository.resolveArtTrack(any()) } returns null
 
@@ -195,24 +336,37 @@ class RadioQueueExtenderTest {
             queueStateHolder = queueStateHolder,
             remoteTrackCache = remoteTrackCache,
             repository = repository,
+            relatedArtists = relatedArtists,
             extender = RadioQueueExtender(
                 repository = repository,
                 remoteTrackCache = remoteTrackCache,
                 queueStateHolder = queueStateHolder,
-                connectivityStateHolder = connectivity
+                connectivityStateHolder = connectivity,
+                relatedArtistsRepository = relatedArtists
             )
         )
     }
 
-    private fun song(id: String, videoId: String? = null) = Song.emptySong().copy(
-        id = id,
-        title = id,
-        ytVideoId = videoId
-    )
+    private fun song(id: String, videoId: String? = null, artist: String = "") =
+        Song.emptySong().copy(
+            id = id,
+            title = id,
+            artist = artist,
+            ytVideoId = videoId
+        )
 
     private companion object {
         /** Matches RadioQueueExtender.BATCH_SIZE, so one top-up drains the page exactly. */
         const val STATION_PAGE_SIZE = 5
+
+        const val SEED_ARTIST = "Duman"
+
+        /** Matches RadioQueueExtender.RELATED_ARTIST_TRACKS. */
+        const val RELATED_ARTIST_TRACKS = 5
+
+        /** Small enough that no trim fires, short enough that a top-up is always due. */
+        const val SHORT_QUEUE = 10
+        const val SHORT_QUEUE_INDEX = 8
 
         /** Virtual-time cost of one art-track search. */
         const val LOOKUP_MS = 1_000L

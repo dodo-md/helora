@@ -7,7 +7,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
-import java.text.Normalizer
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -122,18 +121,6 @@ class DeezerGenreRepository @Inject constructor(
         private const val NETWORK_RETRY_INITIAL_DELAY_MS = 500L
 
         /**
-         * Short enough that a substring test stops meaning anything. "Mor" would match "Mor ve
-         * Otesi" and half a dozen unrelated acts.
-         */
-        private const val MIN_CONTAINMENT_LENGTH = 4
-
-        private val BRACKETED = Regex("[\\(\\[][^\\)\\]]*[\\)\\]]")
-        private val FEATURING = Regex("\\b(feat|ft|featuring|with|prod)\\b.*")
-        private val COMBINING_MARKS = Regex("\\p{Mn}+")
-        private val NON_ALPHANUMERIC = Regex("[^a-z0-9]+")
-        private val WHITESPACE = Regex("\\s+")
-
-        /**
          * Accepts a candidate only when both halves line up.
          *
          * The artist may be a superset, because Deezer credits featured artists in the name
@@ -141,40 +128,17 @@ class DeezerGenreRepository @Inject constructor(
          * which is what keeps a different song by the right artist from being accepted.
          */
         internal fun matches(artist: String, title: String, candidate: DeezerTrack): Boolean {
-            val wantedArtist = normalize(artist)
-            val wantedTitle = normalize(title)
-            val candidateArtist = normalize(candidate.artist?.name.orEmpty())
-            val candidateTitle = normalize(candidate.title)
-            if (wantedArtist.isEmpty() || wantedTitle.isEmpty()) return false
-            if (candidateArtist.isEmpty() || candidateTitle.isEmpty()) return false
+            val wantedTitle = DeezerArtistMatching.normalize(title)
+            val candidateTitle = DeezerArtistMatching.normalize(candidate.title)
+            if (wantedTitle.isEmpty() || candidateTitle.isEmpty()) return false
+            if (wantedTitle != candidateTitle) return false
 
-            return artistMatches(wantedArtist, candidateArtist) && wantedTitle == candidateTitle
+            return DeezerArtistMatching.artistMatches(
+                DeezerArtistMatching.normalize(artist),
+                DeezerArtistMatching.normalize(candidate.artist?.name.orEmpty())
+            )
         }
 
-        private fun artistMatches(wanted: String, candidate: String): Boolean {
-            if (wanted == candidate) return true
-            val shorter = if (wanted.length <= candidate.length) wanted else candidate
-            if (shorter.length < MIN_CONTAINMENT_LENGTH) return false
-            return wanted.contains(candidate) || candidate.contains(wanted)
-        }
-
-        /**
-         * Reduces a name to the part worth comparing: lowercase, unaccented, without bracketed
-         * suffixes like "(Official Video)" or "(Radio Edit)", without a featuring clause, and
-         * without punctuation. "HUMBLE." and "Humble" come out the same, and so do "Gülümse"
-         * and "Gulumse".
-         */
-        internal fun normalize(value: String): String {
-            // Dotless i survives decomposition, and it is common enough in Turkish titles that
-            // leaving it to be stripped as punctuation would break otherwise exact matches.
-            val folded = value.lowercase().replace('ı', 'i')
-            return Normalizer.normalize(folded, Normalizer.Form.NFKD)
-                .replace(COMBINING_MARKS, "")
-                .replace(BRACKETED, " ")
-                .replace(FEATURING, " ")
-                .replace(NON_ALPHANUMERIC, " ")
-                .trim()
-                .replace(WHITESPACE, " ")
-        }
+        internal fun normalize(value: String): String = DeezerArtistMatching.normalize(value)
     }
 }

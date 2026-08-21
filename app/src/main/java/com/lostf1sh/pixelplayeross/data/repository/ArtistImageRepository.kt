@@ -42,6 +42,9 @@ class ArtistImageRepository @Inject constructor(
     companion object {
         private const val TAG = "ArtistImageRepository"
         private const val CACHE_SIZE = 100
+
+        /** Deep enough to see past the duplicate entries Deezer returns first. */
+        private const val ARTIST_SEARCH_LIMIT = 10
         private const val PREFETCH_CONCURRENCY = 3
         private val deezerSizeRegex = Regex("/\\d{2,4}x\\d{2,4}([\\-.])")
         private const val NETWORK_RETRY_ATTEMPTS = 3
@@ -158,9 +161,13 @@ class ArtistImageRepository @Inject constructor(
         return try {
             withContext(Dispatchers.IO) {
                 val response = withNetworkRetry("deezer_search:$artistName") {
-                    deezerApiService.searchArtist(artistName, limit = 1)
+                    deezerApiService.searchArtist(artistName, limit = ARTIST_SEARCH_LIMIT)
                 }
-                val deezerArtist = response.data.firstOrNull()
+                // Not the first result: Deezer carries near-empty duplicate entries and leads
+                // with them, so "Sezen Aksu" resolved to a 15-fan copy rather than the real
+                // artist, and the image came from whatever that copy had. Same pattern for
+                // Tarkan, Ceza, Model and Mor ve Otesi.
+                val deezerArtist = DeezerArtistMatching.bestMatch(artistName, response.data)
 
                 if (deezerArtist != null) {
                     val imageUrl = (

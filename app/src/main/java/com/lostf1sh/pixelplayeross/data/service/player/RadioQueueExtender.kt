@@ -5,6 +5,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.lostf1sh.pixelplayeross.data.model.Song
+import com.lostf1sh.pixelplayeross.data.repository.DeezerRelatedArtistsRepository
 import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import com.lostf1sh.pixelplayeross.presentation.viewmodel.ConnectivityStateHolder
@@ -42,6 +43,7 @@ class RadioQueueExtender @Inject constructor(
     private val remoteTrackCache: RemoteTrackCache,
     private val queueStateHolder: QueueStateHolder,
     private val connectivityStateHolder: ConnectivityStateHolder,
+    private val relatedArtistsRepository: DeezerRelatedArtistsRepository,
 ) {
 
     private class Session(
@@ -60,6 +62,11 @@ class RadioQueueExtender @Inject constructor(
         var opened: Boolean = false,
         var exhausted: Boolean = false,
         var artistFallbackUsed: Boolean = false,
+        /**
+         * Artists Deezer named as similar to the seed, still to be tried. Null until the mix
+         * has actually run out, so a station that never needs them never asks.
+         */
+        var relatedArtists: ArrayDeque<String>? = null,
         var backoffUntilMs: Long = 0L,
         var consecutiveFailures: Int = 0,
     )
@@ -195,9 +202,8 @@ class RadioQueueExtender @Inject constructor(
                 current.nextPage = page.nextPage
                 return page.songs.filterUnseen(current)
             }
-            // No mix at all for this track. Fall back to the artist once, then give up: it is
-            // still "more like this", just coarser.
-            return artistFallback(current)
+            // No mix at all for this track. The fallback ladder takes over.
+            return fallback(current)
         }
 
         val stationUrl = current.stationUrl
@@ -211,29 +217,86 @@ class RadioQueueExtender @Inject constructor(
             }
         }
 
-        return artistFallback(current)
+        return fallback(current)
     }
 
-    private suspend fun artistFallback(current: Session): List<Song> {
-        if (current.artistFallbackUsed) {
-            current.exhausted = true
-            return emptyList()
-        }
-        current.artistFallbackUsed = true
+    /**
+     * What plays once the mix has nothing left.
+     *
+     * Two steps, coarsest last. The seed's own artist comes first because it is the closest
+     * thing to the station's subject, and it is one shot: a second round would just be more of
+     * the same artist. After that the station moves to artists Deezer considers similar, which
+     * is what "more like this" actually means once the mix is gone. Before this second step
+     * existed the station died after a single fallback round.
+     */
+    private suspend fun fallback(current: Session): List<Song> {
         val seed = remoteTrackCache.getByVideoId(current.stationVideoId)
         if (seed == null) {
             current.exhausted = true
             return emptyList()
         }
-        val fallback = repository.getArtistFallbackSongs(seed).filterUnseen(current)
-        if (fallback.isEmpty()) current.exhausted = true
-        return fallback
+
+        if (!current.artistFallbackUsed) {
+            current.artistFallbackUsed = true
+            val sameArtist = repository.getArtistFallbackSongs(seed).filterUnseen(current)
+            if (sameArtist.isNotEmpty()) return sameArtist
+        }
+
+        return relatedArtistFallback(current, seed)
     }
 
-    private fun List<Song>.filterUnseen(current: Session): List<Song> = filter { song ->
+    /**
+     * Plays through the similar-artist list one artist at a time.
+     *
+     * The list is fetched once and then spent gradually, so each top-up costs a single search
+     * rather than the whole tail up front. A named artist can still come back empty, either
+     * because YouTube does not find them under that name or because everything they returned
+     * is already in the queue, so a few are tried per round: one dud should not read as the
+     * station having run out.
+     */
+    private suspend fun relatedArtistFallback(current: Session, seed: Song): List<Song> {
+        val queue = current.relatedArtists ?: run {
+            val names = relatedArtistsRepository.relatedArtists(seed.artist)
+            Timber.d("RadioQueueExtender: %d related artist(s) for %s", names.size, seed.artist)
+            ArrayDeque(names).also { current.relatedArtists = it }
+        }
+
+        var attempts = 0
+        while (queue.isNotEmpty() && attempts < RELATED_ARTIST_ATTEMPTS_PER_ROUND) {
+            attempts++
+            val artist = queue.removeFirst()
+            // Filtered before it is trimmed, and lazily, which matters both ways round:
+            // trimming first would waste a round whose first few tracks are already queued,
+            // and filtering the whole page eagerly would mark tracks as seen that never got
+            // queued at all, because claiming a track is what filterUnseen does.
+            val songs = repository.getSongsForArtist(artist)
+                .asSequence()
+                .filterUnseen(current)
+                .take(RELATED_ARTIST_TRACKS)
+                .toList()
+            if (songs.isNotEmpty()) {
+                Timber.d("RadioQueueExtender: %d track(s) via related artist %s", songs.size, artist)
+                return songs
+            }
+        }
+
+        if (queue.isEmpty()) current.exhausted = true
+        return emptyList()
+    }
+
+    private fun List<Song>.filterUnseen(current: Session): List<Song> =
+        asSequence().filterUnseen(current).toList()
+
+    /**
+     * Keeps tracks the station has not queued yet, claiming each one it inspects.
+     *
+     * The claim is the filter: a track counts as new only if neither its upload nor its
+     * recording identity has been queued before, and asking marks it as queued. Callers that
+     * only want the first few must stay lazy so the rest are never inspected.
+     */
+    private fun Sequence<Song>.filterUnseen(current: Session): Sequence<Song> = filter { song ->
         val videoId = song.ytVideoId ?: return@filter false
-        // Both checks must run as inserts: a track is new only if neither its upload nor its
-        // recording identity has been queued before.
+        // Both checks must run as inserts, not short-circuit.
         val newUpload = current.seen.add(videoId)
         val newRecording = current.seenTracks.add(
             YouTubeMusicRepository.trackKey(song.title, song.artist)
@@ -330,6 +393,15 @@ class RadioQueueExtender @Inject constructor(
          * one go. ytDispatcher already caps at 4, so the effective limit is the lower of the two.
          */
         const val ART_TRACK_LOOKUP_CONCURRENCY = 3
+
+        /**
+         * Kept small so the tail stays varied. Taking an artist's whole search page would turn
+         * each round into their greatest hits instead of a station.
+         */
+        const val RELATED_ARTIST_TRACKS = 5
+
+        /** Bounds one round's searches, so a run of empty artists cannot stall a top-up. */
+        const val RELATED_ARTIST_ATTEMPTS_PER_ROUND = 3
         const val MAX_QUEUE_ITEMS = 400
         const val TRIM_KEEP_BEHIND = 60
         const val FAILURE_BACKOFF_MS = 30_000L

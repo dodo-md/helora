@@ -42,4 +42,11 @@ interface DeezerApiService {
      */
     @GET("album/{id}")
     suspend fun getAlbum(@Path("id") albumId: Long): DeezerAlbum
+
+    /**
+     * Artists Deezer considers similar to [artistId]. Returns the same shape as a search, so
+     * [DeezerSearchResponse] covers it.
+     */
+    @GET("artist/{id}/related")
+    suspend fun getRelatedArtists(@Path("id") artistId: Long): DeezerSearchResponse
 }
