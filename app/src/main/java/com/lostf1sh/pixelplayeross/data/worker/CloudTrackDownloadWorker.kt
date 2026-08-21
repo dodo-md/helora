@@ -9,6 +9,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.lostf1sh.pixelplayeross.data.database.OfflineTrackDao
 import com.lostf1sh.pixelplayeross.data.download.MediaStoreDownloadPublisher
+import com.lostf1sh.pixelplayeross.data.repository.DeezerGenreRepository
 import com.lostf1sh.pixelplayeross.data.jellyfin.JellyfinRepository
 import com.lostf1sh.pixelplayeross.data.navidrome.NavidromeRepository
 import com.lostf1sh.pixelplayeross.data.offline.CloudOfflineRepository
@@ -39,6 +40,7 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
     private val jellyfinRepository: JellyfinRepository,
     private val youTubeMusicRepository: YouTubeMusicRepository,
     private val publisher: MediaStoreDownloadPublisher,
+    private val deezerGenreRepository: DeezerGenreRepository,
     baseOkHttpClient: OkHttpClient
 ) : CoroutineWorker(appContext, workerParams) {
     private val client = baseOkHttpClient.newBuilder()
@@ -136,6 +138,10 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
                 // while a YouTube download is the user's only copy and goes to the shared
                 // Music folder so other apps can see it and it survives an uninstall.
                 if (entity.provider == CloudOfflineRepository.PROVIDER_YOUTUBE) {
+                    // Asked only once the bytes are safely on disk, so a slow or unreachable
+                    // Deezer costs a download nothing. It answers null rather than throwing,
+                    // and the tag is then simply left out.
+                    val genre = deezerGenreRepository.genreFor(entity.artist, entity.title)
                     val published = publisher.publish(
                         entity = entity,
                         source = tempFile,
@@ -144,7 +150,8 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
                             ?.substringBefore(';')
                             ?.trim()
                             ?: entity.mimeType
-                            ?: "audio/mp4"
+                            ?: "audio/mp4",
+                        genre = genre
                     )
                     // Tracked from here on: the file is now visible in the user's Music folder,
                     // so anything that throws before the row is written has to take it back out

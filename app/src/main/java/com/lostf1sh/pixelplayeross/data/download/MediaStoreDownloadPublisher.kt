@@ -51,12 +51,16 @@ class MediaStoreDownloadPublisher @Inject constructor(
     /**
      * Moves [source] into the shared Music folder. The caller keeps ownership of [source] and is
      * responsible for deleting it; this only reads from it.
+     *
+     * [genre] is written into the file rather than into the MediaStore row, because the scanner
+     * derives the row's genre from the tags and would overwrite anything set here directly.
      */
     fun publish(
         entity: OfflineTrackEntity,
         source: File,
         extension: String,
-        mimeType: String
+        mimeType: String,
+        genre: String? = null
     ): PublishedDownload {
         val resolver = context.contentResolver
         val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
@@ -85,7 +89,7 @@ class MediaStoreDownloadPublisher @Inject constructor(
                 source.inputStream().use { input -> input.copyTo(output) }
             } ?: throw IOException("Could not open the destination for writing")
 
-            writeTags(uri, entity)
+            writeTags(uri, entity, genre)
 
             resolver.update(
                 uri,
@@ -113,7 +117,7 @@ class MediaStoreDownloadPublisher @Inject constructor(
      * Best effort: a track that plays but shows a bare filename elsewhere is still a successful
      * download, so failures here are logged rather than failing the whole thing.
      */
-    private fun writeTags(uri: Uri, entity: OfflineTrackEntity) {
+    private fun writeTags(uri: Uri, entity: OfflineTrackEntity, genre: String?) {
         runCatching {
             context.contentResolver.openFileDescriptor(uri, "rw")?.use { descriptor ->
                 val properties = hashMapOf("TITLE" to arrayOf(entity.title))
@@ -124,6 +128,11 @@ class MediaStoreDownloadPublisher @Inject constructor(
                     }
                 entity.album?.takeIf { it.isNotBlank() }
                     ?.let { properties["ALBUM"] = arrayOf(it) }
+                // Left out entirely when unknown. An absent tag lets the library fall back to
+                // its own placeholder, while writing one would make a guess look like a fact
+                // in every other player too.
+                genre?.takeIf { it.isNotBlank() }
+                    ?.let { properties["GENRE"] = arrayOf(it) }
 
                 TagLib.savePropertyMap(descriptor.dup().detachFd(), properties)
             }
