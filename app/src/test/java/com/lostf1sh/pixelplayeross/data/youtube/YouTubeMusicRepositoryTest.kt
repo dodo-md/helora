@@ -130,4 +130,73 @@ class YouTubeMusicRepositoryTest {
         assertThat(trackKey("Numb", "Linkin Park"))
             .isNotEqualTo(trackKey("Numb / Encore", "Jay-Z"))
     }
+
+    // --- upload decoration vs a different recording -----------------------------------------
+    //
+    // A station repeats itself when the same song comes round under a second upload title.
+    // trackKey is what stops that, and it only works if the decoration is gone from the title
+    // first. "Snap (Official Dance Video)" was already handled; the unbracketed forms were not.
+
+    private fun key(rawTitle: String, artist: String = "manifest") =
+        YouTubeMusicRepository.trackKey(
+            YouTubeMusicRepository.cleanTrackTitle(rawTitle, artist),
+            artist
+        )
+
+    @Test
+    fun `an upload title deduplicates against the plain song however it is decorated`() {
+        val plain = key("Snap")
+
+        listOf(
+            "Snap (Official Music Video)",
+            "Snap (Official Dance Video)",
+            "Snap - Official Dance Video",
+            "Snap | Official Dance Video",
+            "Snap / Official Video",
+            "Snap - Special Dance Video",
+            "Snap (Special Performance Video)",
+            "Snap [Dance Practice]",
+            "Snap (Choreography Video)",
+            "Snap - Klip",
+            "Snap (Visualizer)",
+            "Snap (Official Audio)",
+            "Snap [HD]",
+            "Snap - MV",
+            "manifest - Snap"
+        ).forEach { decorated ->
+            assertThat(key(decorated)).isEqualTo(plain)
+        }
+    }
+
+    @Test
+    fun `a different recording keeps its own identity`() {
+        val plain = key("Snap")
+
+        // These name a performance rather than an upload, so collapsing them would hide a
+        // genuinely different recording behind one title.
+        listOf(
+            "Snap (Acoustic)",
+            "Snap (Remix)",
+            "Snap (feat. Ayla)",
+            "Snap - Live at Wembley",
+            "Snap (Sped Up)"
+        ).forEach { variant ->
+            assertThat(key(variant)).isNotEqualTo(plain)
+        }
+    }
+
+    @Test
+    fun `a title that merely contains a noise word is left alone`() {
+        assertThat(YouTubeMusicRepository.cleanTrackTitle("Videotape", "Radiohead"))
+            .isEqualTo("Videotape")
+        assertThat(YouTubeMusicRepository.cleanTrackTitle("Dance Monkey", "Tones and I"))
+            .isEqualTo("Dance Monkey")
+        assertThat(YouTubeMusicRepository.cleanTrackTitle("Music of the Night", "Various"))
+            .isEqualTo("Music of the Night")
+    }
+
+    @Test
+    fun `stacked decoration comes off in one pass`() {
+        assertThat(key("Snap - Official Dance Video - HD")).isEqualTo(key("Snap"))
+    }
 }

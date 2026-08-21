@@ -4,6 +4,7 @@ import com.lostf1sh.pixelplayeross.data.model.Album
 import com.lostf1sh.pixelplayeross.data.model.Artist
 import com.lostf1sh.pixelplayeross.data.model.ArtistRef
 import com.lostf1sh.pixelplayeross.data.model.Song
+import com.lostf1sh.pixelplayeross.utils.ArtistNameMatching
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
@@ -408,7 +409,10 @@ class YouTubeMusicRepository @Inject constructor(
         if (artistName.isBlank()) return@withContext emptyList()
         runCatching { searchSongs(artistName) }
             .getOrElse { emptyList() }
-            .filter { it.ytVideoId != null }
+            // The search is a plain text query, so it answers with anything carrying the words.
+            // Asking for "manifest" came back with a Jason Stephenson meditation track and a
+            // Thai single, and the radio queued both. The name has to actually match.
+            .filter { it.ytVideoId != null && ArtistNameMatching.matches(artistName, it.artist) }
     }
 
     /**
@@ -658,13 +662,47 @@ class YouTubeMusicRepository @Inject constructor(
         private val TOPIC_SUFFIX_REGEX = Regex("\\s*-\\s*topic\\s*$")
         private val NON_ALPHANUMERIC_REGEX = Regex("[^\\p{L}\\p{N}]+")
         private val WHITESPACE_REGEX = Regex("\\s+")
+        private const val MAX_NOISE_SUFFIXES = 3
         private val TITLE_SEPARATORS = charArrayOf('-', '\u2013', ':', '\u2014')
+
+        /**
+         * Words that qualify a kind of upload rather than a kind of recording. "Dance" and
+         * "performance" belong here only in front of "video": a *dance video* is the same song,
+         * while "Dance Monkey" is a title.
+         */
+        private const val NOISE_QUALIFIER =
+            "official|officiel|special|exclusive|new|full|vertical|colou?r|dance|performance|" +
+                "choreo(graphy)?|lyrics?|music|visual|live|hd|hq|4k|8k"
+
+        /** Words that make a title a description of an upload. */
+        private const val NOISE_HEAD = "video|visuali[sz]er|clip|klip|practice"
+
+        /**
+         * Decoration that says which upload this is rather than which recording.
+         *
+         * Kept deliberately narrow. Anything that names a different performance, such as
+         * "(Acoustic)", "(Remix)", "(feat. X)" or "Live at Wembley", has to survive, because
+         * collapsing those would hide genuinely different recordings behind one title.
+         */
+        private const val NOISE_PHRASE =
+            "(($NOISE_QUALIFIER)\\s+){0,3}($NOISE_HEAD)" +
+                "|(official\\s+)?audio|remaster(ed)?(\\s+\\d{4})?|\\bmv\\b|hd|hq|4k|8k"
 
         // Bracketed segments that are purely upload decoration.
         private val NOISE_BRACKET_REGEX = Regex(
-            "[\\[(][^\\[\\]()]*\\b(official|lyrics?|visuali[sz]er|music\\s*video|audio|" +
-                "remaster(ed)?|hd|hq|4k|8k|mv|full\\s*video|video\\s*oficial)\\b" +
-                "[^\\[\\]()]*[\\])]",
+            "[\\[(][^\\[\\]()]*\\b($NOISE_PHRASE)\\b[^\\[\\]()]*[\\])]",
+            RegexOption.IGNORE_CASE
+        )
+
+        /**
+         * The same decoration without brackets, as a trailing clause.
+         *
+         * This is the gap that let a station repeat itself: "Snap (Official Dance Video)" was
+         * already reduced to "Snap" and deduplicated against it, but "Snap - Official Dance
+         * Video" was not, so the same song came round a second time under a different id.
+         */
+        private val NOISE_SUFFIX_REGEX = Regex(
+            "\\s*[-\u2013\u2014|/]\\s*($NOISE_PHRASE)\\s*$",
             RegexOption.IGNORE_CASE
         )
 
@@ -693,6 +731,12 @@ class YouTubeMusicRepository @Inject constructor(
          */
         fun cleanTrackTitle(rawTitle: String, artist: String): String {
             var title = NOISE_BRACKET_REGEX.replace(rawTitle, " ")
+            // Repeated because uploads stack them: "Snap - Official Dance Video - HD".
+            repeat(MAX_NOISE_SUFFIXES) {
+                val stripped = NOISE_SUFFIX_REGEX.replace(title, "")
+                if (stripped == title) return@repeat
+                title = stripped
+            }
             val normalizedArtist = normalizeForMatching(artist)
             if (normalizedArtist.isNotBlank()) {
                 // "Coldplay - Yellow" -> "Yellow", but only when the prefix really is the artist.

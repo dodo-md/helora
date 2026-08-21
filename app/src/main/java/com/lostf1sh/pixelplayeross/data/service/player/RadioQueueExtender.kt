@@ -10,6 +10,7 @@ import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import com.lostf1sh.pixelplayeross.presentation.viewmodel.ConnectivityStateHolder
 import com.lostf1sh.pixelplayeross.presentation.viewmodel.QueueStateHolder
+import com.lostf1sh.pixelplayeross.utils.ArtistNameMatching
 import com.lostf1sh.pixelplayeross.utils.MediaItemBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,6 +68,9 @@ class RadioQueueExtender @Inject constructor(
          * has actually run out, so a station that never needs them never asks.
          */
         var relatedArtists: ArrayDeque<String>? = null,
+        /** Normalized artist of the last track appended, for spacing across batches. */
+        var lastAppendedArtist: String? = null,
+        var lastAppendedArtistRun: Int = 0,
         var backoffUntilMs: Long = 0L,
         var consecutiveFailures: Int = 0,
     )
@@ -261,8 +265,14 @@ class RadioQueueExtender @Inject constructor(
             ArrayDeque(names).also { current.relatedArtists = it }
         }
 
+        // Several artists per round rather than one artist's whole page, so the tail reads as
+        // a station instead of a run of greatest hits.
+        val gathered = ArrayList<Song>(BATCH_SIZE)
         var attempts = 0
-        while (queue.isNotEmpty() && attempts < RELATED_ARTIST_ATTEMPTS_PER_ROUND) {
+        while (queue.isNotEmpty() &&
+            attempts < RELATED_ARTIST_ATTEMPTS_PER_ROUND &&
+            gathered.size < BATCH_SIZE
+        ) {
             attempts++
             val artist = queue.removeFirst()
             // Filtered before it is trimmed, and lazily, which matters both ways round:
@@ -276,12 +286,12 @@ class RadioQueueExtender @Inject constructor(
                 .toList()
             if (songs.isNotEmpty()) {
                 Timber.d("RadioQueueExtender: %d track(s) via related artist %s", songs.size, artist)
-                return songs
+                gathered.addAll(songs)
             }
         }
 
-        if (queue.isEmpty()) current.exhausted = true
-        return emptyList()
+        if (gathered.isEmpty() && queue.isEmpty()) current.exhausted = true
+        return gathered
     }
 
     private fun List<Song>.filterUnseen(current: Session): List<Song> =
@@ -305,10 +315,7 @@ class RadioQueueExtender @Inject constructor(
     }
 
     private suspend fun appendFromBuffer(player: Player, current: Session) {
-        val queued = ArrayList<Song>(BATCH_SIZE)
-        while (queued.size < BATCH_SIZE && current.pending.isNotEmpty()) {
-            queued.add(current.pending.removeFirst())
-        }
+        val queued = takeSpacedBatch(current)
         if (queued.isEmpty()) return
 
         // Pin the station to the releases that went to streaming services. Mixes often hand
@@ -348,6 +355,58 @@ class RadioQueueExtender @Inject constructor(
         player.addMediaItems(batch.map(MediaItemBuilder::build))
         trimBehindIfNeeded(player)
         Timber.d("RadioQueueExtender: appended %d track(s)", batch.size)
+    }
+
+
+    /**
+     * Takes the next batch, keeping one artist from taking it over.
+     *
+     * The mix itself is well spaced, but a fallback round is not: it answers with one artist's
+     * catalogue, and a batch of [BATCH_SIZE] straight off the front of that is five songs by
+     * the same act back to back. Anything over [MAX_CONSECUTIVE_SAME_ARTIST] in a row is
+     * pushed back down the buffer rather than dropped, so it still plays, just later.
+     *
+     * The run is counted from what is already in the queue, not just from this batch, or the
+     * seam between two batches would still stack up.
+     */
+    private fun takeSpacedBatch(current: Session): List<Song> {
+        val queued = ArrayList<Song>(BATCH_SIZE)
+        var lastArtist = current.lastAppendedArtist
+        var run = current.lastAppendedArtistRun
+        val deferred = ArrayList<Song>()
+
+        while (queued.size < BATCH_SIZE && current.pending.isNotEmpty()) {
+            val song = current.pending.removeFirst()
+            val artist = ArtistNameMatching.normalize(song.artist)
+            val extendsRun = artist.isNotEmpty() && artist == lastArtist
+            if (extendsRun && run >= MAX_CONSECUTIVE_SAME_ARTIST) {
+                deferred.add(song)
+                continue
+            }
+            run = if (extendsRun) run + 1 else 1
+            lastArtist = artist
+            queued.add(song)
+        }
+
+        // Spacing reorders, it never withholds. When the buffer holds nothing but the artist
+        // being spaced out, deferring all of it would leave the round empty and the same songs
+        // waiting again next time, which is a stalled station rather than a varied one.
+        if (queued.isEmpty() && deferred.isNotEmpty()) {
+            val forced = deferred.removeAt(0)
+            lastArtist = ArtistNameMatching.normalize(forced.artist)
+            run = current.lastAppendedArtistRun + 1
+            queued.add(forced)
+        }
+
+        // Back to the front, in their original order: they were skipped for position, not
+        // rejected, and the next round starts with a different artist in the way.
+        deferred.asReversed().forEach(current.pending::addFirst)
+
+        if (queued.isNotEmpty()) {
+            current.lastAppendedArtist = lastArtist
+            current.lastAppendedArtistRun = run
+        }
+        return queued
     }
 
     /**
@@ -395,13 +454,20 @@ class RadioQueueExtender @Inject constructor(
         const val ART_TRACK_LOOKUP_CONCURRENCY = 3
 
         /**
-         * Kept small so the tail stays varied. Taking an artist's whole search page would turn
-         * each round into their greatest hits instead of a station.
+         * Per artist, not per round. Kept at two so a round draws on several similar acts and
+         * no one of them can fill it, which is the same limit the queue spacing enforces.
          */
-        const val RELATED_ARTIST_TRACKS = 5
+        const val RELATED_ARTIST_TRACKS = 2
 
         /** Bounds one round's searches, so a run of empty artists cannot stall a top-up. */
         const val RELATED_ARTIST_ATTEMPTS_PER_ROUND = 3
+
+        /**
+         * How many tracks by one artist may sit together. Two is enough to let a mix open on
+         * the seed artist, which is normal, without a fallback round turning into their
+         * greatest hits.
+         */
+        const val MAX_CONSECUTIVE_SAME_ARTIST = 2
         const val MAX_QUEUE_ITEMS = 400
         const val TRIM_KEEP_BEHIND = 60
         const val FAILURE_BACKOFF_MS = 30_000L
