@@ -37,6 +37,20 @@ class QueueStateHolder @Inject constructor() {
         _originalQueueOrder = _originalQueueOrder + additions
     }
 
+    /**
+     * Drops tracks the player has already discarded, keeping the pre-shuffle order in step with
+     * the live queue.
+     *
+     * Without this a radio session that trims its own history still grows this list without
+     * bound, and unshuffling reinstates the very tracks the player dropped.
+     */
+    fun removeFromOriginalQueueOrder(songIds: Set<String>) {
+        if (songIds.isEmpty() || _originalQueueOrder.isEmpty()) return
+        val retained = _originalQueueOrder.filterNot { it.id in songIds }
+        if (retained.size == _originalQueueOrder.size) return
+        _originalQueueOrder = retained
+    }
+
     fun setOriginalQueueOrder(queue: List<Song>) {
         _originalQueueOrder = queue.toList()
     }

@@ -66,9 +66,18 @@ abstract class CloudStreamProxy<K : Any>(
     /** Resolve the actual streaming URL for the given song ID */
     protected abstract suspend fun resolveStreamUrl(id: K): String?
 
+    // Written from the IO coroutine in start(), read from whatever thread asks isReady(),
+    // getProxyUrl() or stop(). Without the barrier a caller can see a stale port of 0, which
+    // getProxyUrl turns into "" and resolveUri into null — playback then fails with no error.
+    @Volatile
     private var server: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
+
+    @Volatile
     private var actualPort: Int = 0
+
     private val proxyScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    @Volatile
     private var startJob: Job? = null
 
     private val streamingClient: OkHttpClient by lazy {

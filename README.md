@@ -5,7 +5,7 @@
 <h1 align="center">Helora</h1>
 
 <p align="center">
-  A music player for Android that plays <b>your files</b> and <b>YouTube Music</b> — without an account, ads, or tracking.
+  A music player for Android that plays <b>your files</b> and <b>YouTube Music</b>, without an account, ads, or tracking.
 </p>
 
 <p align="center">
@@ -25,13 +25,13 @@
 
 ## What is this?
 
-Helora is a fork of [**PixelPlayerOSS**](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [@lostf1sh](https://github.com/lostf1sh) — a genuinely nice offline music player — with one big thing bolted on: **YouTube Music**.
+Helora is a fork of [**PixelPlayerOSS**](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [@lostf1sh](https://github.com/lostf1sh) (a genuinely nice offline music player) with one big thing bolted on: **YouTube Music**.
 
 So you get both halves. Your own MP3s and FLACs, scanned from the device like any local player. And a search box that reaches into YouTube Music, plays anything, builds radio stations, and saves tracks to your phone for offline listening.
 
 No login. No API key. Nothing to sign up for.
 
-Everything upstream does — Navidrome, Jellyfin, lyrics, tag editing, widgets, backup — still works exactly as before. This fork adds, it doesn't remove.
+Everything upstream does (Navidrome, Jellyfin, lyrics, tag editing, widgets, backup) still works exactly as before. This fork adds, it doesn't remove.
 
 ---
 
@@ -45,7 +45,7 @@ Same as always: drop files on your phone, grant the audio permission, and they s
 
 Open **Search**, type something, tap the **YouTube Music** chip. You get songs, albums and artists.
 
-Tap a song and it plays. Nothing else gets queued behind it — which matters, because if you search "snap" you want *that* song, not fourteen other songs also called "snap".
+Tap a song and it plays. Nothing else gets queued behind it. That matters, because if you search "snap" you want *that* song, not fourteen other songs also called "snap".
 
 ### Radio
 
@@ -55,7 +55,7 @@ Seed Creep and you get Yellow, Wonderwall, Iris, No Surprises, Nothing Else Matt
 
 The station **stays pinned to the song you picked** rather than drifting with whatever's playing now, because "songs like X" should keep meaning X.
 
-You can also start a station from **any song in your own library** — song menu → **Start radio**. It finds the track on YouTube and builds a station from it. It's deliberately picky: artist *and* title *and* duration have to line up, otherwise it tells you it couldn't find a match instead of seeding a station from some random cover.
+You can also start a station from **any song in your own library**: song menu → **Start radio**. It finds the track on YouTube and builds a station from it. It's deliberately picky: artist *and* title *and* duration have to line up, otherwise it tells you it couldn't find a match instead of seeding a station from some random cover.
 
 ### Downloads
 
@@ -65,7 +65,7 @@ Files land in **`Music/Helora/<Artist>/<Album>/`** as proper `.m4a` files with t
 
 - Your other music apps and your file manager can see them
 - They survive uninstalling Helora
-- Helora's own library scan picks them up as ordinary local songs — so they work offline like any other file
+- Helora's own library scan picks them up as ordinary local songs, so they work offline like any other file
 
 Downloads go over Wi-Fi only by default. Flip that in **Settings → Downloads**, where you can also watch the queue, retry failures, and delete things.
 
@@ -112,7 +112,7 @@ apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android \
 adb install -r helora.apk
 ```
 
-**Test release builds, not just debug.** R8 is where the YouTube side breaks, and it breaks silently — see below.
+**Test release builds, not just debug.** R8 is where the YouTube side breaks, and it breaks silently. See below.
 
 ### How the YouTube part works
 
@@ -131,7 +131,7 @@ app/src/main/java/com/lostf1sh/pixelplayeross/
 └── presentation/screens/search/ the YouTube section of the search screen
 ```
 
-A YouTube track is a `Song` whose `contentUriString` is `ytmusic://<videoId>`. At playback time that's resolved to a **localhost HTTP proxy** which streams the real audio through — exactly how Navidrome and Jellyfin already worked. `YouTubeStreamProxy` just fills in the blanks of the existing `CloudStreamProxy`.
+A YouTube track is a `Song` whose `contentUriString` is `ytmusic://<videoId>`. At playback time that's resolved to a **localhost HTTP proxy** which streams the real audio through, exactly how Navidrome and Jellyfin already worked. `YouTubeStreamProxy` just fills in the blanks of the existing `CloudStreamProxy`.
 
 Search results are **ephemeral**: they never touch Room. A track only earns a database row when you favourite it or add it to a playlist. Because `YouTubeIds` hands out deterministic ids up front, that promotion is a plain upsert and any favourite you saved beforehand already points at the right row.
 
@@ -145,11 +145,11 @@ Four traps, all of which cost real debugging time:
 unzip -p app/.../release.apk classes4.dex | strings | grep -c org/mozilla/javascript
 ```
 
-**2. Resolution must happen eagerly.** The `ResolvingDataSource` in `DualPlayerEngine` is synchronous and cache-only — it *cannot* resolve. If a `ytmusic://` URI reaches ExoPlayer unresolved, it just fails. The gate is `buildResolvedPlaybackMediaItem` in `PlayerViewModel`, keyed off `CloudStreamSchemes.PROXIED`. Adding a source means adding it there.
+**2. Resolution must happen eagerly.** The `ResolvingDataSource` in `DualPlayerEngine` is synchronous and cache-only: it *cannot* resolve. If a `ytmusic://` URI reaches ExoPlayer unresolved, it just fails. The gate is `buildResolvedPlaybackMediaItem` in `PlayerViewModel`, keyed off `CloudStreamSchemes.PROXIED`. Adding a source means adding it there.
 
-**3. Flush the proxy.** `CloudStreamProxy` must `flush()` after each chunk. Without it the opening bytes sit in the response buffer while the player waits for its first byte range, and playback hangs on "loading" instead of failing — which looks like a stall, not an error.
+**3. Flush the proxy.** `CloudStreamProxy` must `flush()` after each chunk. Without it the opening bytes sit in the response buffer while the player waits for its first byte range, and playback hangs on "loading" instead of failing, which looks like a stall, not an error.
 
-**4. Test methods can't return a value.** A test written as ``fun `x`() = runBlocking { ... }`` whose last expression isn't `Unit` is silently *not discovered* by JUnit — no failure, it just never runs. Use `runBlocking<Unit>`.
+**4. Test methods can't return a value.** A test written as ``fun `x`() = runBlocking { ... }`` whose last expression isn't `Unit` is silently *not discovered* by JUnit: no failure, it just never runs. Use `runBlocking<Unit>`.
 
 ### Contributing
 
@@ -161,13 +161,13 @@ PRs welcome. Before opening one:
 ./gradlew :app:lintDebug
 ```
 
-Note that the test suite has **12 failures inherited from upstream** — they fail on a clean checkout too. If your count is 12, you're fine; if it's 13, look at what you did.
+Note that the test suite has **12 failures inherited from upstream**. They fail on a clean checkout too. If your count is 12, you're fine; if it's 13, look at what you did.
 
 ---
 
 ## Credit
 
-Almost all of this app is [**PixelPlayerOSS**](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [@lostf1sh](https://github.com/lostf1sh) and its contributors. The player engine, library, UI, self-hosted integrations and general polish are theirs. If you like this, go star the upstream project — and consider [sponsoring them](https://github.com/sponsors/lostf1sh).
+Almost all of this app is [**PixelPlayerOSS**](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [@lostf1sh](https://github.com/lostf1sh) and its contributors. The player engine, library, UI, self-hosted integrations and general polish are theirs. If you like this, go star the upstream project, and consider [sponsoring them](https://github.com/sponsors/lostf1sh).
 
 YouTube extraction is [**NewPipeExtractor**](https://github.com/TeamNewPipe/NewPipeExtractor) (GPLv3) by Team NewPipe.
 
@@ -176,7 +176,7 @@ YouTube extraction is [**NewPipeExtractor**](https://github.com/TeamNewPipe/NewP
 GPL-3.0-or-later, same as upstream. See [LICENSE](LICENSE).
 
 ```
-Helora — a fork of PixelPlayerOSS
+Helora, a fork of PixelPlayerOSS
 Copyright (C) 2026 PixelPlayerOSS contributors and Helora contributors
 
 This program is free software: you can redistribute it and/or modify

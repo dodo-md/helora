@@ -14,7 +14,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.schabi.newpipe.extractor.Page
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicLong
@@ -61,6 +66,9 @@ class RadioQueueExtender @Inject constructor(
 
     private val tokenGenerator = AtomicLong(0L)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    /** Caps how many art-track searches a single top-up puts in flight at once. */
+    private val artTrackSemaphore = Semaphore(ART_TRACK_LOOKUP_CONCURRENCY)
 
     @Volatile
     private var session: Session? = null
@@ -241,13 +249,28 @@ class RadioQueueExtender @Inject constructor(
         if (queued.isEmpty()) return
 
         // Pin the station to the releases that went to streaming services. Mixes often hand
-        // back the music video, which is cut differently and makes synced lyrics drift. Bounded
-        // to one lookup per appended track, so a top-up costs at most BATCH_SIZE searches every
-        // few songs. A failed lookup keeps the original rather than dropping the track.
-        val batch = queued.map { song ->
-            val replacement = repository.resolveArtTrack(song)
-            if (replacement != null && replacement.ytVideoId != song.ytVideoId &&
-                current.seen.add(replacement.ytVideoId.orEmpty())
+        // back the music video, which is cut differently and makes synced lyrics drift. A failed
+        // lookup keeps the original rather than dropping the track.
+        //
+        // The lookups run concurrently but bounded: each is a full search round trip, and doing
+        // BATCH_SIZE of them end to end can outlast the runway the top-up was scheduled with.
+        // The cap is there because YouTube rate-limits aggressive clients, and a 429 comes back
+        // as ReCaptchaException rather than a retryable error.
+        val resolved = coroutineScope {
+            queued.map { song ->
+                async {
+                    song to artTrackSemaphore.withPermit { repository.resolveArtTrack(song) }
+                }
+            }.awaitAll()
+        }
+
+        // The dedup decision stays sequential and in queue order. Folding it into the parallel
+        // block above would let timing decide which upload claims a recording, so the same
+        // station could come out in a different order from one run to the next.
+        val batch = resolved.map { (song, replacement) ->
+            val replacementId = replacement?.ytVideoId
+            if (replacementId != null && replacementId != song.ytVideoId &&
+                current.seen.add(replacementId)
             ) {
                 replacement
             } else {
@@ -268,6 +291,9 @@ class RadioQueueExtender @Inject constructor(
      * Drops tracks far behind the current one once the queue grows past [MAX_QUEUE_ITEMS].
      * Without this an endless station would grow the persisted snapshot without bound and make
      * every timeline change more expensive to project into the UI.
+     *
+     * The trim has to reach everything that shadows the player's queue, or it just moves the
+     * growth somewhere else instead of stopping it.
      */
     private fun trimBehindIfNeeded(player: Player) {
         if (player.mediaItemCount <= MAX_QUEUE_ITEMS) return
@@ -275,14 +301,35 @@ class RadioQueueExtender @Inject constructor(
         if (index == C.INDEX_UNSET) return
         val removable = index - TRIM_KEEP_BEHIND
         if (removable <= 0) return
+
+        // Collected before the removal, because the indices shift the moment the player drops
+        // them. Ids rather than positions: with shuffle on, player order is not the pre-shuffle
+        // order, so trimming that list by position would drop tracks still due to play.
+        val trimmedIds = (0 until removable).mapNotNullTo(HashSet()) {
+            player.getMediaItemAt(it).mediaId.takeIf(String::isNotEmpty)
+        }
+
         // ExoPlayer adjusts currentMediaItemIndex for us.
         player.removeMediaItems(0, removable)
+
+        // Unshuffling rebuilds the queue wholesale from the pre-shuffle order, so leaving the
+        // trimmed tracks in it would put them straight back into the player.
+        queueStateHolder.removeFromOriginalQueueOrder(trimmedIds)
+        // Pinned entries are exempt from eviction, so a station that never releases one pins
+        // its whole history and the cache stops evicting altogether.
+        remoteTrackCache.unpin(trimmedIds)
     }
 
     private companion object {
         /** ~3 tracks of runway is comfortably more than one extraction round trip needs. */
         const val EXTEND_WHEN_REMAINING_AT_MOST = 3
         const val BATCH_SIZE = 5
+
+        /**
+         * Kept well under BATCH_SIZE so a top-up never fans out the whole batch at YouTube in
+         * one go. ytDispatcher already caps at 4, so the effective limit is the lower of the two.
+         */
+        const val ART_TRACK_LOOKUP_CONCURRENCY = 3
         const val MAX_QUEUE_ITEMS = 400
         const val TRIM_KEEP_BEHIND = 60
         const val FAILURE_BACKOFF_MS = 30_000L

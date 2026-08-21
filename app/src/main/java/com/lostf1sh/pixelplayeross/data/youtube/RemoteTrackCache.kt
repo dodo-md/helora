@@ -54,6 +54,17 @@ class RemoteTrackCache @Inject constructor() {
         pinnedIds.clear()
     }
 
+    /**
+     * Releases specific ids, for tracks the player has dropped from the queue.
+     *
+     * Eviction stops entirely once the eldest entry is pinned, so a station that pins every
+     * track it appends and never releases any would defeat [MAX_ENTRIES] outright.
+     */
+    fun unpin(songIds: Collection<String>) {
+        if (songIds.isEmpty()) return
+        pinnedIds.removeAll(songIds.toSet())
+    }
+
     /** Replaces the pinned set in one step, for when a queue is swapped wholesale. */
     fun repin(songIds: Collection<String>) {
         pinnedIds.clear()

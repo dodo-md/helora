@@ -36,7 +36,6 @@ import org.schabi.newpipe.extractor.playlist.PlaylistInfoItem
 import org.schabi.newpipe.extractor.services.youtube.YoutubeParsingHelper
 import org.schabi.newpipe.extractor.search.SearchInfo
 import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
-import org.schabi.newpipe.extractor.stream.AudioStream
 import org.schabi.newpipe.extractor.stream.DeliveryMethod
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
@@ -339,15 +338,6 @@ class YouTubeMusicRepository @Inject constructor(
             averageBitrate = preferred.averageBitrate
         )
     }
-
-    /** MIME type of the stream [getAudioStreamUrl] would pick, for the proxy's content type. */
-    suspend fun getAudioMimeType(videoId: String): String? =
-        streamInfo(videoId)?.audioStreams.orEmpty()
-            .filter { it.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP }
-            .filter { it.isUrl && !it.content.isNullOrBlank() }
-            .filter { it.format?.mimeType?.startsWith("audio/") == true }
-            .maxByOrNull(AudioStream::getAverageBitrate)
-            ?.format?.mimeType
 
     /**
      * Opens the YouTube Music radio station seeded on [videoId].
