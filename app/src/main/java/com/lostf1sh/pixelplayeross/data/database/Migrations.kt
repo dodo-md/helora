@@ -183,3 +183,24 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
         )
     }
 }
+
+/**
+ * Folds the fork's parallel download stack back into the shared one.
+ *
+ * `downloaded_tracks` belonged to a second, YouTube-only download mechanism that duplicated
+ * what `offline_tracks` already did. YouTube is now a provider inside the shared queue, so the
+ * table goes and `offline_tracks` gains the one thing it was missing: somewhere to record the
+ * MediaStore entry, since those downloads are published to the shared Music folder rather than
+ * written into the app's own directory.
+ */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE offline_tracks ADD COLUMN media_store_uri TEXT")
+        // Needed to build a real folder and embed tags when a download is published outside the
+        // app's own directory.
+        db.execSQL("ALTER TABLE offline_tracks ADD COLUMN artist TEXT")
+        db.execSQL("ALTER TABLE offline_tracks ADD COLUMN album TEXT")
+        db.execSQL("ALTER TABLE offline_tracks ADD COLUMN album_art_uri TEXT")
+        db.execSQL("DROP TABLE IF EXISTS downloaded_tracks")
+    }
+}

@@ -18,7 +18,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
@@ -118,17 +117,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
-
-        <!--
-            WorkManager ships this service without a foregroundServiceType, because only the app
-            knows which types its own workers use. Leaving it unset merges to 0, and the system
-            kills the process the moment DownloadWorker calls setForeground with DATA_SYNC:
-            "foregroundServiceType 0x00000001 is not a subset of ... 0x00000000".
-        -->
-        <service
-            android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync"
-            tools:node="merge" />
 
         <receiver
             android:name=".ui.glancewidget.PixelPlayerGlanceWidgetReceiver"

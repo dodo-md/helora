@@ -29,11 +29,13 @@ import com.lostf1sh.pixelplayeross.data.database.MIGRATION_2_3
 import com.lostf1sh.pixelplayeross.data.database.MIGRATION_3_4
 import com.lostf1sh.pixelplayeross.data.database.MIGRATION_4_5
 import com.lostf1sh.pixelplayeross.data.database.MIGRATION_5_6
+import com.lostf1sh.pixelplayeross.data.database.MIGRATION_6_7
 import com.lostf1sh.pixelplayeross.data.database.MusicDao
 import com.lostf1sh.pixelplayeross.data.database.OfflineTrackDao
 import com.lostf1sh.pixelplayeross.data.database.PixelPlayerDatabase
 import com.lostf1sh.pixelplayeross.data.database.SearchHistoryDao
 import com.lostf1sh.pixelplayeross.data.database.TransitionDao
+import com.lostf1sh.pixelplayeross.data.image.YouTubeArtworkInterceptor
 import com.lostf1sh.pixelplayeross.data.preferences.UserPreferencesRepository
 import com.lostf1sh.pixelplayeross.data.preferences.PlaylistPreferencesRepository
 import com.lostf1sh.pixelplayeross.data.preferences.dataStore
@@ -133,7 +135,14 @@ object AppModule {
             "pixelplayer_database"
         )
             .addCallback(PixelPlayerDatabase.createRuntimeArtifactsCallback())
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6,
+                MIGRATION_6_7
+            )
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
 
         if (BuildConfig.DEBUG) {
@@ -142,16 +151,6 @@ object AppModule {
 
         return builder.build()
     }
-
-    @Singleton
-
-    @Provides
-
-    fun provideDownloadedTrackDao(
-
-        database: PixelPlayerDatabase
-
-    ): com.lostf1sh.pixelplayeross.data.database.DownloadedTrackDao = database.downloadedTrackDao()
 
 
     @Singleton
@@ -241,6 +240,9 @@ object AppModule {
         return ImageLoader.Builder(context)
             .okHttpClient(okHttpClient)
             .dispatcher(Dispatchers.Default)
+            // Registered here rather than alongside the fetchers in newImageLoader() because it
+            // has no dependencies, so it also covers the loader injected directly by Dagger.
+            .components { add(YouTubeArtworkInterceptor()) }
             .allowHardware(true)
             .memoryCache {
                 MemoryCache.Builder(context)

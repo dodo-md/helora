@@ -2,6 +2,7 @@ package com.lostf1sh.pixelplayeross.data.offline
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -13,6 +14,7 @@ import com.lostf1sh.pixelplayeross.data.database.OfflineTrackDao
 import com.lostf1sh.pixelplayeross.data.database.OfflineTrackEntity
 import com.lostf1sh.pixelplayeross.data.model.Song
 import com.lostf1sh.pixelplayeross.data.worker.CloudTrackDownloadWorker
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.security.MessageDigest
@@ -47,7 +49,8 @@ data class OfflineDownload(
     val localPath: String?,
     val errorMessage: String?,
     val title: String = "",
-    val provider: String = ""
+    val provider: String = "",
+    val mediaStoreUri: String? = null
 ) {
     val progress: Float?
         get() = totalBytes?.takeIf { it > 0L }
@@ -79,14 +82,11 @@ class CloudOfflineRepository @Inject constructor(
             val downloadId = downloadId(song.contentUriString)
             val existing = dao.getBySourceUri(song.contentUriString)
             if (existing?.state == OfflineDownloadStatus.COMPLETE.storageValue &&
-                existing.localPath?.let(::File)?.isFile == true
+                isStillOnDisk(existing)
             ) {
                 return@withLock
             }
-            existing?.let {
-                it.localPath?.let(::File)?.delete()
-                deleteAttemptFiles(context, it.downloadId, it.attemptId)
-            }
+            existing?.let(::discardArtifacts)
 
             val attemptId = UUID.randomUUID().toString()
             val request = downloadRequest(
@@ -104,6 +104,9 @@ class CloudOfflineRepository @Inject constructor(
                     sourceUri = song.contentUriString,
                     provider = provider,
                     title = song.title,
+                    artist = song.artist.takeIf { it.isNotBlank() },
+                    album = song.album.takeIf { it.isNotBlank() },
+                    albumArtUri = song.albumArtUriString,
                     mimeType = song.mimeType,
                     localPath = null,
                     state = OfflineDownloadStatus.QUEUED.storageValue,
@@ -132,8 +135,7 @@ class CloudOfflineRepository @Inject constructor(
             val existing = dao.getBySourceUri(sourceUri) ?: return@withLock
             if (existing.state != OfflineDownloadStatus.FAILED.storageValue) return@withLock
 
-            existing.localPath?.let(::File)?.delete()
-            deleteAttemptFiles(context, existing.downloadId, existing.attemptId)
+            discardArtifacts(existing)
 
             val attemptId = UUID.randomUUID().toString()
             val request = downloadRequest(
@@ -173,8 +175,7 @@ class CloudOfflineRepository @Inject constructor(
             try {
                 workManager.cancelUniqueWork(workName(entity.downloadId)).await()
             } finally {
-                entity.localPath?.let(::File)?.takeIf { it.exists() }?.delete()
-                deleteAttemptFiles(context, entity.downloadId, entity.attemptId)
+                discardArtifacts(entity)
             }
         }
     }
@@ -183,6 +184,21 @@ class CloudOfflineRepository @Inject constructor(
     suspend fun resolveLocalUri(sourceUri: String): Uri? = withContext(Dispatchers.IO) {
         val entity = dao.getBySourceUri(sourceUri) ?: return@withContext null
         if (entity.state != OfflineDownloadStatus.COMPLETE.storageValue) return@withContext null
+
+        // A published download lives in the shared Music folder, where the raw path is only
+        // readable with the audio permission. The content URI belongs to this app either way,
+        // so it keeps working for someone who only ever uses YouTube.
+        entity.mediaStoreUri?.let { uriString ->
+            val uri = uriString.toUri()
+            return@withContext if (mediaStoreEntryExists(uri)) {
+                uri
+            } else {
+                // Deleted from under us by a file manager or another app.
+                dao.deleteBySourceUri(sourceUri)
+                null
+            }
+        }
+
         val file = entity.localPath?.let(::File)
         if (file?.isFile == true && file.length() > 0L) {
             Uri.fromFile(file)
@@ -192,12 +208,43 @@ class CloudOfflineRepository @Inject constructor(
         }
     }
 
+    /**
+     * Whether a completed row still has its file. Published downloads are checked through the
+     * resolver: their [OfflineTrackEntity.localPath] points into the shared Music folder, which
+     * reads as missing without the audio permission and would make every enqueue re-download.
+     */
+    private fun isStillOnDisk(entity: OfflineTrackEntity): Boolean =
+        entity.mediaStoreUri?.let { mediaStoreEntryExists(it.toUri()) }
+            ?: (entity.localPath?.let(::File)?.isFile == true)
+
+    private fun mediaStoreEntryExists(uri: Uri): Boolean = runCatching {
+        context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { it.length != 0L } == true
+    }.getOrDefault(false)
+
+    /**
+     * Clears everything an attempt may have left behind. Published downloads need the resolver:
+     * they sit in the shared Music folder, so deleting the path directly would silently fail
+     * and leave the file on the device after the user removed it.
+     */
+    private fun discardArtifacts(entity: OfflineTrackEntity) {
+        entity.mediaStoreUri?.let { uriString ->
+            runCatching { context.contentResolver.delete(uriString.toUri(), null, null) }
+        }
+        entity.localPath?.let(::File)?.takeIf(File::exists)?.delete()
+        deleteAttemptFiles(context, entity.downloadId, entity.attemptId)
+    }
+
     companion object {
         fun isCloudSong(song: Song): Boolean = providerFor(song.contentUriString) != null
+
+        const val PROVIDER_YOUTUBE = "youtube"
 
         fun providerFor(sourceUri: String): String? = when (sourceUri.substringBefore(':', "").lowercase()) {
             "navidrome" -> "navidrome"
             "jellyfin" -> "jellyfin"
+            // Everything a YouTube track needs from this queue is already here; the only thing
+            // that differs is where the finished file is published.
+            YouTubeMusicRepository.URI_SCHEME -> PROVIDER_YOUTUBE
             else -> null
         }
 
@@ -255,5 +302,6 @@ private fun OfflineTrackEntity.toModel() = OfflineDownload(
     localPath = localPath,
     errorMessage = errorMessage,
     title = title,
-    provider = provider
+    provider = provider,
+    mediaStoreUri = mediaStoreUri
 )

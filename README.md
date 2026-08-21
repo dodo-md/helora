@@ -61,7 +61,7 @@ You can also start a station from **any song in your own library**: song menu �
 
 Song menu → **Download**. Or grab a whole album, a playlist, or all your liked songs at once.
 
-Files land in **`Music/Helora/<Artist>/<Album>/`** as proper `.m4a` files with tags and cover art embedded. That means:
+Downloads share the same queue as the Navidrome and Jellyfin ones, so they show up in the same place and behave the same way. YouTube tracks differ in where the finished file lands: **`Music/Helora/<Artist>/<Album>/`**, as proper `.m4a` files with tags and cover art embedded. That means:
 
 - Your other music apps and your file manager can see them
 - They survive uninstalling Helora
@@ -125,7 +125,7 @@ app/src/main/java/com/lostf1sh/pixelplayeross/
 │   ├── YouTubeIds               deterministic negative ids for ephemeral tracks
 │   ├── RemoteTrackCache         in-memory home for tracks not in the database
 │   └── YouTubeLibraryWriter     promotes a saved track into the library
-├── data/download/               MediaStore downloader, paths, queue manager
+├── data/download/               publishes finished downloads into the Music folder
 ├── data/service/player/
 │   └── RadioQueueExtender       keeps the station topped up
 └── presentation/screens/search/ the YouTube section of the search screen

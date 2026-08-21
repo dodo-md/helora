@@ -1,6 +1,5 @@
 package com.lostf1sh.pixelplayeross.presentation.navigation
 
-import com.lostf1sh.pixelplayeross.presentation.screens.DownloadsScreen
 import DelimiterConfigScreen
 import com.lostf1sh.pixelplayeross.presentation.screens.WordDelimiterConfigScreen
 import android.annotation.SuppressLint
@@ -603,20 +602,6 @@ fun AppNavigation(
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     CloudDownloadsScreen(onBack = { navController.popBackStack() })
-                }
-            }
-            composable(
-                Screen.Downloads.route,
-                enterTransition = { enterTransition() },
-                exitTransition = { exitTransition() },
-                popEnterTransition = { popEnterTransition() },
-                popExitTransition = { popExitTransition() },
-            ) {
-                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
-                    DownloadsScreen(
-                        onBack = { navController.popBackStack() },
-                        onDownloadLiked = { playerViewModel.downloadLikedSongs() }
-                    )
                 }
             }
             composable(

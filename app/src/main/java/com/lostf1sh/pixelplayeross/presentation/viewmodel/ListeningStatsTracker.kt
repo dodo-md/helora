@@ -6,6 +6,7 @@ import com.lostf1sh.pixelplayeross.data.DailyMixManager
 import com.lostf1sh.pixelplayeross.data.listenbrainz.ScrobbleManager
 import com.lostf1sh.pixelplayeross.data.model.Song
 import com.lostf1sh.pixelplayeross.data.stats.PlaybackStatsRepository
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeLibraryWriter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -33,7 +34,8 @@ import timber.log.Timber
 class ListeningStatsTracker @Inject constructor(
     private val dailyMixManager: DailyMixManager,
     private val playbackStatsRepository: PlaybackStatsRepository,
-    private val scrobbleManager: ScrobbleManager
+    private val scrobbleManager: ScrobbleManager,
+    private val youTubeLibraryWriter: YouTubeLibraryWriter
 ) {
     private var currentSession: ActiveSession? = null
     private var pendingVoluntarySongId: String? = null
@@ -303,6 +305,12 @@ class ListeningStatsTracker @Inject constructor(
     }
 
     private suspend fun persistPlaybackInternal(songId: String, listened: Long, timestamp: Long) {
+        // A YouTube track has no library row until now. Both calls below resolve names and the
+        // mix through `songs`, so without this the play is recorded against nothing and shows
+        // up as "Unknown". Doing it here rather than on tap means only tracks actually listened
+        // to earn a row, not everything scrolled past in search.
+        youTubeLibraryWriter.promoteById(songId)
+
         dailyMixManager.recordPlay(
             songId = songId,
             songDurationMs = listened,

@@ -1,6 +1,7 @@
 package com.lostf1sh.pixelplayeross.presentation.viewmodel
 
-import com.lostf1sh.pixelplayeross.data.download.MusicDownloadManager
+import com.lostf1sh.pixelplayeross.data.offline.CloudOfflineRepository
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeLibraryWriter
 import com.lostf1sh.pixelplayeross.data.service.player.RadioQueueExtender
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
@@ -275,7 +276,8 @@ class PlayerViewModel @Inject constructor(
     private val youTubeSearchStateHolder: YouTubeSearchStateHolder,
     private val youTubeMusicRepository: YouTubeMusicRepository,
     private val radioQueueExtender: RadioQueueExtender,
-    private val musicDownloadManager: MusicDownloadManager,
+    private val cloudOfflineRepository: CloudOfflineRepository,
+    private val youTubeLibraryWriter: YouTubeLibraryWriter,
     private val folderNavigationStateHolder: FolderNavigationStateHolder,
     private val libraryTabsStateHolder: LibraryTabsStateHolder,
     private val metadataEditStateHolder: MetadataEditStateHolder,
@@ -3158,6 +3160,9 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             val favoriteSongId = resolveFavoriteSongId(currentSong) ?: return@launch
             val currentlyFavorite = favoriteSongIds.value.contains(favoriteSongId)
+            // The liked list joins favorites against songs, so a YouTube track needs its row
+            // before the favourite has anything to point at.
+            if (!currentlyFavorite) youTubeLibraryWriter.promote(currentSong)
             setFavoriteStatusEverywhere(favoriteSongId, !currentlyFavorite)
         }
     }
@@ -3167,6 +3172,7 @@ class PlayerViewModel @Inject constructor(
             val favoriteSongId = resolveFavoriteSongId(song) ?: return@launch
             val currentlyFavorite = favoriteSongIds.value.contains(favoriteSongId)
             val targetFavoriteState = if (removing) false else !currentlyFavorite
+            if (targetFavoriteState) youTubeLibraryWriter.promote(song)
             setFavoriteStatusEverywhere(favoriteSongId, targetFavoriteState)
         }
     }
@@ -3971,10 +3977,14 @@ class PlayerViewModel @Inject constructor(
      */
     fun downloadSongs(songs: List<Song>) {
         viewModelScope.launch {
-            val queued = musicDownloadManager.enqueue(songs)
+            // enqueueAll skips anything that is not downloadable, so the count is taken here
+            // rather than after the fact.
+            val queued = songs.filter(CloudOfflineRepository::isCloudSong)
+                .distinctBy { it.contentUriString }
+            cloudOfflineRepository.enqueueAll(queued)
             sendToast(
-                if (queued > 0) {
-                    context.getString(R.string.downloads_enqueued, queued)
+                if (queued.isNotEmpty()) {
+                    context.getString(R.string.downloads_enqueued, queued.size)
                 } else {
                     context.getString(R.string.downloads_nothing_to_do)
                 }

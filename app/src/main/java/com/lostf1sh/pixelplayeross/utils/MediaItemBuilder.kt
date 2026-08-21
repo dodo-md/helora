@@ -12,6 +12,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import com.lostf1sh.pixelplayeross.data.provider.SharedArtworkContentProvider
 import com.lostf1sh.pixelplayeross.data.model.Song
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeArtworkUrls
 import java.io.File
 
 object MediaItemBuilder {
@@ -87,6 +88,9 @@ object MediaItemBuilder {
         "http",
         "https",
     )
+
+    /** What YouTube Music's own player uses; comfortable on a car head unit or a watch. */
+    private const val EXTERNAL_CONTROLLER_ARTWORK_SIZE_PX = 544
     const val EXTERNAL_EXTRA_FLAG = EXTERNAL_EXTRA_PREFIX + "FLAG"
     const val EXTERNAL_EXTRA_ALBUM = EXTERNAL_EXTRA_PREFIX + "ALBUM"
     const val EXTERNAL_EXTRA_DURATION = EXTERNAL_EXTRA_PREFIX + "DURATION"
@@ -270,7 +274,15 @@ object MediaItemBuilder {
             )
         }
 
-        val normalizedUri = normalizeArtworkUri(rawArtworkUri, SUPPORTED_EXTERNAL_ARTWORK_SCHEMES)
+        // Everything reaching here is handed over as a URL the controller fetches itself, so
+        // this is the last chance to influence the size. Android Auto and Wear would otherwise
+        // render the 120x120 thumbnail a YouTube song result carries. Fixed size rather than
+        // measured, because there is no way to know what the other end will display it at.
+        val resizedArtworkUri = YouTubeArtworkUrls.withSize(
+            rawArtworkUri,
+            EXTERNAL_CONTROLLER_ARTWORK_SIZE_PX
+        )
+        val normalizedUri = normalizeArtworkUri(resizedArtworkUri, SUPPORTED_EXTERNAL_ARTWORK_SCHEMES)
             ?: return null
         return when (normalizedUri.scheme?.lowercase()) {
             "file" -> normalizedUri.path

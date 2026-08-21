@@ -325,7 +325,7 @@ fun SettingsScreen(
                         subtitle = stringResource(R.string.downloads_settings_subtitle),
                         icon = Icons.Rounded.Download,
                         colors = getDownloadsColors(isDark),
-                        onClick = { navController.navigateSafely(Screen.Downloads.route) },
+                        onClick = { navController.navigateSafely(Screen.CloudDownloads.route) },
                         shape = shapeFor(itemIndex)
                     )
                     if (itemIndex < totalItems - 1) {

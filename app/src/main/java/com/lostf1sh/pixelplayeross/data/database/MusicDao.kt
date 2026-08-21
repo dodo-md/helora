@@ -712,6 +712,20 @@ interface MusicDao {
                 AND source_type != 0
             )
         )
+        AND (
+            source_type != 7
+            OR (
+                EXISTS(
+                    SELECT 1 FROM favorites
+                    WHERE favorites.songId = songs.id AND favorites.isFavorite = 1
+                )
+                AND NOT EXISTS(
+                    SELECT 1 FROM offline_tracks
+                    WHERE offline_tracks.source_uri = songs.content_uri_string
+                    AND offline_tracks.state = 'complete'
+                )
+            )
+        )
         ORDER BY
             CASE WHEN :sortOrder = 'song_default_order' THEN track_number END ASC,
             CASE WHEN :sortOrder = 'song_title_az' THEN title END COLLATE NOCASE ASC,

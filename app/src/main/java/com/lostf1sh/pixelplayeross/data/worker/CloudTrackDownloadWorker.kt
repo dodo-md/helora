@@ -1,17 +1,20 @@
 package com.lostf1sh.pixelplayeross.data.worker
 
 import android.content.Context
+import android.net.Uri
 import androidx.core.net.toUri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.lostf1sh.pixelplayeross.data.database.OfflineTrackDao
+import com.lostf1sh.pixelplayeross.data.download.MediaStoreDownloadPublisher
 import com.lostf1sh.pixelplayeross.data.jellyfin.JellyfinRepository
 import com.lostf1sh.pixelplayeross.data.navidrome.NavidromeRepository
 import com.lostf1sh.pixelplayeross.data.offline.CloudOfflineRepository
 import com.lostf1sh.pixelplayeross.data.offline.OfflineDownloadStatus
 import com.lostf1sh.pixelplayeross.data.stream.CloudStreamSecurity
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.io.File
@@ -34,6 +37,8 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
     private val dao: OfflineTrackDao,
     private val navidromeRepository: NavidromeRepository,
     private val jellyfinRepository: JellyfinRepository,
+    private val youTubeMusicRepository: YouTubeMusicRepository,
+    private val publisher: MediaStoreDownloadPublisher,
     baseOkHttpClient: OkHttpClient
 ) : CoroutineWorker(appContext, workerParams) {
     private val client = baseOkHttpClient.newBuilder()
@@ -70,6 +75,7 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
             .resolve("${CloudOfflineRepository.attemptFileStem(downloadId, attemptId)}.part")
         tempFile.delete()
         var finalizedFile: File? = null
+        var publishedUri: Uri? = null
 
         try {
             val source = resolveSource(sourceUri)
@@ -125,6 +131,46 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
                 if (!dao.isCurrentAttempt(downloadId, attemptId)) {
                     throw StaleDownloadAttemptException()
                 }
+                // Everything above is provider-agnostic. Only where the finished bytes end up
+                // differs: a self-hosted track is a cache and belongs in the app's directory,
+                // while a YouTube download is the user's only copy and goes to the shared
+                // Music folder so other apps can see it and it survives an uninstall.
+                if (entity.provider == CloudOfflineRepository.PROVIDER_YOUTUBE) {
+                    val published = publisher.publish(
+                        entity = entity,
+                        source = tempFile,
+                        extension = extension,
+                        mimeType = response.header("Content-Type")
+                            ?.substringBefore(';')
+                            ?.trim()
+                            ?: entity.mimeType
+                            ?: "audio/mp4"
+                    )
+                    // Tracked from here on: the file is now visible in the user's Music folder,
+                    // so anything that throws before the row is written has to take it back out
+                    // rather than leave a track nothing in the app knows about.
+                    publishedUri = published.uri
+                    tempFile.delete()
+                    coroutineContext.ensureActive()
+                    val completed = dao.updateState(
+                        downloadId = downloadId,
+                        attemptId = attemptId,
+                        state = OfflineDownloadStatus.COMPLETE.storageValue,
+                        bytesDownloaded = copied,
+                        totalBytes = total ?: copied,
+                        localPath = published.filePath,
+                        errorMessage = null,
+                        updatedAt = System.currentTimeMillis(),
+                        mediaStoreUri = published.uri.toString()
+                    )
+                    if (completed == 0) {
+                        // Superseded while publishing.
+                        deletePublished(published.uri)
+                    }
+                    publishedUri = null
+                    return@use Result.success()
+                }
+
                 finalFile.delete()
                 if (!tempFile.renameTo(finalFile)) {
                     tempFile.copyTo(finalFile, overwrite = true)
@@ -150,14 +196,17 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
         } catch (cancelled: CancellationException) {
             tempFile.delete()
             finalizedFile?.delete()
+            publishedUri?.let(::deletePublished)
             throw cancelled
         } catch (_: StaleDownloadAttemptException) {
             tempFile.delete()
             finalizedFile?.delete()
+            publishedUri?.let(::deletePublished)
             Result.success()
         } catch (error: Throwable) {
             tempFile.delete()
             finalizedFile?.delete()
+            publishedUri?.let(::deletePublished)
             val shouldRetry = runAttemptCount < MAX_RETRIES &&
                 (error is IOException || (error is DownloadHttpException && error.code >= 500))
             Timber.tag(TAG).w(error, "Cloud track download failed for %s", sourceUri)
@@ -205,11 +254,25 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
         setProgress(workDataOf(KEY_BYTES to copied, KEY_TOTAL_BYTES to (total ?: -1L)))
     }
 
-    private fun resolveSource(sourceUri: String): DownloadSource {
+    private suspend fun resolveSource(sourceUri: String): DownloadSource {
         val parsed = sourceUri.toUri()
         val id = parsed.host ?: parsed.path?.removePrefix("/")
             ?: throw IOException("Cloud track identifier is missing")
         return when (parsed.scheme?.lowercase()) {
+            YouTubeMusicRepository.URI_SCHEME -> {
+                if (!CloudStreamSecurity.validateYouTubeVideoId(id)) {
+                    throw IOException("Invalid YouTube track identifier")
+                }
+                // Signed googlevideo URLs expire, so this is resolved per attempt rather than
+                // stored with the queue row.
+                val stream = youTubeMusicRepository.getDownloadableStream(id)
+                    ?: throw IOException("No downloadable audio stream")
+                DownloadSource(
+                    url = stream.url,
+                    // Any rr#---sn-*.googlevideo.com edge; the check matches on suffix.
+                    allowedHost = "https://googlevideo.com"
+                )
+            }
             "navidrome" -> {
                 if (!CloudStreamSecurity.validateNavidromeSongId(id)) {
                     throw IOException("Invalid Navidrome track identifier")
@@ -246,6 +309,12 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
                 throw IOException("Unsafe cloud download URL")
             }
         }
+    }
+
+    /** Takes a published file back out of the shared Music folder. */
+    private fun deletePublished(uri: Uri) {
+        runCatching { applicationContext.contentResolver.delete(uri, null, null) }
+            .onFailure { Timber.tag(TAG).w(it, "Could not remove published download") }
     }
 
     private fun extensionFor(responseType: String?, fallbackType: String?): String {

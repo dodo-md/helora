@@ -36,6 +36,7 @@ interface OfflineTrackDao {
             bytes_downloaded = :bytesDownloaded,
             total_bytes = :totalBytes,
             local_path = :localPath,
+            media_store_uri = :mediaStoreUri,
             error_message = :errorMessage,
             updated_at = :updatedAt
         WHERE download_id = :downloadId AND attempt_id = :attemptId
@@ -49,7 +50,9 @@ interface OfflineTrackDao {
         totalBytes: Long?,
         localPath: String?,
         errorMessage: String?,
-        updatedAt: Long
+        updatedAt: Long,
+        /** Set only when the finished file was published to MediaStore. */
+        mediaStoreUri: String? = null
     ): Int
 
     @Query(

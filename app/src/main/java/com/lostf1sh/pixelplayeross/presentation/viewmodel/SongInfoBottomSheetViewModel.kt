@@ -1,8 +1,8 @@
 package com.lostf1sh.pixelplayeross.presentation.viewmodel
 
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
-import com.lostf1sh.pixelplayeross.data.download.MusicDownloadManager
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
@@ -23,6 +23,8 @@ import com.lostf1sh.pixelplayeross.data.model.Song
 import com.lostf1sh.pixelplayeross.data.musicbrainz.MusicBrainzMatch
 import com.lostf1sh.pixelplayeross.data.musicbrainz.MusicBrainzRepository
 import com.lostf1sh.pixelplayeross.data.offline.CloudOfflineRepository
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
+import com.lostf1sh.pixelplayeross.data.offline.OfflineDownloadStatus
 import com.lostf1sh.pixelplayeross.data.offline.OfflineDownload
 import com.lostf1sh.pixelplayeross.utils.AudioMeta
 import com.lostf1sh.pixelplayeross.utils.AudioMetaUtils
@@ -48,21 +50,38 @@ class SongInfoBottomSheetViewModel @Inject constructor(
     private val musicDao: MusicDao,
     private val cloudOfflineRepository: CloudOfflineRepository,
     private val musicBrainzRepository: MusicBrainzRepository,
-    private val downloadManager: MusicDownloadManager,
     @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
 
     /** What the download button should show for the song currently in the sheet. */
     enum class DownloadUiState { UNAVAILABLE, DOWNLOADABLE, IN_PROGRESS, DOWNLOADED }
 
-    /**
-     * Injecting the download manager here is safe where injecting playback would not be: it is
-     * a @Singleton, so this shares the worker's instance, and queuing never touches the player.
-     */
-    val savedVideoIds: StateFlow<Set<String>> = downloadManager.savedVideoIds
+    private companion object {
+        /** Shown while the server has not told us how big the file is. */
+        const val INDETERMINATE = -1f
+    }
+
+    /** Video ids with a finished download, for the "already saved" indicator. */
+    val savedVideoIds: StateFlow<Set<String>> = cloudOfflineRepository.observeCompleted()
+        .map { downloads -> downloads.mapNotNullTo(mutableSetOf()) { it.videoIdOrNull() } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
-    val downloadProgress: StateFlow<Map<String, Float>> = downloadManager.progress
+    val downloadProgress: StateFlow<Map<String, Float>> = cloudOfflineRepository.observeAll()
+        .map { downloads ->
+            downloads.asSequence()
+                .filter { it.status == OfflineDownloadStatus.DOWNLOADING }
+                .mapNotNull { download ->
+                    download.videoIdOrNull()?.let { it to (download.progress ?: INDETERMINATE) }
+                }
+                .toMap()
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+
+    /** `ytmusic://<videoId>` is the queue row's identity; other providers have no video id. */
+    private fun OfflineDownload.videoIdOrNull(): String? = sourceUri
+        .takeIf { it.startsWith("${YouTubeMusicRepository.URI_SCHEME}://") }
+        ?.substringAfter("://")
+        ?.takeIf { it.isNotBlank() }
 
     fun downloadStateFor(
         song: Song,
@@ -78,7 +97,7 @@ class SongInfoBottomSheetViewModel @Inject constructor(
     }
 
     fun downloadSong(song: Song) {
-        viewModelScope.launch { downloadManager.enqueue(listOf(song)) }
+        viewModelScope.launch { cloudOfflineRepository.enqueue(song) }
     }
 
     data class SongLocationInfo(
