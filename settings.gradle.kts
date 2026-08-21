@@ -23,6 +23,9 @@ dependencyResolutionManagement {
             content {
                 includeGroup("com.github.philburk")
                 includeGroup("com.github.racra")
+                // NewPipeExtractor is a multi-module JitPack build, so artifacts resolve
+                // under both com.github.TeamNewPipe and com.github.TeamNewPipe.NewPipeExtractor.
+                includeGroupByRegex("com\\.github\\.TeamNewPipe.*")
             }
         }
     }

@@ -46,6 +46,7 @@ import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.CloudDownload
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -287,7 +288,7 @@ fun SettingsScreen(
                         it != SettingsCategory.DEVICE_CAPABILITIES
                     }
 
-                    val totalItems = mainCategories.size + 4
+                    val totalItems = mainCategories.size + 5
                     fun shapeFor(index: Int) =
                         when {
                             totalItems == 1 -> RoundedCornerShape(24.dp)
@@ -318,6 +319,19 @@ fun SettingsScreen(
                         }
                         itemIndex++
                     }
+
+                    ExpressiveNavigationItem(
+                        title = stringResource(R.string.downloads_title),
+                        subtitle = stringResource(R.string.downloads_settings_subtitle),
+                        icon = Icons.Rounded.Download,
+                        colors = getDownloadsColors(isDark),
+                        onClick = { navController.navigateSafely(Screen.Downloads.route) },
+                        shape = shapeFor(itemIndex)
+                    )
+                    if (itemIndex < totalItems - 1) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                    }
+                    itemIndex++
 
                     ExpressiveNavigationItem(
                         title = stringResource(R.string.cloud_downloads_title),

@@ -130,7 +130,9 @@ abstract class CloudStreamProxy<K : Any>(
         val rawId = extractIdFromUri(uri) ?: return null
         val id = parseRouteParam(rawId) ?: return null
         if (!validateId(id)) return null
-        return getProxyUrl(id)
+        // getProxyUrl yields "" until the server has a port. Handing that back would put an
+        // empty URI on the MediaItem, which the player cannot fail cleanly on — it just waits.
+        return getProxyUrl(id).takeIf { it.isNotEmpty() }
     }
 
     fun start() {
@@ -315,6 +317,10 @@ abstract class CloudStreamProxy<K : Any>(
                                                 .also { bytesRead = it } != -1
                                         ) {
                                             writeFully(buffer, 0, bytesRead)
+                                            // Without this the first chunks sit in the response
+                                            // buffer while the player waits for its opening
+                                            // byte range, so playback hangs on "loading".
+                                            flush()
                                         }
                                     }
                                 }

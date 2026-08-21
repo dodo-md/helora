@@ -22,6 +22,21 @@ class QueueStateHolder @Inject constructor() {
     /**
      * Set original queue order (for updates during playback).
      */
+    /**
+     * Append tracks to the pre-shuffle order, for queues that grow while playing (radio).
+     *
+     * Appending at the tail is right in both shuffle states, because shuffling here rewrites
+     * the queue list rather than using ExoPlayer's shuffle mode: a track added at the end plays
+     * next either way, and unshuffling reproduces the same order.
+     */
+    fun appendToOriginalQueueOrder(songs: List<Song>) {
+        if (songs.isEmpty()) return
+        val existingIds = _originalQueueOrder.mapTo(HashSet()) { it.id }
+        val additions = songs.filter { existingIds.add(it.id) }
+        if (additions.isEmpty()) return
+        _originalQueueOrder = _originalQueueOrder + additions
+    }
+
     fun setOriginalQueueOrder(queue: List<Song>) {
         _originalQueueOrder = queue.toList()
     }

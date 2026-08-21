@@ -101,6 +101,9 @@ object MediaItemBuilder {
     const val EXTERNAL_EXTRA_SAMPLE_RATE = EXTERNAL_EXTRA_PREFIX + "SAMPLE_RATE"
     const val EXTERNAL_EXTRA_FILE_PATH = EXTERNAL_EXTRA_PREFIX + "FILE_PATH"
     const val EXTERNAL_EXTRA_NAVIDROME_ID = EXTERNAL_EXTRA_PREFIX + "NAVIDROME_ID"
+    const val EXTERNAL_EXTRA_YT_VIDEO_ID = EXTERNAL_EXTRA_PREFIX + "YT_VIDEO_ID"
+    const val EXTERNAL_EXTRA_ALBUM_ID = EXTERNAL_EXTRA_PREFIX + "ALBUM_ID"
+    const val EXTERNAL_EXTRA_ARTIST_ID = EXTERNAL_EXTRA_PREFIX + "ARTIST_ID"
 
     fun build(song: Song): MediaItem {
         return MediaItem.Builder()
@@ -311,6 +314,11 @@ object MediaItemBuilder {
             putInt(EXTERNAL_EXTRA_SAMPLE_RATE, song.sampleRate ?: 0)
             putString(EXTERNAL_EXTRA_FILE_PATH, song.path)
             song.navidromeId?.let { putString(EXTERNAL_EXTRA_NAVIDROME_ID, it) }
+            song.ytVideoId?.let { putString(EXTERNAL_EXTRA_YT_VIDEO_ID, it) }
+            // Album/artist ids let a song with no library row (a YouTube search result,
+            // say) still resolve back to a complete Song after a MediaItem round-trip.
+            putLong(EXTERNAL_EXTRA_ALBUM_ID, song.albumId)
+            putLong(EXTERNAL_EXTRA_ARTIST_ID, song.artistId)
         }
 
         metadataBuilder.setExtras(extras)

@@ -25,13 +25,15 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         JellyfinPlaylistEntity::class,
         ListenBrainzPendingListenEntity::class,
         AudioBookmarkEntity::class,
-        OfflineTrackEntity::class
+        OfflineTrackEntity::class,
+        DownloadedTrackEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 abstract class PixelPlayerDatabase : RoomDatabase() {
     abstract fun albumArtThemeDao(): AlbumArtThemeDao
+    abstract fun downloadedTrackDao(): DownloadedTrackDao
     abstract fun searchHistoryDao(): SearchHistoryDao
     abstract fun musicDao(): MusicDao
     abstract fun transitionDao(): TransitionDao

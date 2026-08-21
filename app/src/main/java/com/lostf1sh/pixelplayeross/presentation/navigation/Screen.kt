@@ -1,5 +1,7 @@
 package com.lostf1sh.pixelplayeross.presentation.navigation
 
+import com.lostf1sh.pixelplayeross.data.model.Artist
+import com.lostf1sh.pixelplayeross.data.model.Album
 import android.net.Uri
 import androidx.compose.runtime.Immutable
 
@@ -7,6 +9,7 @@ import androidx.compose.runtime.Immutable
 @Immutable
 sealed class Screen(val route: String) {
     object Home : Screen("home")
+    object Downloads : Screen("downloads")
     object Search : Screen("search")
     object Library : Screen("library")
     object Settings : Screen("settings")
@@ -47,10 +50,23 @@ sealed class Screen(val route: String) {
     object DJSpace : Screen("dj_space")
     object AlbumDetail : Screen("album_detail/{albumId}") {
         fun createRoute(albumId: Long) = "album_detail/$albumId"
+
+        /**
+         * Remote albums have no numeric library id, so their route carries the source's own
+         * opaque id behind a prefix. The nav argument is already a String, so one destination
+         * serves both.
+         */
+        fun createRoute(album: Album): String = album.ytmBrowseId
+            ?.let { "album_detail/${Uri.encode(RemoteDetailId.youTubeAlbum(it))}" }
+            ?: createRoute(album.id)
     }
 
     object ArtistDetail : Screen("artist_detail/{artistId}") {
         fun createRoute(artistId: Long) = "artist_detail/$artistId"
+
+        fun createRoute(artist: Artist): String = artist.ytmChannelId
+            ?.let { "artist_detail/${Uri.encode(RemoteDetailId.youTubeArtist(it))}" }
+            ?: createRoute(artist.id)
     }
 
     object EditTransition : Screen("edit_transition?playlistId={playlistId}") {

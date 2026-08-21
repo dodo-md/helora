@@ -442,6 +442,7 @@ fun AlbumDetailScreen(
                 }
                 SongInfoBottomSheet(
                     song = currentSong,
+                    onStartRadio = { playerViewModel.startRadioFor(currentSong) },
                     isFavorite = isFavorite,
                     onToggleFavorite = {
                         playerViewModel.toggleFavoriteSpecificSong(currentSong)

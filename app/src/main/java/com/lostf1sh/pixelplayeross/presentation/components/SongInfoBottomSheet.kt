@@ -23,6 +23,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Radio
+import androidx.compose.material.icons.rounded.DownloadDone
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
@@ -125,6 +128,13 @@ fun SongInfoBottomSheet(
         coverArtUpdate: CoverArtUpdate?
     ) -> Unit,
     removeFromListTrigger: () -> Unit,
+    /**
+     * Starts a radio station seeded on this song. Null hides the action.
+     *
+     * Passed in rather than resolved here: playback runs through PlayerViewModel, and obtaining
+     * one inside this component would yield a different instance from the screen's.
+     */
+    onStartRadio: (() -> Unit)? = null,
     songInfoViewModel: SongInfoBottomSheetViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -512,6 +522,69 @@ fun SongInfoBottomSheet(
                                             }
                                         }
                                         item {
+                                            val savedVideoIds by songInfoViewModel.savedVideoIds.collectAsStateWithLifecycle()
+                                            val downloadProgress by songInfoViewModel.downloadProgress.collectAsStateWithLifecycle()
+                                            val downloadState = songInfoViewModel.downloadStateFor(
+                                                song, savedVideoIds, downloadProgress
+                                            )
+                                            if (downloadState != SongInfoBottomSheetViewModel.DownloadUiState.UNAVAILABLE) {
+                                                val done = downloadState == SongInfoBottomSheetViewModel.DownloadUiState.DOWNLOADED
+                                                val running = downloadState == SongInfoBottomSheetViewModel.DownloadUiState.IN_PROGRESS
+                                                val pct = song.ytVideoId?.let { downloadProgress[it] }
+                                                FilledTonalButton(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .heightIn(min = 66.dp),
+                                                    contentPadding = PaddingValues(horizontal = 0.dp),
+                                                    shape = CircleShape,
+                                                    // Saved and in-flight downloads have nothing useful to do on tap.
+                                                    enabled = !done && !running,
+                                                    onClick = { songInfoViewModel.downloadSong(song) }
+                                                ) {
+                                                    Icon(
+                                                        if (done) Icons.Rounded.DownloadDone else Icons.Rounded.Download,
+                                                        contentDescription = stringResource(R.string.download_action)
+                                                    )
+                                                    Spacer(Modifier.width(14.dp))
+                                                    Text(
+                                                        when {
+                                                            done -> stringResource(R.string.download_state_downloaded)
+                                                            running && pct != null && pct >= 0f ->
+                                                                stringResource(R.string.download_state_in_progress, (pct * 100).toInt())
+                                                            running -> stringResource(R.string.download_state_starting)
+                                                            else -> stringResource(R.string.download_action)
+                                                        }
+                                                    )
+                                                }
+                                                Spacer(Modifier.height(10.dp))
+                                            }
+
+                                            if (onStartRadio != null) {
+                                                FilledTonalButton(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .heightIn(min = 66.dp),
+                                                    colors = ButtonDefaults.filledTonalButtonColors(
+                                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                                    ),
+                                                    contentPadding = PaddingValues(horizontal = 0.dp),
+                                                    shape = CircleShape,
+                                                    onClick = {
+                                                        onStartRadio()
+                                                        onDismiss()
+                                                    }
+                                                ) {
+                                                    Icon(
+                                                        Icons.Rounded.Radio,
+                                                        contentDescription = stringResource(R.string.song_info_start_radio)
+                                                    )
+                                                    Spacer(Modifier.width(14.dp))
+                                                    Text(stringResource(R.string.song_info_start_radio))
+                                                }
+                                                Spacer(Modifier.height(10.dp))
+                                            }
+
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()

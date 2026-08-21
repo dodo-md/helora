@@ -1,5 +1,8 @@
 package com.lostf1sh.pixelplayeross.presentation.viewmodel
 
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
+import com.lostf1sh.pixelplayeross.data.download.MusicDownloadManager
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
@@ -45,8 +48,38 @@ class SongInfoBottomSheetViewModel @Inject constructor(
     private val musicDao: MusicDao,
     private val cloudOfflineRepository: CloudOfflineRepository,
     private val musicBrainzRepository: MusicBrainzRepository,
+    private val downloadManager: MusicDownloadManager,
     @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
+
+    /** What the download button should show for the song currently in the sheet. */
+    enum class DownloadUiState { UNAVAILABLE, DOWNLOADABLE, IN_PROGRESS, DOWNLOADED }
+
+    /**
+     * Injecting the download manager here is safe where injecting playback would not be: it is
+     * a @Singleton, so this shares the worker's instance, and queuing never touches the player.
+     */
+    val savedVideoIds: StateFlow<Set<String>> = downloadManager.savedVideoIds
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    val downloadProgress: StateFlow<Map<String, Float>> = downloadManager.progress
+
+    fun downloadStateFor(
+        song: Song,
+        saved: Set<String>,
+        progress: Map<String, Float>
+    ): DownloadUiState {
+        val videoId = song.ytVideoId ?: return DownloadUiState.UNAVAILABLE
+        return when {
+            progress.containsKey(videoId) -> DownloadUiState.IN_PROGRESS
+            videoId in saved -> DownloadUiState.DOWNLOADED
+            else -> DownloadUiState.DOWNLOADABLE
+        }
+    }
+
+    fun downloadSong(song: Song) {
+        viewModelScope.launch { downloadManager.enqueue(listOf(song)) }
+    }
 
     data class SongLocationInfo(
         val label: String,

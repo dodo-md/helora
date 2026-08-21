@@ -140,6 +140,7 @@ fun DailyMixScreen(
         }
         SongInfoBottomSheet(
             song = song,
+            onStartRadio = { playerViewModel.startRadioFor(song) },
             isFavorite = favoriteSongIds.contains(song.id),
             onToggleFavorite = { playerViewModel.toggleFavoriteSpecificSong(song) },
             onDismiss = { showSongInfoSheet = false },

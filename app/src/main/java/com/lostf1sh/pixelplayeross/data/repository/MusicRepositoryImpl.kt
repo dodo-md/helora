@@ -591,6 +591,8 @@ class MusicRepositoryImpl @Inject constructor(
                 SearchFilterType.ALBUMS -> searchAlbums(query, minTracks).map { albums -> albums.map { SearchResultItem.AlbumItem(it) } }
                 SearchFilterType.ARTISTS -> searchArtists(query).map { artists -> artists.map { SearchResultItem.ArtistItem(it) } }
                 SearchFilterType.PLAYLISTS -> playlistsFlow.map { playlists -> playlists.map { SearchResultItem.PlaylistItem(it) } }
+                // YouTube results are served by YouTubeSearchStateHolder, not the local index.
+                SearchFilterType.YOUTUBE -> flowOf(emptyList())
             }
         }.flowOn(Dispatchers.Default)
     }

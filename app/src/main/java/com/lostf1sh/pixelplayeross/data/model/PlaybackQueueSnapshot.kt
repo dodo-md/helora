@@ -23,4 +23,6 @@ data class PlaybackQueueSnapshot(
     val repeatMode: Int = 0,
     val shuffleEnabled: Boolean = false,
     val savedAtEpochMs: Long = System.currentTimeMillis(),
+    /** Video id seeding an active radio session, so radio resumes with the queue. */
+    val radioSeedVideoId: String? = null,
 )

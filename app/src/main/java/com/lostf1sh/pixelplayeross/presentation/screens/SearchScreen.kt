@@ -1,5 +1,7 @@
 package com.lostf1sh.pixelplayeross.presentation.screens
 
+import com.lostf1sh.pixelplayeross.presentation.viewmodel.YouTubeSearchStateHolder
+import com.lostf1sh.pixelplayeross.presentation.screens.search.youTubeSearchSections
 import com.lostf1sh.pixelplayeross.presentation.navigation.navigateSafely
 import com.lostf1sh.pixelplayeross.presentation.navigation.navigateSafelyReplacing
 
@@ -185,6 +187,7 @@ fun SearchScreen(
         playerViewModel.performSearch(searchQuery)
     }
     val searchResults = searchUiState.searchResults
+    val youTubeSearchState by playerViewModel.youTubeSearchState.collectAsStateWithLifecycle()
     val handleSongMoreOptionsClick: (Song) -> Unit = { song ->
         playerViewModel.selectSongForInfo(song)
         showSongInfoBottomSheet = true
@@ -387,9 +390,12 @@ fun SearchScreen(
                             SearchFilterChip(SearchFilterType.ALBUMS, currentFilter, playerViewModel)
                             SearchFilterChip(SearchFilterType.ARTISTS, currentFilter, playerViewModel)
                             SearchFilterChip(SearchFilterType.PLAYLISTS, currentFilter, playerViewModel)
+                            SearchFilterChip(SearchFilterType.YOUTUBE, currentFilter, playerViewModel)
                         }
                         Crossfade(
-                            targetState = searchResults.isEmpty(),
+                            // A query matching only YouTube results must not show the
+                            // "nothing found" state.
+                            targetState = searchResults.isEmpty() && youTubeSearchState.isIdle,
                             animationSpec = tween(durationMillis = 190),
                             label = "search_results_fade"
                         ) { isEmpty ->
@@ -401,6 +407,7 @@ fun SearchScreen(
                             } else {
                                 SearchResultsList(
                                     results = searchResults,
+                                    youTubeState = youTubeSearchState,
                                     searchQuery = searchQuery,
                                     playerViewModel = playerViewModel,
                                     onItemSelected = {
@@ -445,6 +452,7 @@ fun SearchScreen(
         if (currentSong != null) {
             SongInfoBottomSheet(
                 song = currentSong,
+                onStartRadio = { playerViewModel.startRadioFor(currentSong) },
                 isFavorite = isFavorite,
                 removeFromListTrigger = removeFromListTrigger,
                 onToggleFavorite = {
@@ -673,12 +681,13 @@ fun SearchResultsList(
     currentPlayingSongId: String?,
     isPlaying: Boolean,
     onSongMoreOptionsClick: (Song) -> Unit,
-    navController: NavHostController
+    navController: NavHostController,
+    youTubeState: YouTubeSearchStateHolder.State = YouTubeSearchStateHolder.State()
 ) {
     val localDensity = LocalDensity.current
     val playerStableState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
 
-    if (results.isEmpty()) {
+    if (results.isEmpty() && youTubeState.isIdle) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -899,6 +908,16 @@ fun SearchResultsList(
                 }
             }
         }
+
+        youTubeSearchSections(
+            state = youTubeState,
+            playerViewModel = playerViewModel,
+            navController = navController,
+            currentPlayingSongId = currentPlayingSongId,
+            isPlaying = isPlaying,
+            onSongMoreOptionsClick = onSongMoreOptionsClick,
+            onItemSelected = onItemSelected
+        )
     }
 }
 
