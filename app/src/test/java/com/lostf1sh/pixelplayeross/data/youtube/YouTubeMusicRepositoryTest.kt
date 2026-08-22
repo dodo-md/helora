@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.channelIdOrNull
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.playlistIdOrNull
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.stripReleaseTypePrefix
+import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.artistNameFrom
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.stripTopicSuffix
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.cleanTrackTitle
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository.Companion.trackKey
@@ -17,6 +18,23 @@ import org.junit.jupiter.api.Test
  * here: they hit the live network and would make the suite flaky.
  */
 class YouTubeMusicRepositoryTest {
+
+    @Test
+    fun `a stream item is filed under the artist, not the Topic channel`() {
+        // Seen live: a radio station hopped onto "Not the King - Topic - Ice Tea", so the
+        // suffix was reaching the queue and the now playing screen.
+        assertThat(artistNameFrom("Not the King - Topic")).isEqualTo("Not the King")
+        assertThat(artistNameFrom("City Girl")).isEqualTo("City Girl")
+    }
+
+    @Test
+    fun `an unnamed uploader falls back to the artist already known`() {
+        assertThat(artistNameFrom(null, "Henyao")).isEqualTo("Henyao")
+        assertThat(artistNameFrom("", "Henyao")).isEqualTo("Henyao")
+        // A Topic channel with nothing but the suffix is not a name either.
+        assertThat(artistNameFrom(" - Topic", "Henyao")).isEqualTo("Henyao")
+        assertThat(artistNameFrom(null, "")).isNull()
+    }
 
     @Test
     fun `extracts video ids from watch urls`() {

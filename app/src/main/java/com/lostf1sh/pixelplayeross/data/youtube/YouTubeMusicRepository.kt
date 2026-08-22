@@ -183,7 +183,7 @@ class YouTubeMusicRepository @Inject constructor(
         val tracks = info.relatedItems.orEmpty().filterIsInstance<StreamInfoItem>()
         // YouTube leaves the uploader blank on album playlists more often than not; the
         // tracks themselves always carry the artist.
-        val albumArtist = info.uploaderName?.takeIf { it.isNotBlank() }
+        val albumArtist = info.uploaderName?.let(::stripTopicSuffix)?.takeIf { it.isNotBlank() }
             ?: tracks.firstNotNullOfOrNull { it.uploaderName?.takeIf { name -> name.isNotBlank() } }
                 .orEmpty()
 
@@ -560,9 +560,7 @@ class YouTubeMusicRepository @Inject constructor(
         fallbackArtist: String = ""
     ): Song? {
         val videoId = videoIdOrNull(url) ?: return null
-        val artistName = uploaderName?.takeIf { it.isNotBlank() }
-            ?: fallbackArtist.takeIf { it.isNotBlank() }
-            ?: return null
+        val artistName = artistNameFrom(uploaderName, fallbackArtist) ?: return null
         val channelId = channelIdOrNull(uploaderUrl)
         val artistId = channelId?.let(YouTubeIds::artistId) ?: YouTubeIds.artistId(artistName)
 
@@ -600,7 +598,7 @@ class YouTubeMusicRepository @Inject constructor(
             dateAdded = 0L,
             albumArtUriString = thumbnails.bestUrl(),
             songCount = streamCount.coerceAtLeast(0L).toInt(),
-            albumArtist = uploaderName?.takeIf { it.isNotBlank() },
+            albumArtist = uploaderName?.let(::stripTopicSuffix)?.takeIf { it.isNotBlank() },
             ytmBrowseId = browseId
         )
     }
@@ -787,6 +785,19 @@ class YouTubeMusicRepository @Inject constructor(
          */
         fun stripReleaseTypePrefix(name: String): String =
             RELEASE_TYPE_PREFIX_REGEX.replace(name, "").trim()
+
+        /**
+         * The artist to file a stream item under.
+         *
+         * Most of YouTube Music's catalogue is uploaded by auto-generated "Artist - Topic"
+         * channels, and the uploader name is the only artist a stream item carries. Left as is,
+         * the suffix reaches the queue and the now playing screen, and it splits one artist into
+         * two: a different artist id for grouping, and a different name for the queue spacing
+         * that keeps one act from arriving in a block.
+         */
+        fun artistNameFrom(uploaderName: String?, fallbackArtist: String = ""): String? =
+            uploaderName?.let(::stripTopicSuffix)?.takeIf { it.isNotBlank() }
+                ?: fallbackArtist.takeIf { it.isNotBlank() }
 
         /** Auto-generated artist channels are named "Radiohead - Topic". */
         fun stripTopicSuffix(name: String): String =
