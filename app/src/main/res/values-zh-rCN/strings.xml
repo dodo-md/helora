@@ -238,4 +238,11 @@
 <string name="setcat_find_duplicates_title">查找重复曲目</string>
 <string name="setcat_find_duplicates_subtitle">扫描曲库中多次出现的歌曲</string>
 
+
+    <string name="search_youtube_offline">你已离线。请连接网络以搜索 YouTube Music。</string>
+    <string name="search_youtube_error">无法连接到 YouTube Music。</string>
+    <string name="search_youtube_retry">重试</string>
+    <string name="search_youtube_songs">YouTube Music 上的歌曲</string>
+    <string name="search_youtube_albums">YouTube Music 上的专辑</string>
+    <string name="search_youtube_artists">YouTube Music 上的艺人</string>
 </resources>

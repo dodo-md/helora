@@ -213,4 +213,11 @@
     <string name="widget_bar_4x1_desc">Kompakte Player-Leiste</string>
     <string name="widget_control_4x2_desc">Volle Steuerung mit Shuffle und Repeat</string>
     <string name="widget_grid_2x2_desc">Minimalistischer quadratischer Player</string>
+
+    <string name="search_youtube_offline">Du bist offline. Stelle eine Verbindung her, um YouTube Music zu durchsuchen.</string>
+    <string name="search_youtube_error">YouTube Music konnte nicht erreicht werden.</string>
+    <string name="search_youtube_retry">Erneut versuchen</string>
+    <string name="search_youtube_songs">Songs auf YouTube Music</string>
+    <string name="search_youtube_albums">Alben auf YouTube Music</string>
+    <string name="search_youtube_artists">Künstler auf YouTube Music</string>
 </resources>

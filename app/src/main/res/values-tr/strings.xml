@@ -237,4 +237,11 @@
     <string name="cloud_download_selected">Seçili bulut parçalarını indir</string>
     <string name="cloud_download_selected_count">%1$d bulut parçasını indir</string>
     <string name="cloud_download_selected_started">%1$d bulut parçası çevrimdışı dinleme için hazırlanıyor</string>
+
+    <string name="search_youtube_offline">Çevrimdışısınız. YouTube Music\'te arama yapmak için bağlanın.</string>
+    <string name="search_youtube_error">YouTube Music\'e ulaşılamadı.</string>
+    <string name="search_youtube_retry">Yeniden dene</string>
+    <string name="search_youtube_songs">YouTube Music\'teki şarkılar</string>
+    <string name="search_youtube_albums">YouTube Music\'teki albümler</string>
+    <string name="search_youtube_artists">YouTube Music\'teki sanatçılar</string>
 </resources>

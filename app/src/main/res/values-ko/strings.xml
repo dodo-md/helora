@@ -213,4 +213,11 @@
     <string name="widget_bar_4x1_desc">컴팩트 플레이어 바</string>
     <string name="widget_control_4x2_desc">셔플 및 반복 기능이 포함된 전체 컨트롤</string>
     <string name="widget_grid_2x2_desc">미니멀한 사각형 플레이어</string>
+
+    <string name="search_youtube_offline">오프라인 상태입니다. YouTube Music을 검색하려면 연결하세요.</string>
+    <string name="search_youtube_error">YouTube Music에 연결할 수 없습니다.</string>
+    <string name="search_youtube_retry">다시 시도</string>
+    <string name="search_youtube_songs">YouTube Music의 노래</string>
+    <string name="search_youtube_albums">YouTube Music의 앨범</string>
+    <string name="search_youtube_artists">YouTube Music의 아티스트</string>
 </resources>

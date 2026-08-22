@@ -213,4 +213,11 @@
     <string name="widget_bar_4x1_desc">Barra di riproduzione compatta</string>
     <string name="widget_control_4x2_desc">Controlli completi con modalità casuale e ripetizione</string>
     <string name="widget_grid_2x2_desc">Lettore quadrato minimalista</string>
+
+    <string name="search_youtube_offline">Sei offline. Connettiti per cercare su YouTube Music.</string>
+    <string name="search_youtube_error">Impossibile raggiungere YouTube Music.</string>
+    <string name="search_youtube_retry">Riprova</string>
+    <string name="search_youtube_songs">Brani su YouTube Music</string>
+    <string name="search_youtube_albums">Album su YouTube Music</string>
+    <string name="search_youtube_artists">Artisti su YouTube Music</string>
 </resources>

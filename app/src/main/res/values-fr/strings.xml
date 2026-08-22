@@ -213,4 +213,11 @@
     <string name="widget_bar_4x1_desc">Barre de lecture compacte</string>
     <string name="widget_control_4x2_desc">Contrôles complets avec mode aléatoire et répétition</string>
     <string name="widget_grid_2x2_desc">Lecteur carré minimaliste</string>
+
+    <string name="search_youtube_offline">Vous êtes hors ligne. Connectez-vous pour rechercher sur YouTube Music.</string>
+    <string name="search_youtube_error">Impossible de joindre YouTube Music.</string>
+    <string name="search_youtube_retry">Réessayer</string>
+    <string name="search_youtube_songs">Titres sur YouTube Music</string>
+    <string name="search_youtube_albums">Albums sur YouTube Music</string>
+    <string name="search_youtube_artists">Artistes sur YouTube Music</string>
 </resources>
