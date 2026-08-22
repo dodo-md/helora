@@ -50,7 +50,7 @@
     <string name="device_capabilities_report_generate">보고서 생성</string>
     <string name="device_capabilities_report_regenerate">재생성</string>
     <string name="device_capabilities_report_share">공유</string>
-    <string name="device_capabilities_report_share_title">PixelPlayer 성능 보고서</string>
+    <string name="device_capabilities_report_share_title">Helora 성능 보고서</string>
     <string name="device_capabilities_report_title">성능 보고서</string>
     <string name="device_capabilities_review_title">재생 확인 필요</string>
     <string name="device_capabilities_storage_available">사용 가능</string>

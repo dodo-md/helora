@@ -50,7 +50,7 @@
     <string name="device_capabilities_report_generate">Générer le rapport</string>
     <string name="device_capabilities_report_regenerate">Régénérer</string>
     <string name="device_capabilities_report_share">Partager</string>
-    <string name="device_capabilities_report_share_title">Rapport de performance PixelPlayer</string>
+    <string name="device_capabilities_report_share_title">Rapport de performance Helora</string>
     <string name="device_capabilities_report_title">Rapport de performance</string>
     <string name="device_capabilities_review_title">Lecture à vérifier</string>
     <string name="device_capabilities_storage_available">Disponible</string>

@@ -147,7 +147,7 @@ private val AboutMaintainers = listOf(
     NonFossMaintainer,
 )
 
-private const val SourceRepoUrl = "https://github.com/lostf1sh/PixelPlayerOSS"
+private const val SourceRepoUrl = "https://github.com/dodo-md/helora"
 private const val FDroidUrl = "https://f-droid.org/packages/com.lostf1sh.pixelplayeross/"
 private const val SponsorUrl = "https://github.com/sponsors/lostf1sh"
 

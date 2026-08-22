@@ -1072,7 +1072,7 @@ class PlaylistViewModel @Inject constructor(
                     musicDir.mkdirs()
                 }
 
-                val exportDir = File(musicDir, "PixelPlayerOSS Exports")
+                val exportDir = File(musicDir, "Helora Exports")
                 if (!exportDir.exists()) {
                     exportDir.mkdirs()
                 }

@@ -38,7 +38,7 @@ class MusicBrainzApiService @Inject constructor(
                     .header(
                         "User-Agent",
                         "PixelPlayerOSS/${BuildConfig.VERSION_NAME} " +
-                            "(https://github.com/PixelPlayerHQ/PixelPlayerOSS)"
+                            "(https://github.com/dodo-md/helora)"
                     )
                     .header("Accept", "application/json")
                     .build()

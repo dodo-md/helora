@@ -50,7 +50,7 @@
     <string name="device_capabilities_report_generate">Создать отчёт</string>
     <string name="device_capabilities_report_regenerate">Пересоздать</string>
     <string name="device_capabilities_report_share">Поделиться</string>
-    <string name="device_capabilities_report_share_title">Отчёт о производительности PixelPlayer</string>
+    <string name="device_capabilities_report_share_title">Отчёт о производительности Helora</string>
     <string name="device_capabilities_report_title">Отчёт о производительности</string>
     <string name="device_capabilities_review_title">Требуется проверка воспроизведения</string>
     <string name="device_capabilities_storage_available">Доступно</string>

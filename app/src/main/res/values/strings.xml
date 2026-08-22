@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">Helora</string>
     <string name="app_name_change_title">App Name Change</string>
-    <string name="app_name_change_message">This app is now PixelPlayerOSS. Keep playing!</string>
+    <string name="app_name_change_message">This app is now Helora. Keep playing!</string>
     <string name="do_not_show_again">Do not show again</string>
     <string name="dismiss">Dismiss</string>
     <string name="all_files_access_title">Special Permission Required</string>
-    <string name="all_files_access_description">To edit song metadata (.mp3 files), PixelPlayerOSS needs special access to all files. This allows us to modify track tags directly. Please grant this permission on the next screen to enable metadata editing.</string>
+    <string name="all_files_access_description">To edit song metadata (.mp3 files), Helora needs special access to all files. This allows us to modify track tags directly. Please grant this permission on the next screen to enable metadata editing.</string>
     <string name="grant_permission_button">Grant Permission</string>
     <string name="error">Error</string>
     <string name="ok">OK</string>
@@ -127,7 +127,7 @@
     <string name="playlist_share_failed">Share failed: %1$s</string>
     <string name="playlist_none_to_export">No playlists to export</string>
     <string name="playlist_export_failed">Export failed: %1$s</string>
-    <string name="playlist_export_folder_display">Music/PixelPlayerOSS Exports</string>
+    <string name="playlist_export_folder_display">Music/Helora Exports</string>
     <string name="error_unknown">Unknown error</string>
 
 

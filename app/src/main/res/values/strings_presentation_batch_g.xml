@@ -162,7 +162,7 @@
     <string name="device_capabilities_report_copy">Copy</string>
     <string name="device_capabilities_report_share">Share</string>
     <string name="device_capabilities_report_copied">Report copied to clipboard</string>
-    <string name="device_capabilities_report_share_title">PixelPlayer performance report</string>
+    <string name="device_capabilities_report_share_title">Helora performance report</string>
     <string name="device_capabilities_advanced_diagnostics_title">Advanced performance diagnostics</string>
     <string name="device_capabilities_advanced_diagnostics_description">Off by default. Records a short lag timeline for beta troubleshooting.</string>
     <string name="device_capabilities_advanced_diagnostics_expires">Active until %1$s</string>
@@ -181,7 +181,7 @@
     <string name="presentation_batch_g_artist_group_by_album_artist">Group by Album Artist</string>
     <string name="presentation_batch_g_artist_group_by_album_artist_sub">Group the Artists tab and albums by album artist, so featured and compilation artists don\'t clutter the list</string>
     <string name="presentation_batch_g_artist_info_title">About Multi-Artist Parsing</string>
-    <string name="presentation_batch_g_artist_info_body">PixelPlayerOSS splits artist tags using character delimiters (/, ;, &amp;) and word delimiters (feat., ft., vs., x). Word delimiters are matched case-insensitively.
+    <string name="presentation_batch_g_artist_info_body">Helora splits artist tags using character delimiters (/, ;, &amp;) and word delimiters (feat., ft., vs., x). Word delimiters are matched case-insensitively.
 
 "Extract Artists from Title" detects patterns like (feat. Artist) in song titles.
 
@@ -270,7 +270,7 @@ Backslash (\) can be used to escape character delimiters.</string>
     <string name="presentation_batch_g_presets_cd_pin">Pin</string>
     <string name="presentation_batch_g_presets_cd_rename">Rename</string>
     <string name="presentation_batch_g_presets_cd_delete">Delete</string>
-    <string name="presentation_batch_g_beta_sheet_welcome_title">Welcome to PixelPlayerOSS %1$s</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Welcome to Helora %1$s</string>
     <string name="presentation_batch_g_beta_sheet_welcome_body">You\'re using a beta build that may contain bugs, crashes, or experimental features. Help us improve by reporting issues.</string>
     <string name="presentation_batch_g_beta_sheet_welcome_body_stable">You\'re running the stable release build. Check the changelog to see what\'s new, and report anything that misbehaves.</string>
     <string name="presentation_batch_g_beta_sheet_expect_title">What to expect</string>
@@ -287,7 +287,7 @@ Backslash (\) can be used to escape character delimiters.</string>
     <string name="presentation_batch_g_beta_sheet_report_summary">A quick checklist before opening a new issue.</string>
     <string name="presentation_batch_g_beta_sheet_before_title">Before opening an issue</string>
     <string name="presentation_batch_g_beta_sheet_before_1">Search existing open and closed issues to avoid duplicates.</string>
-    <string name="presentation_batch_g_beta_sheet_before_2">Update to the latest PixelPlayerOSS version and confirm the problem still happens.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Update to the latest Helora version and confirm the problem still happens.</string>
     <string name="presentation_batch_g_beta_sheet_before_3">Restart the app and confirm the problem persists.</string>
     <string name="presentation_batch_g_beta_sheet_before_4">Try to reproduce it and write down the exact steps.</string>
     <string name="presentation_batch_g_beta_sheet_issue_type_title">Which issue type?</string>
@@ -305,7 +305,7 @@ Backslash (\) can be used to escape character delimiters.</string>
     <string name="presentation_batch_g_beta_sheet_bug_screenshot">Screenshot / video: if available.</string>
     <string name="presentation_batch_g_beta_sheet_bug_logs">Logs / stack trace: if available.</string>
     <string name="presentation_batch_g_beta_sheet_env_title">Environment</string>
-    <string name="presentation_batch_g_beta_sheet_env_version">PixelPlayerOSS version:</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Helora version:</string>
     <string name="presentation_batch_g_beta_sheet_env_source">Install source: GitHub Release, debug build, nightly build, etc.</string>
     <string name="presentation_batch_g_beta_sheet_env_android">Android version:</string>
     <string name="presentation_batch_g_beta_sheet_env_device">Device model:</string>
@@ -339,7 +339,7 @@ Backslash (\) can be used to escape character delimiters.</string>
     <string name="presentation_batch_g_album_sel_selected">selected</string>
     <string name="presentation_batch_g_album_sel_queue_hint">Queue + play respects your selection order.</string>
     <string name="presentation_batch_g_album_sel_limit">Limit: %1$d albums per selection.</string>
-    <string name="presentation_batch_g_app_name">PixelPlayerOSS</string>
+    <string name="presentation_batch_g_app_name">Helora</string>
     <string name="presentation_batch_g_app_tagline">Music Player</string>
     <string name="presentation_batch_g_brick_high">HIGH %1$d</string>
     <string name="presentation_batch_g_brick_cd_close">Close</string>
@@ -473,7 +473,7 @@ Backslash (\) can be used to escape character delimiters.</string>
         <item>Fixed several bugs that caused the app to crash.</item>
     </string-array>
     <string-array name="presentation_batch_g_changelog_070_whats_new">
-        <item>First public FOSS release of PixelPlayerOSS.</item>
+        <item>First public FOSS release of Helora.</item>
         <item>Includes local playback, playlists, favorites, lyrics, listening stats, dynamic Material 3 theming, widgets, and backup/restore.</item>
         <item>Keeps self-hosted Navidrome/Subsonic and Jellyfin support, plus optional LRCLIB lyrics and Deezer artist artwork lookup.</item>
     </string-array>

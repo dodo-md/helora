@@ -93,7 +93,7 @@
     <string name="song_info_choose_tone">设置提示音</string>
     <string name="cd_choose_song_tone">选择将该歌曲用作系统音效</string>
     <string name="song_info_tone_picker_title">将歌曲用作</string>
-    <string name="song_info_tone_picker_body">选择 PixelPlayerOSS 将该音效设置为何种系统声音。</string>
+    <string name="song_info_tone_picker_body">选择 Helora 将该音效设置为何种系统声音。</string>
     <string name="song_info_tone_ringtone_title">手机铃声</string>
     <string name="song_info_tone_ringtone_subtitle">来电铃声</string>
     <string name="song_info_tone_notification_title">通知提示音</string>
@@ -107,7 +107,7 @@
     <string name="song_info_tone_ringtone_label">铃声</string>
     <string name="song_info_tone_notification_label">通知音</string>
     <string name="song_info_tone_alarm_label">闹钟音</string>
-    <string name="song_info_ringtone_permission_prompt">请开启修改系统设置权限，返回 PixelPlayerOSS 自动完成设置。</string>
+    <string name="song_info_ringtone_permission_prompt">请开启修改系统设置权限，返回 Helora 自动完成设置。</string>
     <string name="song_info_ringtone_permission_missing">未授予修改系统设置权限。</string>
     <string name="song_info_ringtone_local_only">仅本地歌曲可以设置为铃声。</string>
     <string name="song_info_ringtone_missing_file">无法处理该音频文件作为铃声。</string>

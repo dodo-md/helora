@@ -50,7 +50,7 @@
     <string name="device_capabilities_report_generate">Generer rapport</string>
     <string name="device_capabilities_report_regenerate">Regenerer</string>
     <string name="device_capabilities_report_share">Del</string>
-    <string name="device_capabilities_report_share_title">PixelPlayer ytelsesrapport</string>
+    <string name="device_capabilities_report_share_title">Helora ytelsesrapport</string>
     <string name="device_capabilities_report_title">Ytelsesrapport</string>
     <string name="device_capabilities_review_title">Avspilling krever gjennomgang</string>
     <string name="device_capabilities_storage_available">Tilgjengelig</string>

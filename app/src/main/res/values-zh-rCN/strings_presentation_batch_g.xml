@@ -162,7 +162,7 @@
     <string name="device_capabilities_report_copy">复制</string>
     <string name="device_capabilities_report_share">分享</string>
     <string name="device_capabilities_report_copied">报告已复制到剪贴板</string>
-    <string name="device_capabilities_report_share_title">PixelPlayer 性能报告</string>
+    <string name="device_capabilities_report_share_title">Helora 性能报告</string>
     <string name="device_capabilities_advanced_diagnostics_title">高级性能诊断</string>
     <string name="device_capabilities_advanced_diagnostics_description">默认关闭。记录简短的卡顿时间线，用于测试版故障排查。</string>
     <string name="device_capabilities_advanced_diagnostics_expires">有效期至 %1$s</string>
@@ -181,7 +181,7 @@
     <string name="presentation_batch_g_artist_group_by_album_artist">按专辑艺术家分组</string>
     <string name="presentation_batch_g_artist_group_by_album_artist_sub">艺术家列表与专辑将按照专辑艺术家分组，避免合作、合辑艺术家扰乱列表。</string>
     <string name="presentation_batch_g_artist_info_title">关于多艺术家解析</string>
-    <string name="presentation_batch_g_artist_info_body">PixelPlayerOSS 使用字符分隔符（/、;、&amp;）以及关键词分隔符（feat.、ft.、vs.、x）拆分艺术家标签，关键词分隔符匹配不区分大小写。
+    <string name="presentation_batch_g_artist_info_body">Helora 使用字符分隔符（/、;、&amp;）以及关键词分隔符（feat.、ft.、vs.、x）拆分艺术家标签，关键词分隔符匹配不区分大小写。
 
 “从歌曲标题提取艺术家”可以识别歌名内类似 (feat. 艺人) 的格式。
 
@@ -270,7 +270,7 @@
     <string name="presentation_batch_g_presets_cd_pin">置顶</string>
     <string name="presentation_batch_g_presets_cd_rename">重命名</string>
     <string name="presentation_batch_g_presets_cd_delete">删除</string>
-    <string name="presentation_batch_g_beta_sheet_welcome_title">欢迎使用 PixelPlayerOSS %1$s</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">欢迎使用 Helora %1$s</string>
     <string name="presentation_batch_g_beta_sheet_welcome_body">你正在使用测试版本，可能存在漏洞、崩溃或者实验性功能。遇到问题欢迎反馈，帮助项目改进。</string>
     <string name="presentation_batch_g_beta_sheet_welcome_body_stable">你正在使用正式发布版本。查看更新日志了解新功能，遇到异常可以提交反馈。</string>
     <string name="presentation_batch_g_beta_sheet_expect_title">版本说明</string>
@@ -287,7 +287,7 @@
     <string name="presentation_batch_g_beta_sheet_report_summary">新建反馈前的简易检查清单。</string>
     <string name="presentation_batch_g_beta_sheet_before_title">提交反馈前</string>
     <string name="presentation_batch_g_beta_sheet_before_1">检索已存在的开放/已关闭问题，避免重复提交。</string>
-    <string name="presentation_batch_g_beta_sheet_before_2">更新到最新 PixelPlayerOSS，确认问题依旧存在。</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">更新到最新 Helora，确认问题依旧存在。</string>
     <string name="presentation_batch_g_beta_sheet_before_3">重启应用，确认故障可以复现。</string>
     <string name="presentation_batch_g_beta_sheet_before_4">尽量复现问题，记录完整操作步骤。</string>
     <string name="presentation_batch_g_beta_sheet_issue_type_title">反馈类型</string>
@@ -305,7 +305,7 @@
     <string name="presentation_batch_g_beta_sheet_bug_screenshot">截图/录屏（如有）。</string>
     <string name="presentation_batch_g_beta_sheet_bug_logs">日志/堆栈信息（如有）。</string>
     <string name="presentation_batch_g_beta_sheet_env_title">运行环境</string>
-    <string name="presentation_batch_g_beta_sheet_env_version">PixelPlayerOSS版本：</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Helora版本：</string>
     <string name="presentation_batch_g_beta_sheet_env_source">安装来源：GitHub发布包、调试构建、每日构建等</string>
     <string name="presentation_batch_g_beta_sheet_env_android">Android版本：</string>
     <string name="presentation_batch_g_beta_sheet_env_device">设备型号：</string>
@@ -339,7 +339,7 @@
     <string name="presentation_batch_g_album_sel_selected">已选择</string>
     <string name="presentation_batch_g_album_sel_queue_hint">加入队列并播放将严格遵循你的选中顺序。</string>
     <string name="presentation_batch_g_album_sel_limit">上限：单次最多选择 %1$d 张专辑。</string>
-    <string name="presentation_batch_g_app_name">PixelPlayerOSS</string>
+    <string name="presentation_batch_g_app_name">Helora</string>
     <string name="presentation_batch_g_app_tagline">音乐播放器</string>
     <string name="presentation_batch_g_brick_high">最高分 %1$d</string>
     <string name="presentation_batch_g_brick_cd_close">关闭</string>
@@ -473,7 +473,7 @@
         <item>修复多项会造成闪退的程序缺陷。</item>
     </string-array>
     <string-array name="presentation_batch_g_changelog_070_whats_new">
-        <item>PixelPlayerOSS首个公开开源版本。</item>
+        <item>Helora首个公开开源版本。</item>
         <item>包含本地播放、歌单、收藏、歌词、收听统计、动态Material3主题、小组件、备份恢复。</item>
         <item>保留自建Navidrome/Subsonic、Jellyfin服务支持，可选接入LRCLIB歌词与Deezer艺术家封面查询。</item>
     </string-array>

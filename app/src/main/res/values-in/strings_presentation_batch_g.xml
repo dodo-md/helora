@@ -50,7 +50,7 @@
     <string name="device_capabilities_report_generate">Buat laporan</string>
     <string name="device_capabilities_report_regenerate">Regenerasi</string>
     <string name="device_capabilities_report_share">Bagikan</string>
-    <string name="device_capabilities_report_share_title">Laporan performa PixelPlayer</string>
+    <string name="device_capabilities_report_share_title">Laporan performa Helora</string>
     <string name="device_capabilities_report_title">Laporan performa</string>
     <string name="device_capabilities_review_title">Pemutaran perlu ditinjau</string>
     <string name="device_capabilities_storage_available">Tersedia</string>

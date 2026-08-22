@@ -7,7 +7,7 @@
     <string name="audio_bookmarks_cd_open">音频书签</string>
     <string name="audio_bookmarks_cd_add">保存书签</string>
     <string name="nav_error_genre_id_missing">错误：缺少流派ID</string>
-    <string name="easter_egg_thank_you">感谢使用 PixelPlayerOSS！</string>
+    <string name="easter_egg_thank_you">感谢使用 Helora！</string>
 
     <string name="word_delimiter_section_title">当前词语分隔符</string>
     <string name="word_delimiter_section_subtitle">该关键词在两侧存在空格时用于拆分艺术家名称，匹配不区分大小写。点击可移除。</string>
@@ -51,7 +51,7 @@
     <string name="setup_theme_footer">后续可在 设置＞外观＞应用主题 中修改。</string>
     <string name="setup_recommended">推荐</string>
     <string name="setup_external_services_title">可选在线服务</string>
-    <string name="setup_external_services_subtitle">PixelPlayerOSS 默认离线运行，按需开启需要的联网查询功能。</string>
+    <string name="setup_external_services_subtitle">Helora 默认离线运行，按需开启需要的联网查询功能。</string>
     <string name="setup_external_lyrics_title">来自 LRCLIB 的在线歌词</string>
     <string name="setup_external_lyrics_description">本地或内嵌歌词缺失时，从 lrclib.net 搜索歌词。</string>
     <string name="setup_external_artist_images_title">来自 Deezer 的艺术家封面</string>
@@ -100,7 +100,7 @@
     <string name="setup_excluded_folders_description">默认扫描全部文件夹，选择需要忽略的目录，建立音乐库时不会读取。</string>
     <string name="setup_choose_folders_ignore">选择要忽略的文件夹</string>
     <string name="setup_permission_media_title">媒体权限</string>
-    <string name="setup_permission_media_description">PixelPlayerOSS 需要访问音频文件来构建音乐库。</string>
+    <string name="setup_permission_media_description">Helora 需要访问音频文件来构建音乐库。</string>
     <string name="setup_permission_granted">权限已授予</string>
     <string name="setup_grant_media_permission">授予媒体权限</string>
     <string name="setup_permission_notifications_title">通知权限</string>
@@ -110,12 +110,12 @@
     <string name="setup_permission_alarms_description">可选，若使用睡眠定时，建议开启，保证准时停止播放。</string>
     <string name="setup_grant_permission_generic">授予权限</string>
     <string name="setup_backup_have_title">你是否拥有备份？</string>
-    <string name="setup_backup_have_description">如果你有 PixelPlayerOSS 的备份，可以现在恢复，省去本机大部分设置步骤。</string>
+    <string name="setup_backup_have_description">如果你有 Helora 的备份，可以现在恢复，省去本机大部分设置步骤。</string>
     <string name="setup_inspecting_backup">正在检查备份</string>
     <string name="setup_restoring_backup">正在恢复备份</string>
     <string name="setup_import_backup">导入备份</string>
     <string name="setup_theme_dark_title">深色</string>
-    <string name="setup_theme_dark_description">PixelPlayerOSS 默认 Material 3 深色主题。</string>
+    <string name="setup_theme_dark_description">Helora 默认 Material 3 深色主题。</string>
     <string name="setup_theme_light_title">浅色</string>
     <string name="setup_theme_light_description">全局明亮的 Material 3 界面。</string>
     <string name="setup_theme_follow_title">跟随系统</string>
@@ -152,7 +152,7 @@
     <string name="crash_report_stack_preview_label">堆栈信息（预览）：</string>
     <string name="crash_report_clipboard_label">崩溃日志</string>
     <string name="toast_crash_log_copied">崩溃日志已复制到剪贴板</string>
-    <string name="crash_report_share_subject">PixelPlayerOSS 崩溃报告</string>
+    <string name="crash_report_share_subject">Helora 崩溃报告</string>
     <string name="crash_report_share_chooser">分享崩溃报告</string>
     <string name="action_copy">复制</string>
     <string name="action_share">分享</string>
@@ -173,7 +173,7 @@
     <string name="browse_by_genre">按流派浏览</string>
     <string name="no_genres_available">暂无可用流派。</string>
 
-    <string name="about_app_name">PixelPlayerOSS</string>
+    <string name="about_app_name">Helora</string>
     <string name="about_tagline">优先本地播放、支持自建流媒体，基于 Material 3 的开源播放器。</string>
     <string name="about_version_format">版本 v%1$s</string>
     <string name="about_contributions_format">%1$d 位贡献者</string>
@@ -183,7 +183,7 @@
     <string name="about_project_title">项目信息</string>
     <string name="about_project_subtitle">源代码、发布版本以及社区入口。</string>
     <string name="about_link_source_title">源代码</string>
-    <string name="about_link_source_subtitle">github.com/lostf1sh/PixelPlayerOSS</string>
+    <string name="about_link_source_subtitle">github.com/dodo-md/helora</string>
     <string name="about_link_fdroid_title">F‑Droid</string>
     <string name="about_link_fdroid_subtitle">可在 F‑Droid 软件库获取</string>
     <string name="cd_about_open_link">打开 %1$s</string>
@@ -191,7 +191,7 @@
     <string name="about_signal_community_first">社区驱动</string>
     <string name="about_signal_material3">Material 3 设计风格</string>
     <string name="about_support_eyebrow">GitHub 赞助</string>
-    <string name="about_support_title">支持 PixelPlayerOSS</string>
+    <string name="about_support_title">支持 Helora</string>
     <string name="about_support_body">帮助维护开源版本，完成真实安卓设备的审核与测试。</string>
     <string name="about_support_chip_foss">开源版本维护</string>
     <string name="about_support_chip_ci">持续集成与版本发布</string>
