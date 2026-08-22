@@ -66,7 +66,7 @@
     <string name="rebuild">Пересоздать</string>
     <string name="search_no_songs_match">Нет треков, соответствующих запросу.</string>
     <string name="search_songs_by_title_artist_album">Поиск по названию, исполнителю или альбому</string>
-    <string name="setcat_about_pixelplayer_subtitle">Версия приложения, авторы и др.</string>
+    <string name="setcat_about_helora_subtitle">Версия приложения, авторы и др.</string>
     <string name="setcat_album_art_cache_limit">Лимит кэша обложек</string>
     <string name="setcat_album_art_palette_subtitle">Текущий: %1$s. Откройте предпросмотр и выберите стиль.</string>
     <string name="setcat_album_art_palette_title">Стиль палитры обложки</string>

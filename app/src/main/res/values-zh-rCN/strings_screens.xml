@@ -179,7 +179,7 @@
     <string name="about_contributions_format">%1$d 位贡献者</string>
     <string name="screen_about">关于</string>
     <string name="about_maintainer_title">维护者</string>
-    <string name="about_maintainer_subtitle">开源版本与原版维护团队。</string>
+    <string name="about_maintainer_subtitle">Helora 及其衍生自的项目。</string>
     <string name="about_project_title">项目信息</string>
     <string name="about_project_subtitle">源代码、发布版本以及社区入口。</string>
     <string name="about_link_source_title">源代码</string>

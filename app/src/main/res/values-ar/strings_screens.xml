@@ -4,7 +4,7 @@
     <string name="about_link_fdroid_subtitle">متوفر في كتالوج F-Droid</string>
     <string name="about_link_fdroid_title">F-Droid</string>
     <string name="about_link_source_title">الكود المصدري</string>
-    <string name="about_maintainer_subtitle">الشخص الذي يقف وراء Helora.</string>
+    <string name="about_maintainer_subtitle">Helora والمشروع الذي تفرّع عنه.</string>
     <string name="about_maintainer_title">المشرف الرئيسي</string>
     <string name="about_project_subtitle">الكود المصدري والإصدارات ونقاط الدخول إلى المجتمع.</string>
     <string name="about_project_title">المشروع</string>

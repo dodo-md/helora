@@ -126,7 +126,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/pixelplayer_glance_widget_info" />
+                android:resource="@xml/helora_glance_widget_info" />
         </receiver>
 
         <receiver

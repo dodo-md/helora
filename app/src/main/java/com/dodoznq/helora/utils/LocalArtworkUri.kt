@@ -3,11 +3,15 @@ package com.dodoznq.helora.utils
 import android.net.Uri
 
 object LocalArtworkUri {
-    const val SCHEME = "pixelplayer_local_art"
-    private val LEGACY_SCHEME = charArrayOf(
-        'p', 'i', 'x', 'e', 'l', 'p', 'l', 'a', 'y', '_',
-        'l', 'o', 'c', 'a', 'l', '_', 'a', 'r', 't'
-    ).concatToString()
+    const val SCHEME = "helora_local_art"
+
+    /**
+     * Schemes earlier versions wrote. These strings live inside song and album rows and inside
+     * every backup file ever taken, so they have to keep resolving no matter what the app is
+     * called. Renaming one to match the current brand blanks the artwork of every song saved
+     * before that rename, including anything restored from an older backup.
+     */
+    private val LEGACY_SCHEMES = listOf("pixelplayer_local_art", "pixelplay_local_art")
     private const val HOST_SONG = "song"
     private const val CACHE_BUST_QUERY = "t"
 
@@ -15,7 +19,9 @@ object LocalArtworkUri {
     fun buildSongUriWithTimestamp(songId: Long): String = buildSongUri(songId) + "?t=${System.currentTimeMillis()}"
 
     fun isLocalArtworkUri(uriString: String?): Boolean {
-        return uriString?.let { it.startsWith("$SCHEME://") || it.startsWith("$LEGACY_SCHEME://") } == true
+        if (uriString == null) return false
+        return uriString.startsWith("$SCHEME://") ||
+            LEGACY_SCHEMES.any { uriString.startsWith("$it://") }
     }
 
     fun isLocalArtworkUri(uri: Uri?): Boolean {
@@ -24,7 +30,11 @@ object LocalArtworkUri {
 
     fun parseSongId(uriString: String): Long? {
         if (!isLocalArtworkUri(uriString)) return null
-        val scheme = if (uriString.startsWith("$SCHEME://")) SCHEME else LEGACY_SCHEME
+        val scheme = if (uriString.startsWith("$SCHEME://")) {
+            SCHEME
+        } else {
+            LEGACY_SCHEMES.first { uriString.startsWith("$it://") }
+        }
         val prefix = "$scheme://$HOST_SONG/"
         return uriString.removePrefix(prefix)
             .substringBefore('?')

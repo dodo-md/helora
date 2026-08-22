@@ -66,7 +66,7 @@
     <string name="rebuild">Yeniden Oluştur</string>
     <string name="search_no_songs_match">Aramanızla eşleşen şarkı bulunamadı.</string>
     <string name="search_songs_by_title_artist_album">Başlık, sanatçı veya albüme göre ara</string>
-    <string name="setcat_about_pixelplayer_subtitle">Uygulama sürümü, katkıda bulunanlar ve daha fazlası.</string>
+    <string name="setcat_about_helora_subtitle">Uygulama sürümü, katkıda bulunanlar ve daha fazlası.</string>
     <string name="setcat_album_art_cache_limit">Albüm Kapağı Önbellek Sınırı</string>
     <string name="setcat_album_art_palette_subtitle">Mevcut: %1$s. Canlı önizlemeyi açın ve stil seçin.</string>
     <string name="setcat_album_art_palette_title">Albüm Kapağı Palet Stili</string>

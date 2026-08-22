@@ -66,7 +66,7 @@
     <string name="rebuild">Reconstruir</string>
     <string name="search_no_songs_match">Ninguna canción coincide con la búsqueda.</string>
     <string name="search_songs_by_title_artist_album">Buscar por título, artista o álbum</string>
-    <string name="setcat_about_pixelplayer_subtitle">Versión, créditos y más.</string>
+    <string name="setcat_about_helora_subtitle">Versión, créditos y más.</string>
     <string name="setcat_album_art_cache_limit">Límite de caché de carátulas de álbum</string>
     <string name="setcat_album_art_palette_subtitle">Actual: %1$s. Abre la vista previa en vivo y elige el estilo.</string>
     <string name="setcat_album_art_palette_title">Estilo de paleta de carátula</string>

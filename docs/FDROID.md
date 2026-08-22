@@ -1,6 +1,7 @@
 # F-Droid
 
-PixelPlayerOSS is published on F-Droid:
+Helora is not on F-Droid yet. This document records what a submission needs,
+and the package it would be listed under:
 
 ```text
 https://f-droid.org/packages/com.dodoznq.helora/
@@ -36,7 +37,7 @@ uninstall/reinstall.
 ## Recipe Notes
 
 The official recipe builds `:app:assembleRelease` with
-`pixelplayer.enableAbiSplits=false` and `pixelplayer.disableReleaseSigning=true`,
+`helora.enableAbiSplits=false` and `helora.disableReleaseSigning=true`,
 producing a single universal unsigned APK. Its `prebuild` step strips two things the
 F-Droid build servers cannot use:
 
@@ -104,10 +105,10 @@ The project source is GPL-3.0-licensed. Release APKs also include `org.jellyfin.
 
 ## Local Verification Build
 
-Reproduce the F-Droid-style artifact locally — a universal unsigned release APK. Pass `pixelplayer.disableReleaseSigning=true` so local ignored signing files cannot affect the artifact:
+Reproduce the F-Droid-style artifact locally — a universal unsigned release APK. Pass `helora.disableReleaseSigning=true` so local ignored signing files cannot affect the artifact:
 
 ```sh
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:assembleRelease -Ppixelplayer.enableAbiSplits=false -Ppixelplayer.disableReleaseSigning=true
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:assembleRelease -Phelora.enableAbiSplits=false -Phelora.disableReleaseSigning=true
 ```
 
 Expected artifact:

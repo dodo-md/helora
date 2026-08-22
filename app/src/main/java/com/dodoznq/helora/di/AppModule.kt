@@ -133,7 +133,7 @@ object AppModule {
         val builder = Room.databaseBuilder(
             context.applicationContext,
             HeloraDatabase::class.java,
-            "pixelplayer_database"
+            "helora_database"
         )
             .addCallback(HeloraDatabase.createRuntimeArtifactsCallback())
             .addMigrations(

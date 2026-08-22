@@ -66,7 +66,7 @@
     <string name="rebuild">Reconstruire</string>
     <string name="search_no_songs_match">Aucune chanson ne correspond à votre recherche.</string>
     <string name="search_songs_by_title_artist_album">Rechercher par titre, artiste ou album</string>
-    <string name="setcat_about_pixelplayer_subtitle">Version de l\'application, crédits, etc.</string>
+    <string name="setcat_about_helora_subtitle">Version de l\'application, crédits, etc.</string>
     <string name="setcat_album_art_cache_limit">Limite du cache des pochettes</string>
     <string name="setcat_album_art_palette_subtitle">Actuel : %1$s. Ouvrir l\'aperçu en direct et choisir le style.</string>
     <string name="setcat_album_art_palette_title">Style de palette de pochette</string>

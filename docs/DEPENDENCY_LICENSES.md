@@ -5,8 +5,8 @@ This is a review aid for F-Droid/app-store submission. It is not legal advice. R
 ## Regenerate The Runtime Graph
 
 ```sh
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:dependencies --configuration releaseRuntimeClasspath > /tmp/opencode/pixelplayer-releaseRuntimeClasspath.txt
-rg -o "[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+:[A-Za-z0-9_.+:-]+" /tmp/opencode/pixelplayer-releaseRuntimeClasspath.txt | sort -u | wc -l
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:dependencies --configuration releaseRuntimeClasspath > /tmp/opencode/helora-releaseRuntimeClasspath.txt
+rg -o "[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+:[A-Za-z0-9_.+:-]+" /tmp/opencode/helora-releaseRuntimeClasspath.txt | sort -u | wc -l
 ```
 
 Last local review result: 631 unique runtime coordinates in `releaseRuntimeClasspath`.

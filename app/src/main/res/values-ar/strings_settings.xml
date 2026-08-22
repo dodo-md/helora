@@ -66,7 +66,7 @@
     <string name="rebuild">إعادة البناء</string>
     <string name="search_no_songs_match">لا توجد أغانٍ تطابق بحثك.</string>
     <string name="search_songs_by_title_artist_album">البحث حسب العنوان، أو الفنان، أو الألبوم</string>
-    <string name="setcat_about_pixelplayer_subtitle">إصدار التطبيق، الحقوق والمساهمين، والمزيد.</string>
+    <string name="setcat_about_helora_subtitle">إصدار التطبيق، الحقوق والمساهمين، والمزيد.</string>
     <string name="setcat_album_art_cache_limit">حد ذاكرة التخزين المؤقت لأغلفة الألبومات</string>
     <string name="setcat_album_art_palette_subtitle">الحالي: %1$s. افتح المعاينة الحية لتحديد النمط.</string>
     <string name="setcat_album_art_palette_title">نمط لوحة غلاف الألبوم</string>

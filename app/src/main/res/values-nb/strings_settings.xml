@@ -66,7 +66,7 @@
     <string name="rebuild">Gjenoppbygg</string>
     <string name="search_no_songs_match">Ingen sanger samsvarer med søket ditt.</string>
     <string name="search_songs_by_title_artist_album">Søk etter tittel, artist eller album</string>
-    <string name="setcat_about_pixelplayer_subtitle">App-versjon, bidragsytere med mer.</string>
+    <string name="setcat_about_helora_subtitle">App-versjon, bidragsytere med mer.</string>
     <string name="setcat_album_art_cache_limit">Grense for albumkunst-cache</string>
     <string name="setcat_album_art_palette_subtitle">Gjeldende: %1$s. Åpne forhåndsvisning og velg stil.</string>
     <string name="setcat_album_art_palette_title">Palettstil for albumkunst</string>

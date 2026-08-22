@@ -71,7 +71,7 @@ class HeloraApplication : Application(), ImageLoaderFactory, Configuration.Provi
     private val startupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     companion object {
-        const val NOTIFICATION_CHANNEL_ID = "pixelplayer_music_channel"
+        const val NOTIFICATION_CHANNEL_ID = "helora_music_channel"
     }
 
     private val appLifecycleObserver = object : DefaultLifecycleObserver {

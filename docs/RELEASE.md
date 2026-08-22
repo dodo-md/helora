@@ -1,6 +1,6 @@
 # Release Checklist
 
-PixelPlayerOSS releases are shipped from `main` after the release candidate passes local checks and a basic device smoke test.
+Helora releases are shipped from `main` after the release candidate passes local checks and a basic device smoke test.
 
 ## Versioning
 
@@ -26,13 +26,13 @@ Run these before tagging:
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:compileDebugKotlin
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:lintDebug
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:testDebugUnitTest
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:assembleRelease -Ppixelplayer.enableAbiSplits=false -Ppixelplayer.disableReleaseSigning=true
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:assembleRelease -Phelora.enableAbiSplits=false -Phelora.disableReleaseSigning=true
 ```
 
 For split APK artifacts, use:
 
 ```sh
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:assembleRelease -Ppixelplayer.enableAbiSplits=true
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:assembleRelease -Phelora.enableAbiSplits=true
 ```
 
 ## Signing
@@ -50,7 +50,7 @@ keyPassword=...
 
 `storeFile` is optional when the release keystore is available as `vz-pixelplay.jks` at the repository root. `storePassword`, `keyAlias`, and `keyPassword` are required for signing. If signing properties or the keystore file are missing, release builds are unsigned. CI workflows create temporary CI signing keys for artifacts; those are not official release keys.
 
-For F-Droid-compatible unsigned verification builds, pass `-Ppixelplayer.disableReleaseSigning=true` even when local signing files exist.
+For F-Droid-compatible unsigned verification builds, pass `-Phelora.disableReleaseSigning=true` even when local signing files exist.
 
 ## Device Smoke Test
 

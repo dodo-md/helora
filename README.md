@@ -94,7 +94,7 @@ cd helora
 ./gradlew :app:assembleDebug
 
 # one universal APK instead of per-ABI splits
-./gradlew :app:assembleDebug -Ppixelplayer.enableAbiSplits=false
+./gradlew :app:assembleDebug -Phelora.enableAbiSplits=false
 
 # unit tests
 ./gradlew :app:testDebugUnitTest

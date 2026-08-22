@@ -120,22 +120,35 @@ private data class Contributor(
     val contributions: Int? = null,
 )
 
-private val CoreMaintainer = Contributor(
+private val HeloraMaintainer = Contributor(
+    id = "dodo-md",
+    displayName = "@dodo-md",
+    role = "Maintainer",
+    detail = "Maintains Helora.",
+    avatarUrl = "https://github.com/dodo-md.png",
+    iconRes = R.drawable.round_developer_board_24,
+    githubUrl = "https://github.com/dodo-md",
+)
+
+// Helora is a GPLv3 fork. These two wrote the code it started from, so they stay credited
+// here by name even though they do not work on Helora itself.
+private val UpstreamMaintainer = Contributor(
     id = "lostf1sh",
     displayName = "@lostf1sh",
-    role = "FOSS Maintainer",
-    detail = "Maintains PixelPlayerOSS. GitHub and Telegram: @lostf1sh.",
+    role = "Upstream Author",
+    detail = "Wrote and maintains PixelPlayerOSS, the project Helora is forked from.",
+    badge = "Upstream",
     avatarUrl = "https://github.com/lostf1sh.png",
     iconRes = R.drawable.round_developer_board_24,
     githubUrl = "https://github.com/lostf1sh",
     telegramUrl = "https://t.me/lostf1sh",
 )
 
-private val NonFossMaintainer = Contributor(
+private val OriginalAuthor = Contributor(
     id = "theovilardo",
     displayName = "@theovilardo",
-    role = "Author / Non-FOSS Maintainer",
-    detail = "Author and maintainer of the original Google Play / non-FOSS PixelPlayer release.",
+    role = "Original Author",
+    detail = "Author of the original PixelPlayer release that PixelPlayerOSS came from.",
     badge = "Original app",
     avatarUrl = "https://github.com/theovilardo.png",
     iconRes = R.drawable.round_developer_board_24,
@@ -143,8 +156,9 @@ private val NonFossMaintainer = Contributor(
 )
 
 private val AboutMaintainers = listOf(
-    CoreMaintainer,
-    NonFossMaintainer,
+    HeloraMaintainer,
+    UpstreamMaintainer,
+    OriginalAuthor,
 )
 
 private const val SourceRepoUrl = "https://github.com/dodo-md/helora"
@@ -414,7 +428,7 @@ private fun AboutHeroCard(
                         color = MaterialTheme.colorScheme.primaryContainer,
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.pixelplayer_base_monochrome),
+                            painter = painterResource(R.drawable.helora_base_monochrome),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(10.dp).size(28.dp),

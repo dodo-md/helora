@@ -195,8 +195,8 @@
     <string name="setcat_trigger_crash_title">Trigger Test Crash</string>
     <string name="setcat_trigger_crash_subtitle">Simulate a crash to test the crash reporting system.</string>
     <string name="setcat_application">Application</string>
-    <string name="setcat_about_pixelplayer_title">About Helora</string>
-    <string name="setcat_about_pixelplayer_subtitle">App version, credits, and more.</string>
+    <string name="setcat_about_helora_title">About Helora</string>
+    <string name="setcat_about_helora_subtitle">App version, credits, and more.</string>
 
     <string name="backup_summary_none">No sections selected.</string>
     <string name="backup_summary_all">All sections selected.</string>

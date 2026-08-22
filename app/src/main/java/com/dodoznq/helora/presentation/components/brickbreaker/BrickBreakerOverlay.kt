@@ -107,7 +107,7 @@ private data class Particle(
     val life: Float = 1.0f
 )
 
-private const val EasterEggPrefsName = "pixelplayer_easter_egg"
+private const val EasterEggPrefsName = "helora_easter_egg"
 private const val EasterEggHighScoreKey = "brick_breaker_high_score"
 private const val FixedPhysicsStepSeconds = 1f / 180f
 private const val MaxPhysicsStepsPerFrame = 8

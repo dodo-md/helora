@@ -183,8 +183,8 @@
     <string name="setcat_trigger_crash_title">触发测试崩溃</string>
     <string name="setcat_trigger_crash_subtitle">模拟程序崩溃，用于测试崩溃上报系统</string>
     <string name="setcat_application">应用信息</string>
-    <string name="setcat_about_pixelplayer_title">关于 Helora</string>
-    <string name="setcat_about_pixelplayer_subtitle">版本、致谢等更多信息</string>
+    <string name="setcat_about_helora_title">关于 Helora</string>
+    <string name="setcat_about_helora_subtitle">版本、致谢等更多信息</string>
 
     <string name="backup_summary_none">未选择任何备份模块</string>
     <string name="backup_summary_all">已选择全部模块</string>

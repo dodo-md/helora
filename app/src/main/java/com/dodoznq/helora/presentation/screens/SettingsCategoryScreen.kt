@@ -1042,8 +1042,8 @@ fun SettingsCategoryScreen(
                                 addBottomSpace = false
                             ) {
                                 SettingsItem(
-                                    title = stringResource(R.string.setcat_about_pixelplayer_title),
-                                    subtitle = stringResource(R.string.setcat_about_pixelplayer_subtitle),
+                                    title = stringResource(R.string.setcat_about_helora_title),
+                                    subtitle = stringResource(R.string.setcat_about_helora_subtitle),
                                     leadingIcon = { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.secondary) },
                                     trailingIcon = { Icon(Icons.Rounded.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     modifier = Modifier.settingHighlight("item_about_app", highlightKey),

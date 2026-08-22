@@ -66,7 +66,7 @@
     <string name="rebuild">Ricostruisci</string>
     <string name="search_no_songs_match">Nessun brano corrisponde alla tua ricerca.</string>
     <string name="search_songs_by_title_artist_album">Cerca per titolo, artista o album</string>
-    <string name="setcat_about_pixelplayer_subtitle">Versione app, crediti e altro.</string>
+    <string name="setcat_about_helora_subtitle">Versione app, crediti e altro.</string>
     <string name="setcat_album_art_cache_limit">Limite cache copertine</string>
     <string name="setcat_album_art_palette_subtitle">Attuale: %1$s. Apri anteprima live e scegli lo stile.</string>
     <string name="setcat_album_art_palette_title">Stile palette copertina album</string>

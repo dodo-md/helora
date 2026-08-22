@@ -4,7 +4,7 @@
     <string name="about_link_fdroid_subtitle">F-Droid 카탈로그에서 이용 가능</string>
     <string name="about_link_fdroid_title">F-Droid</string>
     <string name="about_link_source_title">소스 코드</string>
-    <string name="about_maintainer_subtitle">FOSS 버전과 원본/비FOSS 버전의 메인테이너입니다.</string>
+    <string name="about_maintainer_subtitle">Helora와 이 앱이 갈라져 나온 프로젝트입니다.</string>
     <string name="about_maintainer_title">메인테이너</string>
     <string name="about_project_subtitle">소스 코드, 릴리스, 커뮤니티로 이어지는 링크입니다.</string>
     <string name="about_project_title">프로젝트</string>

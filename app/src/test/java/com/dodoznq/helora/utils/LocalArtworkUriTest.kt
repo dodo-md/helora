@@ -51,6 +51,28 @@ class LocalArtworkUriTest {
         assertThat(resolved).isEqualTo("navidrome_cover://cover-123")
     }
 
+    /**
+     * Every rename of the app has left a scheme behind in song rows and in backup files. These
+     * two must keep resolving forever, so a future rename cannot quietly blank the artwork of
+     * anything saved before it.
+     */
+    @Test
+    fun isLocalArtworkUri_stillRecognisesSchemesWrittenByOlderVersions() {
+        assertThat(LocalArtworkUri.isLocalArtworkUri("pixelplayer_local_art://song/42")).isTrue()
+        assertThat(LocalArtworkUri.isLocalArtworkUri("pixelplay_local_art://song/42")).isTrue()
+    }
+
+    @Test
+    fun parseSongId_readsSongUrisWrittenByOlderVersions() {
+        assertThat(LocalArtworkUri.parseSongId("pixelplayer_local_art://song/42")).isEqualTo(42L)
+        assertThat(LocalArtworkUri.parseSongId("pixelplay_local_art://song/42?t=99")).isEqualTo(42L)
+    }
+
+    @Test
+    fun isLocalArtworkUri_rejectsAnUnrelatedScheme() {
+        assertThat(LocalArtworkUri.isLocalArtworkUri("navidrome_cover://song/42")).isFalse()
+    }
+
     @Test
     fun parseSongId_readsStableSongUri() {
         val songId = LocalArtworkUri.parseSongId(LocalArtworkUri.buildSongUri(99L))
@@ -70,7 +92,7 @@ class LocalArtworkUriTest {
     @Test
     fun extractCacheBustToken_readsTimestampQuery() {
         val cacheBustToken = LocalArtworkUri.extractCacheBustToken(
-            "pixelplayer_local_art://song/99?t=456"
+            "helora_local_art://song/99?t=456"
         )
 
         assertThat(cacheBustToken).isEqualTo("456")

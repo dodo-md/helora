@@ -66,7 +66,7 @@
     <string name="rebuild">Bangun Ulang</string>
     <string name="search_no_songs_match">Tidak ada lagu yang cocok dengan pencarian Anda.</string>
     <string name="search_songs_by_title_artist_album">Cari berdasarkan judul, artis, atau album</string>
-    <string name="setcat_about_pixelplayer_subtitle">Versi aplikasi, kredit, dan lainnya.</string>
+    <string name="setcat_about_helora_subtitle">Versi aplikasi, kredit, dan lainnya.</string>
     <string name="setcat_album_art_cache_limit">Batas Cache Sampul Album</string>
     <string name="setcat_album_art_palette_subtitle">Saat ini: %1$s. Buka pratinjau langsung dan pilih gaya.</string>
     <string name="setcat_album_art_palette_title">Gaya Palet Sampul Album</string>

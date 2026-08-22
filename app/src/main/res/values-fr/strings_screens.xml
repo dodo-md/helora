@@ -4,7 +4,7 @@
     <string name="about_link_fdroid_subtitle">Disponible dans le catalogue F-Droid</string>
     <string name="about_link_fdroid_title">F-Droid</string>
     <string name="about_link_source_title">Code source</string>
-    <string name="about_maintainer_subtitle">Maintenance des éditions FOSS et originale/non-FOSS.</string>
+    <string name="about_maintainer_subtitle">Helora et le projet dont il est issu.</string>
     <string name="about_maintainer_title">Mainteneurs</string>
     <string name="about_project_subtitle">Code source, versions et points d\'entrée vers la communauté.</string>
     <string name="about_project_title">Projet</string>

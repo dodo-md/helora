@@ -66,7 +66,7 @@
     <string name="rebuild">Neu aufbauen</string>
     <string name="search_no_songs_match">Keine passenden Songs gefunden.</string>
     <string name="search_songs_by_title_artist_album">Nach Titel, Künstler oder Album suchen</string>
-    <string name="setcat_about_pixelplayer_subtitle">Version, Credits und mehr.</string>
+    <string name="setcat_about_helora_subtitle">Version, Credits und mehr.</string>
     <string name="setcat_album_art_cache_limit">Cover-Cache-Limit</string>
     <string name="setcat_album_art_palette_subtitle">Aktuell: %1$s – antippen für Vorschau und Stilwahl.</string>
     <string name="setcat_album_art_palette_title">Cover-Palette</string>

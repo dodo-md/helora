@@ -180,7 +180,7 @@
     <string name="about_contributions_format">%1$d contrib.</string>
     <string name="screen_about">About</string>
     <string name="about_maintainer_title">Maintainers</string>
-    <string name="about_maintainer_subtitle">FOSS and original/non-FOSS maintainership.</string>
+    <string name="about_maintainer_subtitle">Helora and the project it was forked from.</string>
     <string name="about_project_title">Project</string>
     <string name="about_project_subtitle">Source, releases, and community entry points.</string>
     <string name="about_link_source_title">Source code</string>

@@ -123,7 +123,7 @@ jobs:
           } > keystore.properties
 
       - name: Build Phone nightly release APKs
-        run: ./gradlew :app:assembleRelease -Ppixelplayer.enableAbiSplits=true
+        run: ./gradlew :app:assembleRelease -Phelora.enableAbiSplits=true
 
       - name: Verify Phone nightly split APKs
         run: |

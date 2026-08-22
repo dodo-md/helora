@@ -549,7 +549,7 @@ Actualmente es un God Object de `4,631` líneas con `15 StateHolders`. Considera
 Habilitar vía gradle property:
 
 ```properties
-pixelplayer.enableComposeCompilerReports=true
+helora.enableComposeCompilerReports=true
 ```
 
 Revisar:

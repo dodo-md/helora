@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-PixelPlayerOSS is licensed under the GNU General Public License v3.0 (GPL-3.0). The app also includes third-party libraries and font assets. This file records source and license evidence useful for app-store and F-Droid review.
+Helora is licensed under the GNU General Public License v3.0 (GPL-3.0). The app also includes third-party libraries and font assets. This file records source and license evidence useful for app-store and F-Droid review.
 
 ## Bundled Font Assets
 
@@ -19,7 +19,7 @@ The OFL text is included in `app/src/main/assets/licenses/OFL.txt`.
 | `io.github.kyant0:taglib:1.0.6` | `libtaglib.so` | `https://github.com/Kyant0/taglib` | Maven POM declares Apache-2.0 |
 | `androidx.graphics:graphics-shapes:1.1.0` | `libandroidx.graphics.path.so` | `https://android.googlesource.com/platform/frameworks/support` | Google Maven POM declares Apache-2.0 |
 
-The Jellyfin FFmpeg decoder bundled in the APK is GPL-3.0, consistent with the PixelPlayerOSS source license (GPL-3.0).
+The Jellyfin FFmpeg decoder bundled in the APK is GPL-3.0, consistent with the Helora source license (GPL-3.0).
 
 ## JitPack Artifacts
 

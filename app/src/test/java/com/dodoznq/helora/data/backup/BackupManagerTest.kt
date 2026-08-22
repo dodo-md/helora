@@ -155,7 +155,7 @@ class BackupManagerTest {
                 deviceInfo = DeviceInfo(),
                 modules = modules
             ),
-            backupUri = "content://pixelplayer/test-backup",
+            backupUri = "content://helora/test-backup",
             availableModules = selectedModules,
             selectedModules = selectedModules,
             moduleDetails = selectedModules.associateWith {
