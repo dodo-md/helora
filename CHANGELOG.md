@@ -1,6 +1,48 @@
 # Changelog
 
-All notable changes to PixelPlayerOSS will be documented in this file.
+All notable changes to Helora will be documented in this file.
+
+## [0.2.0] - 2026-08-22
+
+### Important
+
+- The app is now called Helora everywhere and its package identifier changed to
+  `com.dodoznq.helora`. Android treats that as a different app, so this release
+  **does not install over 0.1.0**. Export a backup from the old build first, install
+  this one, restore, then remove the old app. Music already downloaded to
+  `Music/Helora` is on shared storage and is visible to both.
+
+### Added
+
+- Downloaded YouTube tracks are tagged with their real genre, looked up on Deezer and
+  written into the file itself, instead of landing in a single placeholder bucket. The
+  match has to agree on both artist and title before it is believed, because a wrong
+  genre is invisible once it is in the tag.
+- A setting, off by default, that does the same lookup for streamed tracks.
+- A new launcher icon, including a themed-icon layer for Android 13 and later.
+
+### Changed
+
+- The radio stays on YouTube's own recommendations for far longer. It used to retire a
+  station at the first page that returned nothing new, but page yields swing and recover:
+  on one station the new tracks per page ran 50, 21, 14, 13, 3, 8, 2, 12, 0, 2, 15, and it
+  kept producing to 176 unique tracks. A third of the station was being thrown away.
+- Once a mix really is spent, the station now continues from the mix of a track it already
+  played rather than searching for more by the same artist, so it keeps moving through
+  related music instead of one back catalogue.
+- The "YouTube Music" placeholder genre is gone. Genres now come from local and downloaded
+  music only, unless the new setting is on.
+
+### Fixed
+
+- The radio no longer plays the same song twice under a different upload title, such as a
+  track and its "official dance video" re-upload.
+- The radio no longer stacks several songs by one artist back to back.
+- YouTube tracks are filed under the artist rather than the auto-generated
+  "Artist - Topic" channel, which was reaching the queue and the now playing screen and
+  splitting one artist into two.
+- A crash while downloading, and a radio queue that grew without bound.
+- Downloaded songs now appear in the library, and liked songs in the listening stats.
 
 ## [0.3.0] - 2026-08-15
 

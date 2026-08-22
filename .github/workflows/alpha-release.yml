@@ -53,29 +53,31 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6.2.0
 
-      # The shared CI keystore lives in the CI_KEYSTORE_B64 + CI_KEYSTORE_PASSWORD
-      # repo secrets so every workflow signs with the same stable key and builds
-      # install over each other. Without the secrets we fall back to a throwaway
-      # keystore with a random one-off password (signature varies per run).
-      - name: Set up CI keystore
+      # A release signed with a different key cannot install over the last one, and
+      # there is no way back once a wrong signature has been published. So the key
+      # comes from repo secrets and a missing secret fails the run: the old fallback
+      # generated a throwaway key per run, which silently shipped releases that could
+      # never update each other.
+      - name: Set up signing keystore
         env:
           CI_KEYSTORE_B64: ${{ secrets.CI_KEYSTORE_B64 }}
           CI_KEYSTORE_PASSWORD: ${{ secrets.CI_KEYSTORE_PASSWORD }}
+          CI_KEYSTORE_ALIAS: ${{ secrets.CI_KEYSTORE_ALIAS }}
+          CI_KEY_PASSWORD: ${{ secrets.CI_KEY_PASSWORD }}
         run: |
-          if [ -n "$CI_KEYSTORE_B64" ] && [ -n "$CI_KEYSTORE_PASSWORD" ]; then
-            KEYSTORE_PASSWORD="$CI_KEYSTORE_PASSWORD"
-            printf '%s' "$CI_KEYSTORE_B64" | base64 -d > pixelplayeross-ci.jks
-          else
-            KEYSTORE_PASSWORD="$(openssl rand -hex 24)"
-            keytool -genkey -v -keystore pixelplayeross-ci.jks -alias pixelplayeross-ci-key -keyalg RSA -keysize 4096 -validity 10000 \
-              -storepass "$KEYSTORE_PASSWORD" -keypass "$KEYSTORE_PASSWORD" \
-              -dname "CN=PixelPlayerOSS CI Throwaway, OU=Dev, O=PixelPlayerOSS, L=World, S=World, C=US"
-          fi
+          for name in CI_KEYSTORE_B64 CI_KEYSTORE_PASSWORD CI_KEYSTORE_ALIAS; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is not set. Add it under Settings > Secrets and variables > Actions."
+              exit 1
+            fi
+          done
+          printf '%s' "$CI_KEYSTORE_B64" | base64 -d > helora-release.jks
           {
-            echo "storeFile=pixelplayeross-ci.jks"
-            echo "storePassword=$KEYSTORE_PASSWORD"
-            echo "keyAlias=pixelplayeross-ci-key"
-            echo "keyPassword=$KEYSTORE_PASSWORD"
+            echo "storeFile=helora-release.jks"
+            echo "storePassword=$CI_KEYSTORE_PASSWORD"
+            echo "keyAlias=$CI_KEYSTORE_ALIAS"
+            # Most keystores reuse the store password for the key.
+            echo "keyPassword=${CI_KEY_PASSWORD:-$CI_KEYSTORE_PASSWORD}"
           } > keystore.properties
 
       - name: Build alpha release APKs
@@ -93,7 +95,7 @@ jobs:
             apk="app/build/outputs/apk/release/app-$abi-release.apk"
             "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aapt2" dump badging "$apk" >/dev/null
             "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner" verify --verbose "$apk"
-            cp "$apk" "release-apks/PixelPlayerOSS-${{ steps.version.outputs.name }}-$abi.apk"
+            cp "$apk" "release-apks/Helora-${{ steps.version.outputs.name }}-$abi.apk"
           done
 
       - name: Create GitHub prerelease
@@ -103,5 +105,5 @@ jobs:
           gh release create "${{ steps.version.outputs.tag }}"
           --prerelease
           --generate-notes
-          --title "PixelPlayerOSS ${{ steps.version.outputs.name }}"
+          --title "Helora ${{ steps.version.outputs.name }}"
           release-apks/*.apk
