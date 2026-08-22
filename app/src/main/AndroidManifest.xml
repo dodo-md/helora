@@ -26,7 +26,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
-        android:name=".PixelPlayerApplication"
+        android:name=".HeloraApplication"
         android:allowBackup="true"
         android:enableOnBackInvokedCallback="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -36,14 +36,14 @@
         android:localeConfig="@xml/locales_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PixelPlayer"
+        android:theme="@style/Theme.Helora"
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.PixelPlayer"
+            android:theme="@style/Theme.Helora"
             android:launchMode="singleTop"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize"
             android:windowSoftInputMode="adjustResize">
@@ -58,7 +58,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.lostf1sh.pixelplayeross.action.OPEN_PLAYER" />
+                <action android:name="com.dodoznq.helora.action.OPEN_PLAYER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <meta-data
@@ -70,14 +70,14 @@
             android:name=".presentation.navidrome.auth.NavidromeLoginActivity"
             android:exported="false"
             android:label="Navidrome Login"
-            android:theme="@style/Theme.PixelPlayer"
+            android:theme="@style/Theme.Helora"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".presentation.jellyfin.auth.JellyfinLoginActivity"
             android:exported="false"
             android:label="Jellyfin Login"
-            android:theme="@style/Theme.PixelPlayer"
+            android:theme="@style/Theme.Helora"
             android:windowSoftInputMode="adjustResize" />
 
 
@@ -85,7 +85,7 @@
             android:name=".ExternalPlayerActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.PixelPlayer.ExternalPlayer"
+            android:theme="@style/Theme.Helora.ExternalPlayer"
             android:excludeFromRecents="true"
             android:grantUriPermissions="true">
             <intent-filter>
@@ -119,7 +119,7 @@
         </service>
 
         <receiver
-            android:name=".ui.glancewidget.PixelPlayerGlanceWidgetReceiver"
+            android:name=".ui.glancewidget.HeloraGlanceWidgetReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -165,7 +165,7 @@
         <receiver android:name=".data.service.SleepTimerReceiver" android:exported="false" />
 
         <receiver
-            android:name=".data.service.PixelPlayerMediaButtonReceiver"
+            android:name=".data.service.HeloraMediaButtonReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
@@ -185,7 +185,7 @@
 
         <receiver android:name=".ui.glancewidget.WidgetUpdateReceiver" android:exported="false">
             <intent-filter>
-                <action android:name="com.lostf1sh.pixelplayeross.ACTION_WIDGET_UPDATE_PLAYBACK_STATE" />
+                <action android:name="com.dodoznq.helora.ACTION_WIDGET_UPDATE_PLAYBACK_STATE" />
             </intent-filter>
         </receiver>
 

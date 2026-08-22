@@ -39,7 +39,7 @@ val enableComposeCompilerReports = providers.gradleProperty("pixelplayer.enableC
 
 @Suppress("DEPRECATION")
 android {
-    namespace = "com.lostf1sh.pixelplayeross"
+    namespace = "com.dodoznq.helora"
     compileSdk = 37
 
     sourceSets {
@@ -78,7 +78,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.lostf1sh.pixelplayeross"
+        applicationId = "com.dodoznq.helora"
         minSdk = 30
         targetSdk = 37
         versionCode = (project.findProperty("APP_VERSION_CODE") as? String)?.toInt() ?: 1

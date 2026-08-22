@@ -117,7 +117,7 @@ adb install -r helora.apk
 ### How the YouTube part works
 
 ```
-app/src/main/java/com/lostf1sh/pixelplayeross/
+app/src/main/java/com/dodoznq/helora/
 ├── data/youtube/
 │   ├── YouTubeMusicRepository   search, streams, mixes, artist/album lookup, matching
 │   ├── NewPipeOkHttpDownloader  NewPipe's Downloader over the shared OkHttp client

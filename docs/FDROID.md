@@ -3,15 +3,15 @@
 PixelPlayerOSS is published on F-Droid:
 
 ```text
-https://f-droid.org/packages/com.lostf1sh.pixelplayeross/
+https://f-droid.org/packages/com.dodoznq.helora/
 ```
 
 The listing is fed by the Fastlane metadata under `fastlane/metadata/android/en-US`
 (summary, full description, changelogs, screenshots).
 
 The official build recipe lives in the `fdroiddata` repository:
-`https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/com.lostf1sh.pixelplayeross.yml`.
-A reference copy is mirrored at `metadata/com.lostf1sh.pixelplayeross.yml` in this
+`https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/com.dodoznq.helora.yml`.
+A reference copy is mirrored at `metadata/com.dodoznq.helora.yml` in this
 repository — keep it in sync with the official recipe when build configuration changes.
 
 ## How Updates Reach F-Droid
@@ -59,7 +59,7 @@ tarball.
 These properties got the app accepted and must be maintained:
 
 1. GPL-3.0 license.
-2. OSS-focused package name: `com.lostf1sh.pixelplayeross`.
+2. OSS-focused package name: `com.dodoznq.helora`.
 3. No Firebase, Crashlytics, Play Store billing, ads, analytics, Cast, Wear OS, or
    Google Play Services runtime dependencies.
 4. Optional network services documented in `PRIVACY.md`.

@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.lostf1sh.pixelplayeross.baselineprofile"
+    namespace = "com.dodoznq.helora.baselineprofile"
     compileSdk = 37
 
     compileOptions {

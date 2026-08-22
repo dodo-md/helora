@@ -32,7 +32,7 @@ Run a single test class/method:
 
 ```sh
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :app:testDebugUnitTest \
-  --tests "com.lostf1sh.pixelplayeross.SomeTestClass.someMethod"
+  --tests "com.dodoznq.helora.SomeTestClass.someMethod"
 ```
 
 > Unit tests use **JUnit Jupiter** (`useJUnitPlatform()`), not JUnit 4 — use

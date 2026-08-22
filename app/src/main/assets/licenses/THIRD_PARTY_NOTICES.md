@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-PixelPlayerOSS is licensed under the GNU General Public License v3.0 (GPL-3.0) and includes third-party open-source components.
+Helora is licensed under the GNU General Public License v3.0 (GPL-3.0) and includes third-party open-source components.
 
 Bundled fonts:
 

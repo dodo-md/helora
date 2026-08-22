@@ -1,4 +1,4 @@
-PixelPlayerOSS is a FOSS Android music player focused on local playback, self-hosted music libraries, and user-controlled online lookups.
+Helora is a FOSS Android music player focused on local playback, self-hosted music libraries, and user-controlled online lookups.
 
 The app works offline by default. Network features are optional and must be enabled by the user.
 
@@ -13,4 +13,4 @@ Features:
 * Material 3 UI, dynamic color, light/dark themes, and Glance widgets
 * Backup and restore for preferences, playlists, favorites, lyrics, stats, and app state
 
-PixelPlayerOSS does not include analytics, ads, Firebase, Crashlytics, Play Store billing, or Google Play Services runtime dependencies.
+Helora does not include analytics, ads, Firebase, Crashlytics, Play Store billing, or Google Play Services runtime dependencies.
