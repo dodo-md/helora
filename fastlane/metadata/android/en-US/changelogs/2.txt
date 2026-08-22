@@ -1,7 +1,9 @@
-PixelPlayerOSS 0.2.0:
+Helora 0.2.0:
 
-* Material 3 Expressive pass: new motion scheme, wavy progress indicators, shape-morphing animations.
-* Navidrome library selector; album artist grouping for Artists tab and cloud albums.
-* HTTP allowed for local/VPN Navidrome and Jellyfin servers; user-installed CAs trusted.
-* Smaller app, faster startup, smoother lists and sheets.
-* Fixes: local server connections on Android 17, spurious errors when skipping cloud tracks quickly.
+* The app is now Helora and its package identifier changed, so this does not install over 0.1.0. Back up from the old build, install this one, restore, then remove the old app.
+* Downloaded YouTube tracks are tagged with their real genre from Deezer instead of a single placeholder bucket. An optional setting, off by default, does the same for streamed tracks.
+* The radio stays on YouTube's own recommendations far longer, and moves on to the mix of a track it already played instead of more by the same artist.
+* The radio no longer repeats a song under a different upload title, and no longer stacks several songs by one artist together.
+* Tracks are filed under the artist rather than the auto-generated "Artist - Topic" channel.
+* New launcher icon, including a themed-icon layer for Android 13 and later.
+* Fixes: a crash while downloading, a radio queue that grew without bound, downloaded songs missing from the library, and liked songs missing from listening stats.
