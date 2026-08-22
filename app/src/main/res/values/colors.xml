@@ -5,4 +5,7 @@
 
     <color name="pixel_play_purple_dark">#19191B</color>
     <color name="light_background">#EDEDED</color>
+
+    <!-- Adaptive icon background. Flat, so a colour beats a 432px bitmap. -->
+    <color name="ic_launcher_background">#120F0E</color>
 </resources>
