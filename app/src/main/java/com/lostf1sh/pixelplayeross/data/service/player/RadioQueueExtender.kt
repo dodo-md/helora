@@ -5,7 +5,6 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.lostf1sh.pixelplayeross.data.model.Song
-import com.lostf1sh.pixelplayeross.data.repository.DeezerRelatedArtistsRepository
 import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import com.lostf1sh.pixelplayeross.presentation.viewmodel.ConnectivityStateHolder
@@ -44,7 +43,6 @@ class RadioQueueExtender @Inject constructor(
     private val remoteTrackCache: RemoteTrackCache,
     private val queueStateHolder: QueueStateHolder,
     private val connectivityStateHolder: ConnectivityStateHolder,
-    private val relatedArtistsRepository: DeezerRelatedArtistsRepository,
 ) {
 
     private class Session(
@@ -64,10 +62,14 @@ class RadioQueueExtender @Inject constructor(
         var exhausted: Boolean = false,
         var artistFallbackUsed: Boolean = false,
         /**
-         * Artists Deezer named as similar to the seed, still to be tried. Null until the mix
-         * has actually run out, so a station that never needs them never asks.
+         * One track per artist the station has already handed back, newest last. These are the
+         * seeds for the next station once this one runs dry: YouTube put them next to the seed
+         * itself, so hopping onto one stays inside the same recommendation neighbourhood
+         * without anything having to describe what that neighbourhood is.
          */
-        var relatedArtists: ArrayDeque<String>? = null,
+        val pivots: ArrayDeque<Song> = ArrayDeque(),
+        /** Artists already represented in [pivots] or already hopped onto. */
+        val pivotArtists: HashSet<String> = HashSet(),
         /** Normalized artist of the last track appended, for spacing across batches. */
         var lastAppendedArtist: String? = null,
         var lastAppendedArtistRun: Int = 0,
@@ -211,13 +213,21 @@ class RadioQueueExtender @Inject constructor(
         }
 
         val stationUrl = current.stationUrl
-        val nextPage = current.nextPage
-        if (stationUrl != null && nextPage != null) {
-            val page = repository.getRadioNextPage(stationUrl, nextPage)
-            if (page != null) {
+        if (stationUrl != null) {
+            // A page that returns nothing new does not mean the station is spent. Pages overlap
+            // heavily deep into a mix and the yield swings: measured on a lofi seed, the new
+            // tracks per page ran 50, 21, 14, 13, 3, 8, 2, 12, 0, 2, 15, and kept producing to
+            // page 24 for 176 unique tracks. Retiring the station at that first zero, which is
+            // what this used to do, threw away a third of what it still had. Five separate zero
+            // pages showed up in that run and every one of them recovered.
+            var emptyPages = 0
+            while (emptyPages < MAX_EMPTY_PAGES) {
+                val nextPage = current.nextPage ?: break
+                val page = repository.getRadioNextPage(stationUrl, nextPage) ?: break
                 current.nextPage = page.nextPage
                 val fresh = page.songs.filterUnseen(current)
                 if (fresh.isNotEmpty()) return fresh
+                emptyPages++
             }
         }
 
@@ -227,96 +237,73 @@ class RadioQueueExtender @Inject constructor(
     /**
      * What plays once the mix has nothing left.
      *
-     * Two steps, coarsest last. The seed's own artist comes first because it is the closest
-     * thing to the station's subject, and it is one shot: a second round would just be more of
-     * the same artist. After that the station moves to artists Deezer considers similar, which
-     * is what "more like this" actually means once the mix is gone. Before this second step
-     * existed the station died after a single fallback round.
+     * The station moves onto the mix of a track this station already produced. That keeps the
+     * whole radio inside YouTube's own recommendations, which is the strongest similarity
+     * signal available here: it is built from what people actually listen to together, so genre
+     * and energy carry over without anything having to name them.
+     *
+     * Measured on a lofi seed whose station was paged to exhaustion at 162 tracks, six such
+     * pivots each returned a 50 track mix that was 88 to 98 percent tracks the station had
+     * never seen, across 28 to 39 artists, all in the same scene.
+     *
+     * The seed's own catalogue is the last resort, only for a track that never had a mix at all.
      */
     private suspend fun fallback(current: Session): List<Song> {
-        val seed = remoteTrackCache.getByVideoId(current.stationVideoId)
-        if (seed == null) {
-            current.exhausted = true
-            return emptyList()
-        }
+        val hopped = hopToNeighbourStation(current)
+        if (hopped.isNotEmpty()) return hopped
 
         if (!current.artistFallbackUsed) {
             current.artistFallbackUsed = true
-            val sameArtist = repository.getArtistFallbackSongs(seed).filterUnseen(current)
-            if (sameArtist.isNotEmpty()) return sameArtist
+            val seed = remoteTrackCache.getByVideoId(current.stationVideoId)
+            if (seed != null) {
+                // Capped, because this is the one source that answers with a single act. Taking
+                // a whole batch off it is what put five songs by the same artist back to back.
+                val sameArtist = repository.getArtistFallbackSongs(seed)
+                    .asSequence()
+                    .filterUnseen(current)
+                    .take(SAME_ARTIST_TRACKS)
+                    .toList()
+                if (sameArtist.isNotEmpty()) return sameArtist
+            }
         }
 
-        return hopToRelatedArtistStation(current, seed)
+        if (current.pivots.isEmpty()) current.exhausted = true
+        return emptyList()
     }
 
     /**
-     * Moves the station onto a similar artist by opening *their* mix.
+     * Re-points the station at the mix of a track it already played.
      *
-     * Searching an artist's name answers with their most popular tracks, which says nothing
-     * about the song the station was built on: pivoting from a heavy Duman track to Teoman
-     * that way lands on whichever Teoman song is biggest, ballad or not. Their mix is picked
-     * the same way the seed's was, by what people actually listen to alongside it, so genre
-     * and energy carry over without any of it having to be described.
+     * Pivots are taken newest first. The tracks the station opened with sit closest to the seed
+     * and their neighbourhood is the one just exhausted, so starting from the far end is what
+     * actually reaches new material.
      *
-     * Measured on three pivots from a Turkish rock seed: each mix returned 50 tracks across
-     * 33 to 35 artists, the pivot artist taking 26 to 28 percent of them and never more than
-     * two in a row, and the neighbours were the same scene rather than that artist's back
-     * catalogue.
-     *
-     * The station is only re-pointed once the original mix is spent. Re-seeding on whatever
+     * The station is only ever re-pointed once the current mix is spent. Re-seeding on whatever
      * happens to be playing is what an earlier version did, and it let the station wander off
      * the song the user picked.
      */
-    private suspend fun hopToRelatedArtistStation(current: Session, seed: Song): List<Song> {
-        val queue = current.relatedArtists ?: run {
-            val names = relatedArtistsRepository.relatedArtists(seed.artist)
-            Timber.d("RadioQueueExtender: %d related artist(s) for %s", names.size, seed.artist)
-            ArrayDeque(names).also { current.relatedArtists = it }
-        }
-
+    private suspend fun hopToNeighbourStation(current: Session): List<Song> {
         var attempts = 0
-        while (queue.isNotEmpty() && attempts < RELATED_ARTIST_ATTEMPTS_PER_ROUND) {
+        while (current.pivots.isNotEmpty() && attempts < HOP_ATTEMPTS_PER_ROUND) {
+            val pivot = current.pivots.removeLast()
+            val videoId = pivot.ytVideoId ?: continue
             attempts++
-            val artist = queue.removeFirst()
 
-            // One search, only to find a track of theirs to seed on. The results are already
-            // verified to be by this artist, so any of them will do.
-            val pivot = repository.getSongsForArtist(artist).firstOrNull()?.ytVideoId
-            if (pivot == null) {
-                Timber.d("RadioQueueExtender: no track found for related artist %s", artist)
-                continue
-            }
-
-            val page = repository.getRadioStation(pivot)
-            if (page != null) {
-                // From here the station pages through their mix exactly like the original one.
-                current.stationUrl = page.stationUrl
-                current.nextPage = page.nextPage
-                val fresh = page.songs.filterUnseen(current)
-                if (fresh.isNotEmpty()) {
-                    Timber.d(
-                        "RadioQueueExtender: hopped to %s station, %d new track(s)",
-                        artist,
-                        fresh.size
-                    )
-                    return fresh
-                }
-            }
-
-            // No mix for them either. Their own tracks are still closer than nothing, and the
-            // queue spacing keeps them from arriving as a block.
-            val songs = repository.getSongsForArtist(artist)
-                .asSequence()
-                .filterUnseen(current)
-                .take(RELATED_ARTIST_TRACKS)
-                .toList()
-            if (songs.isNotEmpty()) {
-                Timber.d("RadioQueueExtender: %d track(s) by related artist %s", songs.size, artist)
-                return songs
+            val page = repository.getRadioStation(videoId) ?: continue
+            // From here the station pages through this mix exactly like the original one.
+            current.stationUrl = page.stationUrl
+            current.nextPage = page.nextPage
+            val fresh = page.songs.filterUnseen(current)
+            if (fresh.isNotEmpty()) {
+                Timber.d(
+                    "RadioQueueExtender: hopped to %s - %s station, %d new track(s)",
+                    pivot.artist,
+                    pivot.title,
+                    fresh.size
+                )
+                return fresh
             }
         }
-
-        if (queue.isEmpty()) current.exhausted = true
         return emptyList()
     }
 
@@ -374,6 +361,8 @@ class RadioQueueExtender @Inject constructor(
             }
         }
 
+        batch.forEach { current.rememberPivot(it) }
+
         remoteTrackCache.putAll(batch)
         remoteTrackCache.pin(batch.map { it.id })
         queueStateHolder.appendToOriginalQueueOrder(batch)
@@ -384,13 +373,24 @@ class RadioQueueExtender @Inject constructor(
     }
 
 
+    /** Records one track per artist as a possible seed for the station after this one. */
+    private fun Session.rememberPivot(song: Song) {
+        if (song.ytVideoId == null) return
+        val artist = ArtistNameMatching.normalize(song.artist)
+        if (artist.isEmpty() || !pivotArtists.add(artist)) return
+        // Oldest go first: they are the ones nearest the seed, whose neighbourhood is the one
+        // the station is working through right now.
+        if (pivots.size >= MAX_PIVOTS) pivots.removeFirst()
+        pivots.addLast(song)
+    }
+
     /**
      * Takes the next batch, keeping one artist from taking it over.
      *
-     * The mix itself is well spaced, but a fallback round is not: it answers with one artist's
-     * catalogue, and a batch of [BATCH_SIZE] straight off the front of that is five songs by
-     * the same act back to back. Anything over [MAX_CONSECUTIVE_SAME_ARTIST] in a row is
-     * pushed back down the buffer rather than dropped, so it still plays, just later.
+     * A mix is mostly well spaced but not always: measured over 176 tracks of one station, 150
+     * artists arrived alone, and the rest came in blocks of two, three, four, and one of six.
+     * Anything over [MAX_CONSECUTIVE_SAME_ARTIST] in a row is passed over for a track further
+     * down the buffer, so it still plays, just later.
      *
      * The run is counted from what is already in the queue, not just from this batch, or the
      * seam between two batches would still stack up.
@@ -399,34 +399,31 @@ class RadioQueueExtender @Inject constructor(
         val queued = ArrayList<Song>(BATCH_SIZE)
         var lastArtist = current.lastAppendedArtist
         var run = current.lastAppendedArtistRun
-        val deferred = ArrayList<Song>()
 
         while (queued.size < BATCH_SIZE && current.pending.isNotEmpty()) {
-            val song = current.pending.removeFirst()
+            // Looking ahead for a different artist is what actually interleaves. Pushing the
+            // offender back instead only throttles: it returns to the head of the buffer, is
+            // refused again next round, and nothing ever gets in front of it, so the queue
+            // grows by one track per top-up while the artist still plays consecutively.
+            val index = if (run >= MAX_CONSECUTIVE_SAME_ARTIST && lastArtist != null) {
+                current.pending
+                    .indexOfFirst { ArtistNameMatching.normalize(it.artist) != lastArtist }
+                    .takeIf { it >= 0 }
+                    ?: 0
+            } else {
+                0
+            }
+
+            // Falling back to the head when the buffer holds nothing else is deliberate.
+            // Spacing reorders, it never withholds, and a round that appends nothing leaves
+            // the station short of the playhead.
+            val song = current.pending.removeAt(index)
             val artist = ArtistNameMatching.normalize(song.artist)
             val extendsRun = artist.isNotEmpty() && artist == lastArtist
-            if (extendsRun && run >= MAX_CONSECUTIVE_SAME_ARTIST) {
-                deferred.add(song)
-                continue
-            }
             run = if (extendsRun) run + 1 else 1
             lastArtist = artist
             queued.add(song)
         }
-
-        // Spacing reorders, it never withholds. When the buffer holds nothing but the artist
-        // being spaced out, deferring all of it would leave the round empty and the same songs
-        // waiting again next time, which is a stalled station rather than a varied one.
-        if (queued.isEmpty() && deferred.isNotEmpty()) {
-            val forced = deferred.removeAt(0)
-            lastArtist = ArtistNameMatching.normalize(forced.artist)
-            run = current.lastAppendedArtistRun + 1
-            queued.add(forced)
-        }
-
-        // Back to the front, in their original order: they were skipped for position, not
-        // rejected, and the next round starts with a different artist in the way.
-        deferred.asReversed().forEach(current.pending::addFirst)
 
         if (queued.isNotEmpty()) {
             current.lastAppendedArtist = lastArtist
@@ -480,13 +477,23 @@ class RadioQueueExtender @Inject constructor(
         const val ART_TRACK_LOOKUP_CONCURRENCY = 3
 
         /**
-         * Only used when a similar artist turns out to have no mix of their own. Kept at two so
-         * a dead end still cannot fill a round with one act.
+         * How many pages may come back with nothing new before the mix is treated as spent.
+         * Zero pages appear well before the end and recover, so one is far too few; the deepest
+         * measured run of consecutive zero pages was one.
          */
-        const val RELATED_ARTIST_TRACKS = 2
+        const val MAX_EMPTY_PAGES = 3
 
-        /** Bounds one round's searches, so a run of empty artists cannot stall a top-up. */
-        const val RELATED_ARTIST_ATTEMPTS_PER_ROUND = 3
+        /** Bounds one round's station lookups, so a run of dud pivots cannot stall a top-up. */
+        const val HOP_ATTEMPTS_PER_ROUND = 3
+
+        /** Pivot candidates held at once. Enough to outlast any single station. */
+        const val MAX_PIVOTS = 60
+
+        /**
+         * The seed artist's own catalogue is the only source that answers with a single act, so
+         * it is capped rather than spaced. Two matches what may sit together anyway.
+         */
+        const val SAME_ARTIST_TRACKS = 2
 
         /**
          * How many tracks by one artist may sit together. Two is enough to let a mix open on

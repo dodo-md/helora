@@ -5,7 +5,6 @@ import androidx.media3.common.Player
 import com.google.common.truth.Truth.assertThat
 import com.lostf1sh.pixelplayeross.MainCoroutineExtension
 import com.lostf1sh.pixelplayeross.data.model.Song
-import com.lostf1sh.pixelplayeross.data.repository.DeezerRelatedArtistsRepository
 import com.lostf1sh.pixelplayeross.data.youtube.RadioPage
 import com.lostf1sh.pixelplayeross.data.youtube.RemoteTrackCache
 import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
@@ -153,168 +152,310 @@ class RadioQueueExtenderTest {
             .inOrder()
     }
 
-    // --- the fallback ladder ---------------------------------------------------------------
+    // --- staying in the mix ------------------------------------------------------------------
     //
-    // A station used to die one round after its mix ran out: the seed artist was the only
-    // fallback and it was one shot. These cover the step that follows it.
+    // Pages overlap heavily deep into a mix and the yield swings. Measured on a lofi seed, the
+    // new tracks per page ran 50, 21, 14, 13, 3, 8, 2, 12, 0, 2, 15, and the station kept
+    // producing to page 24 for 176 unique tracks. Retiring it at the first zero, which is what
+    // this used to do, threw away a third of what it still had.
 
-    private fun fallbackFixture() =
+    private fun stationFixture() =
         fixture(queueSize = SHORT_QUEUE, currentIndex = SHORT_QUEUE_INDEX, withStation = false)
 
     @Test
-    fun `carries on with similar artists once the seed artist has nothing left`() = runTest {
-        val fixture = fallbackFixture()
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
-        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
-        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
-            List(BATCH_SIZE) { song("teoman-$it", videoId = "t$it") }
+    fun `a page with nothing new does not retire the station`() = runTest {
+        val second = mockk<Page>(relaxed = true)
+        val third = mockk<Page>(relaxed = true)
+        val opening = List(BATCH_SIZE) { song("p1-$it", videoId = "a$it", artist = "A$it") }
+        val fixture = stationFixture()
+        coEvery { fixture.repository.getRadioStation("seed") } returns
+            RadioPage(songs = opening, nextPage = second, stationUrl = STATION_URL)
+        // Page two hands back only what page one already gave.
+        coEvery { fixture.repository.getRadioNextPage(STATION_URL, second) } returns
+            RadioPage(songs = opening, nextPage = third, stationUrl = STATION_URL)
+        coEvery { fixture.repository.getRadioNextPage(STATION_URL, third) } returns RadioPage(
+            songs = List(BATCH_SIZE) { song("p3-$it", videoId = "c$it", artist = "C$it") },
+            nextPage = null,
+            stationUrl = STATION_URL
+        )
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        assertThat(fixture.appended(BATCH_SIZE))
+            .containsExactly("p3-0", "p3-1", "p3-2", "p3-3", "p3-4")
+            .inOrder()
+        // The station is still the station, so nothing below it was ever consulted.
+        coVerify(exactly = 0) { fixture.repository.getArtistFallbackSongs(any()) }
+    }
+
+    @Test
+    fun `the mix is given up on after a run of empty pages`() = runTest {
+        val more = mockk<Page>(relaxed = true)
+        val opening = List(BATCH_SIZE) { song("p1-$it", videoId = "a$it", artist = "A$it") }
+        val fixture = stationFixture()
+        coEvery { fixture.repository.getRadioStation("seed") } returns
+            RadioPage(songs = opening, nextPage = more, stationUrl = STATION_URL)
+        // Every page from here repeats itself, which is what a spent mix actually looks like.
+        coEvery { fixture.repository.getRadioNextPage(STATION_URL, more) } returns
+            RadioPage(songs = opening, nextPage = more, stationUrl = STATION_URL)
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        // Bounded, or a mix that repeats forever would page forever.
+        coVerify(exactly = MAX_EMPTY_PAGES) {
+            fixture.repository.getRadioNextPage(STATION_URL, more)
+        }
+        coVerify { fixture.repository.getArtistFallbackSongs(any()) }
+    }
+
+    // --- the hop -------------------------------------------------------------------------------
+    //
+    // Once a mix is spent the station moves onto the mix of a track it already played, which
+    // keeps the whole radio inside YouTube's own recommendations. Measured on a lofi seed paged
+    // to exhaustion at 162 tracks, six such pivots each returned a 50 track mix that was 88 to
+    // 98 percent unseen, across 28 to 39 artists, all in the same scene.
+
+    @Test
+    fun `hops onto the mix of a track the station already played`() = runTest {
+        val fixture = fixture(queueSize = SHORT_QUEUE, currentIndex = SHORT_QUEUE_INDEX)
+        coEvery { fixture.repository.getRadioStation("vid4") } returns RadioPage(
+            songs = listOf(
+                song("hop-0", videoId = "h0", artist = "Elior"),
+                song("hop-1", videoId = "h1", artist = "Kupla")
+            ),
+            nextPage = null,
+            stationUrl = HOP_URL
+        )
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        assertThat(fixture.appended(2)).containsExactly("hop-0", "hop-1").inOrder()
+    }
+
+    @Test
+    fun `the newest pivot is tried first`() = runTest {
+        val fixture = fixture(queueSize = SHORT_QUEUE, currentIndex = SHORT_QUEUE_INDEX)
+        coEvery { fixture.repository.getRadioStation("vid4") } returns RadioPage(
+            songs = listOf(song("hop-0", videoId = "h0", artist = "Elior")),
+            nextPage = null,
+            stationUrl = HOP_URL
+        )
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        // The tracks a mix opens with sit closest to the seed, and their neighbourhood is the
+        // one just exhausted. Starting from the far end is what reaches new material.
+        coVerify { fixture.repository.getRadioStation("vid4") }
+        coVerify(exactly = 0) { fixture.repository.getRadioStation("vid0") }
+    }
+
+    @Test
+    fun `only one pivot is kept per artist`() = runTest {
+        val fixture = stationFixture()
+        coEvery { fixture.repository.getRadioStation("seed") } returns RadioPage(
+            songs = List(BATCH_SIZE) { song("p1-$it", videoId = "a$it", artist = "One Act") },
+            nextPage = null,
+            stationUrl = STATION_URL
+        )
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        // Five tracks by one act are one lead to follow, not five, so the round moves on to the
+        // seed artist instead of burning its three attempts on the same neighbourhood.
+        coVerify(exactly = 1) { fixture.repository.getRadioStation(match { it != "seed" }) }
+        coVerify { fixture.repository.getArtistFallbackSongs(any()) }
+    }
+
+    @Test
+    fun `keeps paging the station it hopped to`() = runTest {
+        val hopPage = mockk<Page>(relaxed = true)
+        val fixture = fixture(queueSize = SHORT_QUEUE, currentIndex = SHORT_QUEUE_INDEX)
+        coEvery { fixture.repository.getRadioStation("vid4") } returns RadioPage(
+            songs = listOf(song("hop-0", videoId = "h0", artist = "Elior")),
+            nextPage = hopPage,
+            stationUrl = HOP_URL
+        )
+        coEvery { fixture.repository.getRadioNextPage(HOP_URL, hopPage) } returns RadioPage(
+            songs = listOf(song("hop-1", videoId = "h1", artist = "Kupla")),
+            nextPage = null,
+            stationUrl = HOP_URL
+        )
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        // The hop re-points the station, so the rest arrives through the ordinary paging path
+        // instead of costing another station lookup per round.
+        coVerify { fixture.repository.getRadioNextPage(HOP_URL, hopPage) }
+        assertThat(fixture.queueStateHolder.originalQueueOrder.map { it.id }).contains("hop-1")
+    }
+
+    @Test
+    fun `a pivot with no mix does not end the station`() = runTest {
+        val fixture = fixture(queueSize = SHORT_QUEUE, currentIndex = SHORT_QUEUE_INDEX)
+        coEvery { fixture.repository.getRadioStation("vid4") } returns null
+        coEvery { fixture.repository.getRadioStation("vid3") } returns RadioPage(
+            songs = listOf(song("hop-0", videoId = "h0", artist = "Elior")),
+            nextPage = null,
+            stationUrl = HOP_URL
+        )
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        assertThat(fixture.queueStateHolder.originalQueueOrder.map { it.id }).contains("hop-0")
+    }
+
+    // --- the last resort -----------------------------------------------------------------------
+
+    @Test
+    fun `the seed artist is only reached once there is nothing to pivot onto`() = runTest {
+        val fixture = fixture(queueSize = SHORT_QUEUE, currentIndex = SHORT_QUEUE_INDEX)
+        coEvery { fixture.repository.getRadioStation("vid4") } returns RadioPage(
+            songs = listOf(song("hop-0", videoId = "h0", artist = "Elior")),
+            nextPage = null,
+            stationUrl = HOP_URL
+        )
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        // More of the same act is the coarsest thing the radio can do, so it goes last.
+        coVerify(exactly = 0) { fixture.repository.getArtistFallbackSongs(any()) }
+    }
+
+    @Test
+    fun `the seed artist's catalogue is capped rather than spaced`() = runTest {
+        val fixture = stationFixture()
+        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns
+            List(20) { song("same-$it", videoId = "s$it", artist = SEED_ARTIST) }
 
         fixture.run()
         advanceUntilIdle()
 
-        // Before this step the round would have ended here with the station marked exhausted.
-        // Two per artist, so a round can draw on several similar acts instead of emptying one.
-        assertThat(fixture.appended(RELATED_ARTIST_TRACKS))
-            .containsExactly("teoman-0", "teoman-1")
+        // This is the one source that answers with a single act. Taking a whole batch off it is
+        // what put five songs by the same artist back to back in the queue.
+        assertThat(fixture.queueStateHolder.originalQueueOrder)
+            .hasSize(SHORT_QUEUE + SAME_ARTIST_TRACKS)
+        assertThat(fixture.appended(SAME_ARTIST_TRACKS))
+            .containsExactly("same-0", "same-1")
             .inOrder()
     }
 
     @Test
-    fun `the seed artist still goes first`() = runTest {
-        val fixture = fallbackFixture()
+    fun `the seed artist is one shot`() = runTest {
+        val fixture = stationFixture()
         coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns
-            List(BATCH_SIZE) { song("same-$it", videoId = "s$it") }
-        coEvery { fixture.relatedArtists.relatedArtists(any()) } returns listOf("Teoman")
+            List(20) { song("same-$it", videoId = "s$it", artist = SEED_ARTIST) }
 
         fixture.run()
         advanceUntilIdle()
-
-        assertThat(fixture.appended(BATCH_SIZE)).containsExactly(
-            "same-0", "same-1", "same-2", "same-3", "same-4"
-        ).inOrder()
-        // Nothing asks Deezer while the seed artist still has something to give.
-        coVerify(exactly = 0) { fixture.relatedArtists.relatedArtists(any()) }
-    }
-
-    @Test
-    fun `a related artist that returns nothing does not end the station`() = runTest {
-        val fixture = fallbackFixture()
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
-        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns
-            listOf("Nobody", "Teoman")
-        coEvery { fixture.repository.getSongsForArtist("Nobody") } returns emptyList()
-        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
-            List(BATCH_SIZE) { song("teoman-$it", videoId = "t$it") }
-
-        fixture.run()
+        fixture.topUp()
         advanceUntilIdle()
 
-        // One name YouTube cannot find should not read as the station having run out.
-        assertThat(fixture.appended(RELATED_ARTIST_TRACKS)).contains("teoman-0")
-        coVerify { fixture.repository.getSongsForArtist("Nobody") }
+        // A second round off the same catalogue is just more of that artist, which is the thing
+        // the ladder exists to avoid.
+        coVerify(exactly = 1) { fixture.repository.getArtistFallbackSongs(any()) }
     }
 
     @Test
-    fun `gives up when there are no similar artists either`() = runTest {
-        val fixture = fallbackFixture()
+    fun `gives up when there is nothing to pivot onto and no seed artist either`() = runTest {
+        val fixture = stationFixture()
         coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
-        coEvery { fixture.relatedArtists.relatedArtists(any()) } returns emptyList()
 
         fixture.run()
         advanceUntilIdle()
 
         assertThat(fixture.queueStateHolder.originalQueueOrder).hasSize(SHORT_QUEUE)
-        coVerify(exactly = 0) { fixture.repository.getSongsForArtist(any()) }
     }
 
-    @Test
-    fun `takes only a few tracks from each similar artist`() = runTest {
-        val fixture = fallbackFixture()
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
-        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
-        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
-            List(20) { song("teoman-$it", videoId = "t$it") }
-
-        fixture.run()
-        advanceUntilIdle()
-
-        // A whole search page would turn the round into one artist's greatest hits.
-        assertThat(fixture.queueStateHolder.originalQueueOrder)
-            .hasSize(SHORT_QUEUE + RELATED_ARTIST_TRACKS)
-        assertThat(fixture.appended(RELATED_ARTIST_TRACKS)).doesNotContain("teoman-5")
-    }
-
-    @Test
-    fun `an already queued opener does not waste a round`() = runTest {
-        val fixture = fallbackFixture()
-        val fromSeedArtist = List(BATCH_SIZE) { song("same-$it", videoId = "s$it") }
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns fromSeedArtist
-        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
-        // The related artist leads with tracks the seed artist round already queued, which is
-        // ordinary: a search for a band returns their collaborations too.
-        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
-            fromSeedArtist + List(RELATED_ARTIST_TRACKS) { song("teoman-$it", videoId = "t$it") }
-
-        fixture.run()
-        advanceUntilIdle()
-        fixture.topUp()
-        advanceUntilIdle()
-
-        // Trimming before filtering would have left this round with nothing at all.
-        assertThat(fixture.appended(RELATED_ARTIST_TRACKS))
-            .containsExactly("teoman-0", "teoman-1")
-            .inOrder()
-    }
-
-    // --- artist spacing ---------------------------------------------------------------------
+    // --- artist spacing --------------------------------------------------------------------------
     //
-    // The mix itself is well spaced: YouTube returns the seed artist roughly every fourth
-    // track, never more than two together. A fallback round is not, because it answers with
-    // one artist's catalogue, and a batch taken straight off the front of that is five songs
-    // by the same act back to back.
+    // A mix is mostly well spaced but not always: over 176 tracks of one station, 150 artists
+    // arrived alone, and the rest came in blocks of two, three, four, and one of six.
 
     @Test
-    fun `one artist cannot take over a batch`() = runTest {
-        val fixture = fallbackFixture()
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns
-            List(5) { song("same-$it", videoId = "s$it", artist = SEED_ARTIST) }
-        coEvery { fixture.relatedArtists.relatedArtists(any()) } returns emptyList()
+    fun `a full buffer still fills the batch while spacing it`() = runTest {
+        // The throttle this catches was live: deferring the offender to the head of the buffer
+        // meant it was refused again next round, so the queue grew by one track per top-up and
+        // the station could barely stay ahead of the playhead.
+        val fixture = stationFixture()
+        coEvery { fixture.repository.getRadioStation("seed") } returns RadioPage(
+            songs = listOf(
+                song("a-0", videoId = "a0", artist = "j^p^n"),
+                song("a-1", videoId = "a1", artist = "j^p^n"),
+                song("a-2", videoId = "a2", artist = "j^p^n"),
+                song("b-0", videoId = "b0", artist = "Saib"),
+                song("b-1", videoId = "b1", artist = "Cospe")
+            ),
+            nextPage = null,
+            stationUrl = STATION_URL
+        )
 
         fixture.run()
         advanceUntilIdle()
 
         val appended = fixture.queueStateHolder.originalQueueOrder.drop(SHORT_QUEUE)
-        // Five by one act back to back is exactly what the user sees without this.
-        assertThat(appended).hasSize(MAX_CONSECUTIVE_SAME_ARTIST)
-        assertThat(appended.map { it.artist }.distinct()).containsExactly(SEED_ARTIST)
+        assertThat(appended).hasSize(BATCH_SIZE)
+        assertThat(longestRun(appended.map { it.artist })).isAtMost(MAX_CONSECUTIVE_SAME_ARTIST)
     }
 
     @Test
-    fun `a deferred track is held back rather than dropped`() = runTest {
-        val fixture = fallbackFixture()
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns
-            List(5) { song("same-$it", videoId = "s$it", artist = SEED_ARTIST) }
-        coEvery { fixture.relatedArtists.relatedArtists(any()) } returns emptyList()
+    fun `spacing reaches past the head of the buffer to find another artist`() = runTest {
+        val fixture = stationFixture()
+        coEvery { fixture.repository.getRadioStation("seed") } returns RadioPage(
+            songs = listOf(
+                song("a-0", videoId = "a0", artist = "j^p^n"),
+                song("a-1", videoId = "a1", artist = "j^p^n"),
+                song("a-2", videoId = "a2", artist = "j^p^n"),
+                song("a-3", videoId = "a3", artist = "j^p^n"),
+                song("b-0", videoId = "b0", artist = "Saib")
+            ),
+            nextPage = null,
+            stationUrl = STATION_URL
+        )
 
         fixture.run()
         advanceUntilIdle()
-        fixture.topUp()
-        advanceUntilIdle()
 
-        val ids = fixture.queueStateHolder.originalQueueOrder.map { it.id }
-        // Everything still arrives, just spread over more rounds than it would have been.
-        assertThat(ids).contains("same-0")
-        assertThat(ids).contains("same-2")
+        // The third slot has to be filled from further down the buffer, not from the head.
+        val ids = fixture.queueStateHolder.originalQueueOrder.drop(SHORT_QUEUE).map { it.id }
+        assertThat(ids.take(3)).containsExactly("a-0", "a-1", "b-0").inOrder()
     }
 
     @Test
     fun `spacing never leaves a round empty`() = runTest {
         // A buffer holding nothing but the artist being spaced out must still yield something,
         // or the same songs wait again next round and the station stalls.
-        val fixture = fallbackFixture()
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns
-            List(6) { song("same-$it", videoId = "s$it", artist = SEED_ARTIST) }
-        coEvery { fixture.relatedArtists.relatedArtists(any()) } returns emptyList()
+        val fixture = stationFixture()
+        coEvery { fixture.repository.getRadioStation("seed") } returns RadioPage(
+            songs = List(6) { song("same-$it", videoId = "s$it", artist = SEED_ARTIST) },
+            nextPage = null,
+            stationUrl = STATION_URL
+        )
 
         fixture.run()
         advanceUntilIdle()
@@ -325,78 +466,16 @@ class RadioQueueExtenderTest {
         assertThat(fixture.queueStateHolder.originalQueueOrder.size).isGreaterThan(afterFirst)
     }
 
-    @Test
-    fun `hops onto a similar artist's own mix rather than their popular tracks`() = runTest {
-        val fixture = fallbackFixture()
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
-        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
-        // The search exists only to find a track to seed on.
-        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
-            listOf(song("teoman-top", videoId = "t-seed", artist = "Teoman"))
-        coEvery { fixture.repository.getRadioStation("t-seed") } returns RadioPage(
-            songs = listOf(
-                song("mix-0", videoId = "m0", artist = "maNga"),
-                song("mix-1", videoId = "m1", artist = "Kargo"),
-                song("mix-2", videoId = "m2", artist = "Model")
-            ),
-            nextPage = null,
-            stationUrl = "https://example.invalid/teoman"
-        )
-
-        fixture.run()
-        advanceUntilIdle()
-
-        // Their mix, not their greatest hits: searching a name answers with whatever is
-        // biggest, which says nothing about the song the station was built on.
-        assertThat(fixture.appended(3)).containsExactly("mix-0", "mix-1", "mix-2").inOrder()
-    }
-
-    @Test
-    fun `keeps paging the station it hopped to`() = runTest {
-        val nextPage = mockk<Page>(relaxed = true)
-        val fixture = fallbackFixture()
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
-        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
-        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
-            listOf(song("teoman-top", videoId = "t-seed", artist = "Teoman"))
-        coEvery { fixture.repository.getRadioStation("t-seed") } returns RadioPage(
-            songs = listOf(song("mix-0", videoId = "m0", artist = "maNga")),
-            nextPage = nextPage,
-            stationUrl = "https://example.invalid/teoman"
-        )
-        coEvery {
-            fixture.repository.getRadioNextPage("https://example.invalid/teoman", nextPage)
-        } returns RadioPage(
-            songs = listOf(song("mix-1", videoId = "m1", artist = "Kargo")),
-            nextPage = null,
-            stationUrl = "https://example.invalid/teoman"
-        )
-
-        fixture.run()
-        advanceUntilIdle()
-        fixture.topUp()
-        advanceUntilIdle()
-
-        // The hop re-points the station, so the rest arrives through the ordinary paging path
-        // instead of costing another search per round.
-        coVerify { fixture.repository.getRadioNextPage("https://example.invalid/teoman", nextPage) }
-        assertThat(fixture.queueStateHolder.originalQueueOrder.map { it.id }).contains("mix-1")
-    }
-
-    @Test
-    fun `falls back to a similar artist's tracks when they have no mix either`() = runTest {
-        val fixture = fallbackFixture()
-        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
-        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
-        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
-            List(BATCH_SIZE) { song("teoman-$it", videoId = "t$it", artist = "Teoman") }
-        // fallbackFixture leaves getRadioStation returning null for everything.
-
-        fixture.run()
-        advanceUntilIdle()
-
-        assertThat(fixture.appended(RELATED_ARTIST_TRACKS))
-            .containsExactly("teoman-0", "teoman-1").inOrder()
+    private fun longestRun(values: List<String>): Int {
+        var best = 0
+        var current = 0
+        var previous: String? = null
+        values.forEach { value ->
+            current = if (value == previous) current + 1 else 1
+            previous = value
+            if (current > best) best = current
+        }
+        return best
     }
 
     private class Fixture(
@@ -404,7 +483,6 @@ class RadioQueueExtenderTest {
         val queueStateHolder: QueueStateHolder,
         val remoteTrackCache: RemoteTrackCache,
         val repository: YouTubeMusicRepository,
-        val relatedArtists: DeezerRelatedArtistsRepository,
         private val extender: RadioQueueExtender
     ) {
         /** Arms a station and asks for one top-up. Drain with `advanceUntilIdle()`. */
@@ -440,12 +518,12 @@ class RadioQueueExtenderTest {
         every { remoteTrackCache.getByVideoId("seed") } returns
             song("seed-song", videoId = "seed", artist = SEED_ARTIST)
 
-        val relatedArtists = mockk<DeezerRelatedArtistsRepository>(relaxed = true)
-
         val repository = mockk<YouTubeMusicRepository>(relaxed = true)
         coEvery { repository.getRadioStation(any()) } returns if (withStation) {
             RadioPage(
-                songs = List(STATION_PAGE_SIZE) { song("radio-$it", videoId = "vid$it") },
+                songs = List(STATION_PAGE_SIZE) {
+                    song("radio-$it", videoId = "vid$it", artist = "Artist $it")
+                },
                 nextPage = null,
                 stationUrl = "https://example.invalid/station"
             )
@@ -471,13 +549,11 @@ class RadioQueueExtenderTest {
             queueStateHolder = queueStateHolder,
             remoteTrackCache = remoteTrackCache,
             repository = repository,
-            relatedArtists = relatedArtists,
             extender = RadioQueueExtender(
                 repository = repository,
                 remoteTrackCache = remoteTrackCache,
                 queueStateHolder = queueStateHolder,
-                connectivityStateHolder = connectivity,
-                relatedArtistsRepository = relatedArtists
+                connectivityStateHolder = connectivity
             )
         )
     }
@@ -496,8 +572,14 @@ class RadioQueueExtenderTest {
 
         const val SEED_ARTIST = "Duman"
 
-        /** Matches RadioQueueExtender.RELATED_ARTIST_TRACKS. */
-        const val RELATED_ARTIST_TRACKS = 2
+        /** Matches RadioQueueExtender.SAME_ARTIST_TRACKS. */
+        const val SAME_ARTIST_TRACKS = 2
+
+        /** Matches RadioQueueExtender.MAX_EMPTY_PAGES. */
+        const val MAX_EMPTY_PAGES = 3
+
+        const val STATION_URL = "https://example.invalid/station"
+        const val HOP_URL = "https://example.invalid/hop"
 
         /** Matches RadioQueueExtender.BATCH_SIZE. */
         const val BATCH_SIZE = 5
