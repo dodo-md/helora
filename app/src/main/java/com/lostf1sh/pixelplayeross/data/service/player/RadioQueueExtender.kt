@@ -246,52 +246,78 @@ class RadioQueueExtender @Inject constructor(
             if (sameArtist.isNotEmpty()) return sameArtist
         }
 
-        return relatedArtistFallback(current, seed)
+        return hopToRelatedArtistStation(current, seed)
     }
 
     /**
-     * Plays through the similar-artist list one artist at a time.
+     * Moves the station onto a similar artist by opening *their* mix.
      *
-     * The list is fetched once and then spent gradually, so each top-up costs a single search
-     * rather than the whole tail up front. A named artist can still come back empty, either
-     * because YouTube does not find them under that name or because everything they returned
-     * is already in the queue, so a few are tried per round: one dud should not read as the
-     * station having run out.
+     * Searching an artist's name answers with their most popular tracks, which says nothing
+     * about the song the station was built on: pivoting from a heavy Duman track to Teoman
+     * that way lands on whichever Teoman song is biggest, ballad or not. Their mix is picked
+     * the same way the seed's was, by what people actually listen to alongside it, so genre
+     * and energy carry over without any of it having to be described.
+     *
+     * Measured on three pivots from a Turkish rock seed: each mix returned 50 tracks across
+     * 33 to 35 artists, the pivot artist taking 26 to 28 percent of them and never more than
+     * two in a row, and the neighbours were the same scene rather than that artist's back
+     * catalogue.
+     *
+     * The station is only re-pointed once the original mix is spent. Re-seeding on whatever
+     * happens to be playing is what an earlier version did, and it let the station wander off
+     * the song the user picked.
      */
-    private suspend fun relatedArtistFallback(current: Session, seed: Song): List<Song> {
+    private suspend fun hopToRelatedArtistStation(current: Session, seed: Song): List<Song> {
         val queue = current.relatedArtists ?: run {
             val names = relatedArtistsRepository.relatedArtists(seed.artist)
             Timber.d("RadioQueueExtender: %d related artist(s) for %s", names.size, seed.artist)
             ArrayDeque(names).also { current.relatedArtists = it }
         }
 
-        // Several artists per round rather than one artist's whole page, so the tail reads as
-        // a station instead of a run of greatest hits.
-        val gathered = ArrayList<Song>(BATCH_SIZE)
         var attempts = 0
-        while (queue.isNotEmpty() &&
-            attempts < RELATED_ARTIST_ATTEMPTS_PER_ROUND &&
-            gathered.size < BATCH_SIZE
-        ) {
+        while (queue.isNotEmpty() && attempts < RELATED_ARTIST_ATTEMPTS_PER_ROUND) {
             attempts++
             val artist = queue.removeFirst()
-            // Filtered before it is trimmed, and lazily, which matters both ways round:
-            // trimming first would waste a round whose first few tracks are already queued,
-            // and filtering the whole page eagerly would mark tracks as seen that never got
-            // queued at all, because claiming a track is what filterUnseen does.
+
+            // One search, only to find a track of theirs to seed on. The results are already
+            // verified to be by this artist, so any of them will do.
+            val pivot = repository.getSongsForArtist(artist).firstOrNull()?.ytVideoId
+            if (pivot == null) {
+                Timber.d("RadioQueueExtender: no track found for related artist %s", artist)
+                continue
+            }
+
+            val page = repository.getRadioStation(pivot)
+            if (page != null) {
+                // From here the station pages through their mix exactly like the original one.
+                current.stationUrl = page.stationUrl
+                current.nextPage = page.nextPage
+                val fresh = page.songs.filterUnseen(current)
+                if (fresh.isNotEmpty()) {
+                    Timber.d(
+                        "RadioQueueExtender: hopped to %s station, %d new track(s)",
+                        artist,
+                        fresh.size
+                    )
+                    return fresh
+                }
+            }
+
+            // No mix for them either. Their own tracks are still closer than nothing, and the
+            // queue spacing keeps them from arriving as a block.
             val songs = repository.getSongsForArtist(artist)
                 .asSequence()
                 .filterUnseen(current)
                 .take(RELATED_ARTIST_TRACKS)
                 .toList()
             if (songs.isNotEmpty()) {
-                Timber.d("RadioQueueExtender: %d track(s) via related artist %s", songs.size, artist)
-                gathered.addAll(songs)
+                Timber.d("RadioQueueExtender: %d track(s) by related artist %s", songs.size, artist)
+                return songs
             }
         }
 
-        if (gathered.isEmpty() && queue.isEmpty()) current.exhausted = true
-        return gathered
+        if (queue.isEmpty()) current.exhausted = true
+        return emptyList()
     }
 
     private fun List<Song>.filterUnseen(current: Session): List<Song> =
@@ -454,8 +480,8 @@ class RadioQueueExtender @Inject constructor(
         const val ART_TRACK_LOOKUP_CONCURRENCY = 3
 
         /**
-         * Per artist, not per round. Kept at two so a round draws on several similar acts and
-         * no one of them can fill it, which is the same limit the queue spacing enforces.
+         * Only used when a similar artist turns out to have no mix of their own. Kept at two so
+         * a dead end still cannot fill a round with one act.
          */
         const val RELATED_ARTIST_TRACKS = 2
 

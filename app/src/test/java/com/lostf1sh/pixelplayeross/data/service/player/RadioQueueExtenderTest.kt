@@ -12,6 +12,7 @@ import com.lostf1sh.pixelplayeross.data.youtube.YouTubeMusicRepository
 import com.lostf1sh.pixelplayeross.presentation.viewmodel.ConnectivityStateHolder
 import com.lostf1sh.pixelplayeross.presentation.viewmodel.QueueStateHolder
 import com.lostf1sh.pixelplayeross.utils.MediaItemBuilder
+import org.schabi.newpipe.extractor.Page
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -325,22 +326,77 @@ class RadioQueueExtenderTest {
     }
 
     @Test
-    fun `a round draws on several similar artists`() = runTest {
+    fun `hops onto a similar artist's own mix rather than their popular tracks`() = runTest {
         val fixture = fallbackFixture()
         coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
-        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns
-            listOf("Teoman", "maNga", "Şebnem Ferah")
-        listOf("Teoman", "maNga", "Şebnem Ferah").forEach { name ->
-            coEvery { fixture.repository.getSongsForArtist(name) } returns
-                List(5) { song("$name-$it", videoId = "$name$it", artist = name) }
-        }
+        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
+        // The search exists only to find a track to seed on.
+        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
+            listOf(song("teoman-top", videoId = "t-seed", artist = "Teoman"))
+        coEvery { fixture.repository.getRadioStation("t-seed") } returns RadioPage(
+            songs = listOf(
+                song("mix-0", videoId = "m0", artist = "maNga"),
+                song("mix-1", videoId = "m1", artist = "Kargo"),
+                song("mix-2", videoId = "m2", artist = "Model")
+            ),
+            nextPage = null,
+            stationUrl = "https://example.invalid/teoman"
+        )
 
         fixture.run()
         advanceUntilIdle()
 
-        val appended = fixture.queueStateHolder.originalQueueOrder.drop(SHORT_QUEUE)
-        // Emptying one artist's page would have made the tail their greatest hits.
-        assertThat(appended.map { it.artist }.distinct().size).isAtLeast(2)
+        // Their mix, not their greatest hits: searching a name answers with whatever is
+        // biggest, which says nothing about the song the station was built on.
+        assertThat(fixture.appended(3)).containsExactly("mix-0", "mix-1", "mix-2").inOrder()
+    }
+
+    @Test
+    fun `keeps paging the station it hopped to`() = runTest {
+        val nextPage = mockk<Page>(relaxed = true)
+        val fixture = fallbackFixture()
+        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
+        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
+        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
+            listOf(song("teoman-top", videoId = "t-seed", artist = "Teoman"))
+        coEvery { fixture.repository.getRadioStation("t-seed") } returns RadioPage(
+            songs = listOf(song("mix-0", videoId = "m0", artist = "maNga")),
+            nextPage = nextPage,
+            stationUrl = "https://example.invalid/teoman"
+        )
+        coEvery {
+            fixture.repository.getRadioNextPage("https://example.invalid/teoman", nextPage)
+        } returns RadioPage(
+            songs = listOf(song("mix-1", videoId = "m1", artist = "Kargo")),
+            nextPage = null,
+            stationUrl = "https://example.invalid/teoman"
+        )
+
+        fixture.run()
+        advanceUntilIdle()
+        fixture.topUp()
+        advanceUntilIdle()
+
+        // The hop re-points the station, so the rest arrives through the ordinary paging path
+        // instead of costing another search per round.
+        coVerify { fixture.repository.getRadioNextPage("https://example.invalid/teoman", nextPage) }
+        assertThat(fixture.queueStateHolder.originalQueueOrder.map { it.id }).contains("mix-1")
+    }
+
+    @Test
+    fun `falls back to a similar artist's tracks when they have no mix either`() = runTest {
+        val fixture = fallbackFixture()
+        coEvery { fixture.repository.getArtistFallbackSongs(any()) } returns emptyList()
+        coEvery { fixture.relatedArtists.relatedArtists(SEED_ARTIST) } returns listOf("Teoman")
+        coEvery { fixture.repository.getSongsForArtist("Teoman") } returns
+            List(BATCH_SIZE) { song("teoman-$it", videoId = "t$it", artist = "Teoman") }
+        // fallbackFixture leaves getRadioStation returning null for everything.
+
+        fixture.run()
+        advanceUntilIdle()
+
+        assertThat(fixture.appended(RELATED_ARTIST_TRACKS))
+            .containsExactly("teoman-0", "teoman-1").inOrder()
     }
 
     private class Fixture(
