@@ -6,6 +6,7 @@ import com.dodoznq.helora.data.database.toEntity
 import com.dodoznq.helora.data.database.toPlaylist
 import com.dodoznq.helora.data.model.isSmartPlaylist
 import com.dodoznq.helora.data.model.SortOption
+import com.dodoznq.helora.data.youtube.YouTubeLibraryWriter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -19,7 +20,8 @@ import javax.inject.Singleton
 @Singleton
 class PlaylistPreferencesRepository @Inject constructor(
     private val localPlaylistDao: LocalPlaylistDao,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val youTubeLibraryWriter: YouTubeLibraryWriter
 ) {
     private val migrationMutex = Mutex()
     @Volatile
@@ -73,6 +75,7 @@ class PlaylistPreferencesRepository @Inject constructor(
             coverShapeDetail4 = coverShapeDetail4,
             source = source,
         )
+        promoteRemoteTracks(newPlaylist.songIds)
         localPlaylistDao.upsertPlaylist(newPlaylist.toEntity())
         localPlaylistDao.replacePlaylistSongs(newPlaylist.id, newPlaylist.songIds)
         return newPlaylist
@@ -105,8 +108,24 @@ class PlaylistPreferencesRepository @Inject constructor(
         ensureMigratedIfNeeded()
         val existing = userPlaylistsFlow.first().find { it.id == playlistId } ?: return
         if (existing.isSmartPlaylist) return
+        promoteRemoteTracks(songIdsToAdd)
         val merged = (existing.songIds + songIdsToAdd).distinct()
         updatePlaylist(existing.copy(songIds = merged))
+    }
+
+    /**
+     * Writes a library row for any of these ids that is still only a streaming YouTube track.
+     *
+     * A playlist stores ids, and the screen resolves them back through `songs`. A track that
+     * was never downloaded has no row there, so its id resolved to nothing and the song simply
+     * did not appear in the playlist it had just been added to.
+     *
+     * A no-op for everything else: ids that are not held in the remote cache fall straight
+     * through. Promotion happens before the playlist row is written, so the song is resolvable
+     * by the time anything observes the playlist.
+     */
+    private suspend fun promoteRemoteTracks(songIds: List<String>) {
+        songIds.forEach { youTubeLibraryWriter.promoteById(it) }
     }
 
     suspend fun addOrRemoveSongFromPlaylists(songId: String, playlistIds: List<String>): MutableList<String> {
