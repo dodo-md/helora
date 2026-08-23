@@ -1,1 +1,1 @@
-Local-first Android music player for offline and self-hosted libraries.
+Music player for your own files and YouTube Music. No account, ads or tracking.

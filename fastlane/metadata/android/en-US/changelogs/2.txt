@@ -1,9 +1,11 @@
-Helora 0.2.0:
+Helora 0.2.0
 
-* The app is now Helora and its package identifier changed, so this does not install over 0.1.0. Back up from the old build, install this one, restore, then remove the old app.
-* Downloaded YouTube tracks are tagged with their real genre from Deezer instead of a single placeholder bucket. An optional setting, off by default, does the same for streamed tracks.
-* The radio stays on YouTube's own recommendations far longer, and moves on to the mix of a track it already played instead of more by the same artist.
-* The radio no longer repeats a song under a different upload title, and no longer stacks several songs by one artist together.
-* Tracks are filed under the artist rather than the auto-generated "Artist - Topic" channel.
-* New launcher icon, including a themed-icon layer for Android 13 and later.
-* Fixes: a crash while downloading, a radio queue that grew without bound, downloaded songs missing from the library, and liked songs missing from listening stats.
+The package id changed, so this will not install over 0.1.0. Back up from the old build, restore here, then remove the old app.
+
+* Downloads are far faster and no longer stop short of finishing
+* YouTube tracks are filed under the artist, not a "- Topic" channel
+* Radio follows YouTube's recommendations longer, without repeats
+* A YouTube track added to a playlist now appears in it
+* Ringtones and alerts stay out of the library
+* Eleven languages
+* New name and icon
