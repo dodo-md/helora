@@ -173,7 +173,6 @@
     <string name="browse_by_genre">按流派浏览</string>
     <string name="no_genres_available">暂无可用流派。</string>
 
-    <string name="about_app_name">Helora</string>
     <string name="about_tagline">优先本地播放、支持自建流媒体，基于 Material 3 的开源播放器。</string>
     <string name="about_version_format">版本 v%1$s</string>
     <string name="about_contributions_format">%1$d 位贡献者</string>
@@ -183,7 +182,6 @@
     <string name="about_project_title">项目信息</string>
     <string name="about_project_subtitle">源代码、发布版本以及社区入口。</string>
     <string name="about_link_source_title">源代码</string>
-    <string name="about_link_source_subtitle">github.com/dodo-md/helora</string>
     <string name="about_link_fdroid_title">F‑Droid</string>
     <string name="about_link_fdroid_subtitle">可在 F‑Droid 软件库获取</string>
     <string name="cd_about_open_link">打开 %1$s</string>

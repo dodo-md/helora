@@ -21,7 +21,6 @@
     <string name="auth_navidrome_title">Subsonic / Navidrome</string>
     <string name="auth_navidrome_subtitle">连接到自建音乐服务器</string>
     <string name="auth_navidrome_info_card">支持 Navidrome、Airsonic、Gonic、Ampache 以及其他兼容 Subsonic API 的服务端。</string>
-    <string name="auth_navidrome_server_placeholder">http://192.168.1.100:4533</string>
     <string name="auth_navidrome_server_url_hint">填写完整服务器地址，局域网使用 http://，外网远程服务器使用 https://。</string>
     <string name="auth_navidrome_username_hint">填写你的 Subsonic / Navidrome 账号名。</string>
     <string name="auth_navidrome_password_hint">若服务端支持，也可以使用应用专用密码。</string>
@@ -35,7 +34,6 @@
     <string name="auth_jellyfin_info_card">可连接 Jellyfin 服务器，局域网同时支持 HTTP、HTTPS 协议。</string>
     <string name="auth_jellyfin_subtitle">连接你的 Jellyfin 媒体服务器</string>
     <string name="auth_jellyfin_connection_subtitle">输入 Jellyfin 服务器地址和账号信息。</string>
-    <string name="auth_jellyfin_server_placeholder">http://192.168.1.100:8096</string>
     <string name="auth_jellyfin_server_url_hint">填写包含端口的完整地址。局域网、Tailscale、.local、.lan 地址可使用 HTTP。</string>
     <string name="auth_jellyfin_username_hint">你的 Jellyfin 账号用户名。</string>
     <string name="auth_jellyfin_password_hint">你的 Jellyfin 账号密码。</string>

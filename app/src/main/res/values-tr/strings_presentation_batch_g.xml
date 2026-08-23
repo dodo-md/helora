@@ -196,10 +196,6 @@
     <string name="presentation_batch_g_cd_switch_on">Anahtar açık</string>
     <string name="presentation_batch_g_changelog_sec_improvements">İyileştirmeler</string>
     <string name="presentation_batch_g_changelog_sec_initial_release">İlk sürüm</string>
-    <string name="presentation_batch_g_changelog_sec_release_readiness">Sürüme hazırlık</string>
-    <string name="presentation_batch_g_changelog_sec_removed_for_foss">FOSS için kaldırılanlar</string>
-    <string name="presentation_batch_g_changelog_sec_security_privacy">Güvenlik ve gizlilik</string>
-    <string name="presentation_batch_g_changelog_sec_under_the_hood">Perde arkası</string>
     <string name="presentation_batch_g_changelog_sec_whats_new">Yenilikler</string>
     <string name="presentation_batch_g_changelog_title">Değişiklik Günlüğü</string>
     <string name="presentation_batch_g_changelog_view_github">GitHub\'da görüntüle</string>

@@ -276,4 +276,5 @@
     <string name="musicbrainz_searching">Recherche d\'enregistrements correspondants…</string>
     <string name="radio_no_match">Aucune station similaire trouvée pour ce morceau</string>
     <string name="song_info_start_radio">Lancer la radio</string>
+    <string name="cloud_download_progress">%1$d %%</string>
 </resources>

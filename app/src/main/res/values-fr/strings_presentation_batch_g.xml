@@ -196,10 +196,6 @@
     <string name="presentation_batch_g_cd_switch_on">Le commutateur est activé</string>
     <string name="presentation_batch_g_changelog_sec_improvements">Améliorations</string>
     <string name="presentation_batch_g_changelog_sec_initial_release">Première version</string>
-    <string name="presentation_batch_g_changelog_sec_release_readiness">Préparation de la version</string>
-    <string name="presentation_batch_g_changelog_sec_removed_for_foss">Retiré pour le FOSS</string>
-    <string name="presentation_batch_g_changelog_sec_security_privacy">Sécurité et confidentialité</string>
-    <string name="presentation_batch_g_changelog_sec_under_the_hood">Sous le capot</string>
     <string name="presentation_batch_g_changelog_sec_whats_new">Nouveautés</string>
     <string name="presentation_batch_g_changelog_title">Journal des modifications</string>
     <string name="presentation_batch_g_changelog_view_github">Voir sur GitHub</string>

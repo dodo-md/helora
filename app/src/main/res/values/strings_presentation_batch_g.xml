@@ -374,13 +374,9 @@
     <string name="presentation_batch_g_player_cd_lyrics">Lyrics</string>
 
     <string name="presentation_batch_g_changelog_sec_initial_release">Initial release</string>
-    <string name="presentation_batch_g_changelog_sec_removed_for_foss">Removed for FOSS</string>
-    <string name="presentation_batch_g_changelog_sec_release_readiness">Release readiness</string>
-    <string name="presentation_batch_g_changelog_sec_security_privacy">Security and privacy</string>
 
     <string name="presentation_batch_g_changelog_sec_whats_new">What\'s new</string>
     <string name="presentation_batch_g_changelog_sec_improvements">Improvements</string>
-    <string name="presentation_batch_g_changelog_sec_under_the_hood">Under the hood</string>
 
     <string name="presentation_batch_g_changelog_sec_fixes">Fixes</string>
     <string-array name="presentation_batch_g_changelog_020_whats_new">

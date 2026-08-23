@@ -241,7 +241,7 @@
     <string name="cloud_download_action">Download</string>
     <string name="cloud_download_queued">Queued</string>
     <string name="cloud_downloading">Downloading…</string>
-    <string name="cloud_download_progress" translatable="false">%1$d%%</string>
+    <string name="cloud_download_progress">%1$d%%</string>
     <string name="cloud_remove_download">Remove download</string>
     <string name="cloud_download_retry">Retry</string>
     <string name="cloud_album_download">Download album</string>

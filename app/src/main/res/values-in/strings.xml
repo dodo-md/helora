@@ -276,4 +276,5 @@
     <string name="musicbrainz_searching">Mencari rekaman yang cocok…</string>
     <string name="radio_no_match">Tidak ada stasiun serupa untuk lagu ini</string>
     <string name="song_info_start_radio">Mulai radio</string>
+    <string name="cloud_download_progress">%1$d%%</string>
 </resources>

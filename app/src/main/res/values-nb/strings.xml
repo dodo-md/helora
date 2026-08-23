@@ -276,4 +276,5 @@
     <string name="musicbrainz_searching">Søker etter innspillinger som passer…</string>
     <string name="radio_no_match">Fant ingen lignende stasjon for denne sangen</string>
     <string name="song_info_start_radio">Start radio</string>
+    <string name="cloud_download_progress">%1$d %%</string>
 </resources>

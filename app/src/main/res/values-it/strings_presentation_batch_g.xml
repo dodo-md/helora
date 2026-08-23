@@ -196,10 +196,6 @@
     <string name="presentation_batch_g_cd_switch_on">Interruttore attivo</string>
     <string name="presentation_batch_g_changelog_sec_improvements">Miglioramenti</string>
     <string name="presentation_batch_g_changelog_sec_initial_release">Prima versione</string>
-    <string name="presentation_batch_g_changelog_sec_release_readiness">Pronti per il rilascio</string>
-    <string name="presentation_batch_g_changelog_sec_removed_for_foss">Rimosso nella versione FOSS</string>
-    <string name="presentation_batch_g_changelog_sec_security_privacy">Sicurezza e privacy</string>
-    <string name="presentation_batch_g_changelog_sec_under_the_hood">Sotto il cofano</string>
     <string name="presentation_batch_g_changelog_sec_whats_new">Novità</string>
     <string name="presentation_batch_g_changelog_title">Changelog</string>
     <string name="presentation_batch_g_changelog_view_github">Vedi su GitHub</string>

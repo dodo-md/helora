@@ -238,7 +238,6 @@
     <string name="dialog_regenerate_stats_title">重建播放统计？</string>
     <string name="dialog_regenerate_stats_body">清空统计缓存，基于数据库历史重新计算播放数据。</string>
     <string name="toast_stats_regeneration_started">开始重建播放统计</string>
-    <string name="backup_file_name_format">Helora_Backup_%1$d.pxpl</string>
 
     <string name="setcat_regenerate_daily_mix_action">重新生成每日混合歌单</string>
     <string name="setcat_regenerate_stats_action">重建播放统计</string>

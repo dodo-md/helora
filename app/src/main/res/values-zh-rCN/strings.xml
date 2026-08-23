@@ -1,5 +1,4 @@
 <resources>
-<string name="app_name">Helora</string>
 <string name="app_name_change_title">应用名称已变更</string>
 <string name="app_name_change_message">本应用现已更名为 Helora！开启你的音乐之旅吧！</string>
 <string name="do_not_show_again">不再提示</string>
@@ -39,7 +38,6 @@
 <string name="lyrics">歌词</string>
 <string name="loading_lyrics">正在加载歌词…</string>
 <string name="lyrics_provided_by">歌词来源</string>
-<string name="lrclib_uri">https://lrclib.net/</string>
 <string name="lyrics_not_found">未找到歌词</string>
 <string name="search_lyrics_online_prompt">是否在线搜索歌词？</string>
 <string name="lyrics_custom_search_hint">未能自动匹配歌词，你可以修改歌曲标题或歌手，手动搜索。</string>
@@ -127,7 +125,6 @@
 <string name="playlist_share_failed">分享失败：%1$s</string>
 <string name="playlist_none_to_export">没有可导出的播放列表</string>
 <string name="playlist_export_failed">导出失败：%1$s</string>
-<string name="playlist_export_folder_display">Music/Helora Exports</string>
 <string name="error_unknown">未知错误</string>
 
 
@@ -299,4 +296,5 @@
     <string name="musicbrainz_searching">正在搜索匹配的录音…</string>
     <string name="radio_no_match">未找到与这首歌相似的电台</string>
     <string name="song_info_start_radio">开始电台</string>
+    <string name="cloud_download_progress">%1$d%%</string>
 </resources>

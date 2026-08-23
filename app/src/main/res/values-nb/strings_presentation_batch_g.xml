@@ -196,10 +196,6 @@
     <string name="presentation_batch_g_cd_switch_on">Bryter er på</string>
     <string name="presentation_batch_g_changelog_sec_improvements">Forbedringer</string>
     <string name="presentation_batch_g_changelog_sec_initial_release">Første utgivelse</string>
-    <string name="presentation_batch_g_changelog_sec_release_readiness">Klar for utgivelse</string>
-    <string name="presentation_batch_g_changelog_sec_removed_for_foss">Fjernet for FOSS</string>
-    <string name="presentation_batch_g_changelog_sec_security_privacy">Sikkerhet og personvern</string>
-    <string name="presentation_batch_g_changelog_sec_under_the_hood">Under panseret</string>
     <string name="presentation_batch_g_changelog_sec_whats_new">Nytt i denne versjonen</string>
     <string name="presentation_batch_g_changelog_title">Endringslogg</string>
     <string name="presentation_batch_g_changelog_view_github">Vis på GitHub</string>

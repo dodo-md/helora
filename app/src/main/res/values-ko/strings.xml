@@ -276,4 +276,5 @@
     <string name="musicbrainz_searching">일치하는 녹음을 찾는 중…</string>
     <string name="radio_no_match">이 곡과 비슷한 스테이션을 찾지 못했습니다</string>
     <string name="song_info_start_radio">라디오 시작</string>
+    <string name="cloud_download_progress">%1$d%%</string>
 </resources>
