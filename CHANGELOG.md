@@ -20,6 +20,9 @@ All notable changes to Helora will be documented in this file.
   genre is invisible once it is in the tag.
 - A setting, off by default, that does the same lookup for streamed tracks.
 - A new launcher icon, including a themed-icon layer for Android 13 and later.
+- Complete translations for all eleven shipped languages. The newest surfaces, downloads,
+  cloud downloads, MusicBrainz lookup, the radio and half the setup flow, had been falling
+  back to English on any phone not set to it.
 
 ### Changed
 
@@ -32,6 +35,15 @@ All notable changes to Helora will be documented in this file.
   related music instead of one back catalogue.
 - The "YouTube Music" placeholder genre is gone. Genres now come from local and downloaded
   music only, unless the new setting is on.
+- Downloads are fetched in one megabyte ranged chunks rather than a single long request.
+  Googlevideo throttles an unranged GET down to roughly the track's own bitrate: measured on
+  the same file over the same connection, a plain request moved 3,990,497 bytes in 126.5
+  seconds while ranged chunks moved them in 1.7.
+- The About screen's sponsor card said "Support Helora" while its button opened the upstream
+  author's sponsor page. It now says whose work the money reaches, and the repository's own
+  sponsor button is gone rather than pointing somewhere it does not belong.
+- The in-app changelog listed PixelPlayer's version history, including a 0.2.0 dated a month
+  before this one. It now carries Helora's own releases.
 
 ### Fixed
 
@@ -43,8 +55,33 @@ All notable changes to Helora will be documented in this file.
   splitting one artist into two.
 - A crash while downloading, and a radio queue that grew without bound.
 - Downloaded songs now appear in the library, and liked songs in the listening stats.
+- A YouTube track added to a playlist without being downloaded first now appears in it. The
+  playlist stored an id with no library row behind it, so the song was dropped on the way to
+  the screen with no error anywhere.
+- The song sheet drew two Download buttons on every streaming YouTube track, because such a
+  track counts as a cloud song and satisfied both conditions.
+- Ringtones, notification tones and alarms no longer reach the library. They arrived with
+  opaque URIs for titles, a side effect of ignoring the scanner's music flag, which is itself
+  deliberate because some devices leave real songs unflagged.
+- Download progress stopped short of full and then jumped to complete, because the tail of a
+  file never crossed the reporting step.
+- Cancelling a download now actually stops it. Every check resolved to the worker's
+  dispatcher rather than the running coroutine, and a dispatcher carries no job to cancel.
 
-## [0.3.0] - 2026-08-15
+## [0.1.0] - 2026-08-21
+
+- First release of Helora, a fork of PixelPlayerOSS with YouTube Music added: search, playback,
+  radio stations and downloads.
+
+---
+
+## Upstream history
+
+Everything below belongs to PixelPlayerOSS, the project Helora was forked from. Its version
+numbers are its own and do not continue into Helora's, which is why a 0.3.0 sits under a 0.2.0
+here.
+
+## PixelPlayerOSS 0.3.0 - 2026-08-15
 
 ### Added
 - Optional ListenBrainz scrobbling, disabled by default. Connect a ListenBrainz account with a user token from the Accounts screen; listens that reach the ListenBrainz threshold (4 minutes or half the track, whichever is lower) queue offline and submit with retry, with per-source toggles for local files, Subsonic, and Jellyfin playback. Now-playing status is reported while scrobbling is enabled, and disconnecting deletes any queued listens. An optional custom server URL scrobbles to self-hosted ListenBrainz-compatible servers such as Maloja instead of listenbrainz.org.
@@ -81,7 +118,7 @@ All notable changes to Helora will be documented in this file.
 ### Removed
 - Android Auto media-library browsing and discovery. Standard MediaSession playback controls for notifications, lock screen, Bluetooth devices, and other system surfaces remain available.
 
-## [0.2.0] - 2026-07-17
+## PixelPlayerOSS 0.2.0 - 2026-07-17
 
 ### Added
 - Navidrome library selector for servers that expose more than one music library.
@@ -104,7 +141,7 @@ All notable changes to Helora will be documented in this file.
 - User-installed CAs are trusted so self-signed cloud servers work without disabling verification.
 - State-changing media session commands are restricted to trusted clients, and artwork sharing stays private behind explicit URI grants.
 
-## [0.1.0] - 2026-06-09
+## PixelPlayerOSS 0.1.0 - 2026-06-09
 
 ### Initial release
 - First public FOSS release of PixelPlayerOSS, an OSS-focused Android music player.

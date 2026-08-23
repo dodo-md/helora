@@ -1,10 +1,14 @@
-Helora is a FOSS Android music player focused on local playback, self-hosted music libraries, and user-controlled online lookups.
+Helora is a FOSS Android music player for two things at once: the audio files already on your device, and YouTube Music.
 
-The app works offline by default. Network features are optional and must be enabled by the user.
+It scans and plays your own library like any local player. It can also search YouTube Music, play any track, build a radio station from one, and download tracks to your phone for offline listening. No account, no ads, no tracking.
+
+Everything else stays offline by default. Network features are optional and must be enabled by the user.
 
 Features:
 
 * Local music scanning and playback for common audio formats
+* Search YouTube Music, stream any track, and download it for offline listening
+* Radio stations built from YouTube's own recommendations
 * Gapless playback, crossfade, custom transitions, queue controls, shuffle, repeat, and sleep timer
 * Albums, artists, genres, folders, favorites, playlists, lyrics, and listening stats
 * Smart playlists generated from local listening history and favorites
@@ -12,5 +16,8 @@ Features:
 * Optional LRCLIB lyric lookup and Deezer artist artwork lookup
 * Material 3 UI, dynamic color, light/dark themes, and Glance widgets
 * Backup and restore for preferences, playlists, favorites, lyrics, stats, and app state
+* Available in eleven languages
 
 Helora does not include analytics, ads, Firebase, Crashlytics, Play Store billing, or Google Play Services runtime dependencies.
+
+Helora is a fork of PixelPlayerOSS by @lostf1sh, released under the GPLv3.
