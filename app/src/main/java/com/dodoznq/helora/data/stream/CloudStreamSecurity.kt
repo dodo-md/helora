@@ -108,6 +108,21 @@ object CloudStreamSecurity {
         return normalized in EXTRA_ALLOWED_AUDIO_TYPES
     }
 
+    /**
+     * Total resource size out of a `Content-Range: bytes 0-1023/9999` reply.
+     *
+     * Null when the server did not say, which includes the `*` form it is allowed to send when
+     * the total is unknown. Callers then have to fall back to reading until the stream ends.
+     */
+    fun totalLengthFromContentRange(contentRangeHeader: String?): Long? {
+        val value = contentRangeHeader?.trim().orEmpty()
+        if (!value.startsWith("bytes ", ignoreCase = true)) return null
+        val total = value.substringAfterLast('/', "").trim()
+        if (total.isEmpty() || total == "*") return null
+        val parsed = total.toLongOrNull() ?: return null
+        return parsed.takeIf { it >= 0L }
+    }
+
     fun isAcceptableContentLength(contentLengthHeader: String?): Boolean {
         if (contentLengthHeader.isNullOrBlank()) {
             return true

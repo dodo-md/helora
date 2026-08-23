@@ -1,10 +1,32 @@
 package com.dodoznq.helora.data.stream
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class CloudStreamSecurityTest {
+
+    @Test
+    fun `totalLengthFromContentRange reads the size after the slash`() {
+        assertEquals(9999L, CloudStreamSecurity.totalLengthFromContentRange("bytes 0-1023/9999"))
+        assertEquals(9999L, CloudStreamSecurity.totalLengthFromContentRange("  bytes 1024-2047/9999  "))
+        assertEquals(1L, CloudStreamSecurity.totalLengthFromContentRange("BYTES 0-0/1"))
+    }
+
+    @Test
+    fun `totalLengthFromContentRange gives up rather than guessing`() {
+        // A server is allowed to send * when it does not know the total, and the download then
+        // has to fall back to reading until a short chunk arrives.
+        assertNull(CloudStreamSecurity.totalLengthFromContentRange("bytes 0-1023/*"))
+        assertNull(CloudStreamSecurity.totalLengthFromContentRange(null))
+        assertNull(CloudStreamSecurity.totalLengthFromContentRange(""))
+        assertNull(CloudStreamSecurity.totalLengthFromContentRange("items 0-1023/9999"))
+        assertNull(CloudStreamSecurity.totalLengthFromContentRange("bytes 0-1023/abc"))
+        assertNull(CloudStreamSecurity.totalLengthFromContentRange("bytes 0-1023"))
+        assertNull(CloudStreamSecurity.totalLengthFromContentRange("bytes 0-1023/-5"))
+    }
 
     @Test
     fun `validateRangeHeader accepts standard ranges`() {
