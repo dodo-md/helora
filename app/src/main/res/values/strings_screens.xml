@@ -192,8 +192,8 @@
     <string name="about_signal_community_first">Community-first</string>
     <string name="about_signal_material3">Material 3 expressive</string>
     <string name="about_support_eyebrow">GitHub Sponsors</string>
-    <string name="about_support_title">Support Helora</string>
-    <string name="about_support_body">Help keep the FOSS edition maintained, reviewed, and tested for real Android devices.</string>
+    <string name="about_support_title">Support PixelPlayerOSS</string>
+    <string name="about_support_body">Helora is a fork. Sponsoring goes to @lostf1sh, who wrote and maintains the player it is built on.</string>
     <string name="about_support_chip_foss">FOSS maintenance</string>
     <string name="about_support_chip_ci">CI and releases</string>
     <string name="about_support_chip_streaming">Self-hosted music</string>

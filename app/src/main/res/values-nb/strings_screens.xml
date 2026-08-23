@@ -11,7 +11,7 @@
     <string name="about_signal_community_first">Samfunnet først</string>
     <string name="about_signal_material3">Material 3 ekspressiv</string>
     <string name="about_signal_open_source">Åpen kildekode</string>
-    <string name="about_support_body">Bidra til at FOSS-utgaven blir vedlikeholdt, gjennomgått og testet på ekte Android-enheter.</string>
+    <string name="about_support_body">Helora er en fork. Sponsingen går til @lostf1sh, som skrev og vedlikeholder spilleren den bygger på.</string>
     <string name="about_support_chip_ci">CI og utgivelser</string>
     <string name="about_support_chip_foss">FOSS-vedlikehold</string>
     <string name="about_support_chip_streaming">Selvhostet musikk</string>
@@ -226,7 +226,7 @@
     <string name="word_delimiter_toast_invalid">Finnes allerede eller er ugyldig</string>
     <string name="word_delimiter_toast_reset">Orddelimitere tilbakestilt til standard</string>
     <string name="word_delimiters_screen_title">Orddelimitere</string>
-    <string name="about_support_title">Støtt Helora</string>
+    <string name="about_support_title">Støtt PixelPlayerOSS</string>
     <string name="crash_report_share_subject">Krasjrapport for Helora</string>
     <string name="easter_egg_thank_you">Takk for at du bruker Helora!</string>
     <string name="home_empty_placeholder_subtitle">Miksen din dukker opp her når Helora finner sanger eller synkroniserer en kilde.</string>

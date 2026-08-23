@@ -189,8 +189,8 @@
     <string name="about_signal_community_first">社区驱动</string>
     <string name="about_signal_material3">Material 3 设计风格</string>
     <string name="about_support_eyebrow">GitHub 赞助</string>
-    <string name="about_support_title">支持 Helora</string>
-    <string name="about_support_body">帮助维护开源版本，完成真实安卓设备的审核与测试。</string>
+    <string name="about_support_title">支持 PixelPlayerOSS</string>
+    <string name="about_support_body">Helora 是一个分支项目。赞助会转给 @lostf1sh，他编写并维护着作为基础的播放器。</string>
     <string name="about_support_chip_foss">开源版本维护</string>
     <string name="about_support_chip_ci">持续集成与版本发布</string>
     <string name="about_support_chip_streaming">自建音乐流媒体支持</string>

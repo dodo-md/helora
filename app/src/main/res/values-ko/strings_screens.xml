@@ -11,7 +11,7 @@
     <string name="about_signal_community_first">커뮤니티 중심</string>
     <string name="about_signal_material3">Material 3 디자인</string>
     <string name="about_signal_open_source">오픈 소스</string>
-    <string name="about_support_body">FOSS 버전이 계속 관리되고, 검토되고, 실제 Android 기기에서 테스트될 수 있도록 도와주세요.</string>
+    <string name="about_support_body">Helora는 포크입니다. 후원금은 이 앱의 바탕이 된 플레이어를 만들고 관리하는 @lostf1sh에게 전달됩니다.</string>
     <string name="about_support_chip_ci">CI 및 릴리스</string>
     <string name="about_support_chip_foss">FOSS 유지 관리</string>
     <string name="about_support_chip_streaming">자체 호스팅 음악</string>
@@ -226,7 +226,7 @@
     <string name="word_delimiter_toast_invalid">이미 존재하거나 유효하지 않습니다</string>
     <string name="word_delimiter_toast_reset">단어 구분 기호가 기본값으로 재설정되었습니다</string>
     <string name="word_delimiters_screen_title">단어 구분 기호</string>
-    <string name="about_support_title">Helora 후원하기</string>
+    <string name="about_support_title">PixelPlayerOSS 후원하기</string>
     <string name="crash_report_share_subject">Helora 오류 보고서</string>
     <string name="easter_egg_thank_you">Helora를 사용해 주셔서 고맙습니다!</string>
     <string name="home_empty_placeholder_subtitle">Helora가 곡을 찾거나 소스를 동기화하면 믹스가 여기에 표시됩니다.</string>

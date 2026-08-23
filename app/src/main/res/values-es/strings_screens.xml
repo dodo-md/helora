@@ -11,7 +11,7 @@
     <string name="about_signal_community_first">Comunidad primero</string>
     <string name="about_signal_material3">Material 3 expresivo</string>
     <string name="about_signal_open_source">Código abierto</string>
-    <string name="about_support_body">Ayuda a mantener, revisar y probar la edición FOSS en dispositivos Android reales.</string>
+    <string name="about_support_body">Helora es una bifurcación. El patrocinio va a @lostf1sh, que escribió y mantiene el reproductor en el que se basa.</string>
     <string name="about_support_chip_ci">CI y versiones</string>
     <string name="about_support_chip_foss">Mantenimiento FOSS</string>
     <string name="about_support_chip_streaming">Música autoalojada</string>
@@ -226,7 +226,7 @@
     <string name="word_delimiter_toast_invalid">Ya existe o no es válido</string>
     <string name="word_delimiter_toast_reset">Delimitadores de palabra restablecidos</string>
     <string name="word_delimiters_screen_title">Delimitadores de palabra</string>
-    <string name="about_support_title">Apoya a Helora</string>
+    <string name="about_support_title">Apoya a PixelPlayerOSS</string>
     <string name="crash_report_share_subject">Informe de fallo de Helora</string>
     <string name="easter_egg_thank_you">¡Gracias por usar Helora!</string>
     <string name="home_empty_placeholder_subtitle">Tu mezcla aparecerá aquí cuando Helora encuentre canciones o sincronice una fuente.</string>
