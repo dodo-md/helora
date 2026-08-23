@@ -9,6 +9,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.dodoznq.helora.data.database.OfflineTrackDao
 import com.dodoznq.helora.data.download.MediaStoreDownloadPublisher
+import com.dodoznq.helora.data.download.RangedDownloader
 import com.dodoznq.helora.data.repository.DeezerGenreRepository
 import com.dodoznq.helora.data.jellyfin.JellyfinRepository
 import com.dodoznq.helora.data.navidrome.NavidromeRepository
@@ -23,6 +24,7 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -47,6 +49,7 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
         .readTimeout(5, TimeUnit.MINUTES)
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
+    private val rangedDownloader = RangedDownloader(client)
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val downloadId = inputData.getString(KEY_DOWNLOAD_ID)
@@ -81,55 +84,29 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
 
         try {
             val source = resolveSource(sourceUri)
-            val requestBuilder = Request.Builder().url(source.url)
-            source.headers.forEach { (name, value) -> requestBuilder.header(name, value) }
 
-            client.newCall(requestBuilder.get().build()).execute().use { response ->
-                if (!response.isSuccessful) {
-                    throw DownloadHttpException(response.code)
+            run {
+                val transfer = tempFile.outputStream().buffered().use { output ->
+                    rangedDownloader.download(
+                        url = source.url,
+                        headers = source.headers,
+                        output = output,
+                        progressStepBytes = PROGRESS_STEP_BYTES
+                    ) { copied, total -> publishProgress(downloadId, attemptId, copied, total) }
                 }
-                if (!CloudStreamSecurity.isSupportedAudioContentType(response.header("Content-Type"))) {
-                    throw IOException("Server returned a non-audio response")
-                }
-                if (!CloudStreamSecurity.isAcceptableContentLength(response.header("Content-Length"))) {
-                    throw IOException("Audio file is too large")
-                }
-
-                val body = response.body
-                val total = body.contentLength().takeIf { it >= 0L }
-                val extension = extensionFor(response.header("Content-Type"), entity.mimeType)
+                val total = transfer.total
+                val copied = transfer.copied
+                val extension = extensionFor(transfer.contentType, entity.mimeType)
                 val finalFile = CloudOfflineRepository.downloadDirectory(applicationContext)
                     .resolve(
                         "${CloudOfflineRepository.attemptFileStem(downloadId, attemptId)}.$extension"
                     )
-                var copied = 0L
-                var lastPublished = 0L
-
-                body.byteStream().use { input ->
-                    tempFile.outputStream().buffered().use { output ->
-                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE * 8)
-                        while (true) {
-                            coroutineContext.ensureActive()
-                            val count = input.read(buffer)
-                            if (count < 0) break
-                            output.write(buffer, 0, count)
-                            copied += count
-                            if (copied > CloudStreamSecurity.MAX_STREAM_CONTENT_LENGTH_BYTES) {
-                                throw IOException("Audio file is too large")
-                            }
-                            if (copied - lastPublished >= PROGRESS_STEP_BYTES) {
-                                publishProgress(downloadId, attemptId, copied, total)
-                                lastPublished = copied
-                            }
-                        }
-                    }
-                }
 
                 if (copied <= 0L) throw IOException("Downloaded file is empty")
                 if (total != null && copied != total) {
                     throw IOException("Download ended early ($copied/$total bytes)")
                 }
-                coroutineContext.ensureActive()
+                currentCoroutineContext().ensureActive()
                 if (!dao.isCurrentAttempt(downloadId, attemptId)) {
                     throw StaleDownloadAttemptException()
                 }
@@ -146,7 +123,7 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
                         entity = entity,
                         source = tempFile,
                         extension = extension,
-                        mimeType = response.header("Content-Type")
+                        mimeType = transfer.contentType
                             ?.substringBefore(';')
                             ?.trim()
                             ?: entity.mimeType
@@ -158,7 +135,7 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
                     // rather than leave a track nothing in the app knows about.
                     publishedUri = published.uri
                     tempFile.delete()
-                    coroutineContext.ensureActive()
+                    currentCoroutineContext().ensureActive()
                     val completed = dao.updateState(
                         downloadId = downloadId,
                         attemptId = attemptId,
@@ -175,7 +152,7 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
                         deletePublished(published.uri)
                     }
                     publishedUri = null
-                    return@use Result.success()
+                    return@run Result.success()
                 }
 
                 finalFile.delete()
@@ -184,7 +161,7 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
                     tempFile.delete()
                 }
                 finalizedFile = finalFile
-                coroutineContext.ensureActive()
+                currentCoroutineContext().ensureActive()
                 val completed = dao.updateState(
                     downloadId = downloadId,
                     attemptId = attemptId,
@@ -215,7 +192,7 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
             finalizedFile?.delete()
             publishedUri?.let(::deletePublished)
             val shouldRetry = runAttemptCount < MAX_RETRIES &&
-                (error is IOException || (error is DownloadHttpException && error.code >= 500))
+                (error is IOException || (error is RangedDownloader.HttpStatusException && error.code >= 500))
             Timber.tag(TAG).w(error, "Cloud track download failed for %s", sourceUri)
             val updated = dao.updateState(
                 downloadId = downloadId,
@@ -345,7 +322,6 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
         val allowedHost: String?
     )
 
-    private class DownloadHttpException(val code: Int) : IOException("Server returned HTTP $code")
     private class StaleDownloadAttemptException : Exception()
 
     companion object {
@@ -357,6 +333,7 @@ class CloudTrackDownloadWorker @AssistedInject constructor(
         const val KEY_TOTAL_BYTES = "total_bytes"
         const val KEY_ERROR = "error"
         private const val PROGRESS_STEP_BYTES = 512L * 1024L
+
         private const val MAX_RETRIES = 3
     }
 }
