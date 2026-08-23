@@ -527,7 +527,15 @@ fun SongInfoBottomSheet(
                                             val downloadState = songInfoViewModel.downloadStateFor(
                                                 song, savedVideoIds, downloadProgress
                                             )
-                                            if (downloadState != SongInfoBottomSheetViewModel.DownloadUiState.UNAVAILABLE) {
+                                            // A streaming YouTube track is a cloud song too, and the
+                                            // cloud button below already draws it with queued, failed
+                                            // and remove states this one cannot show. Two Download
+                                            // buttons appeared on every such track. Once downloaded,
+                                            // the track is local again and only this button remains,
+                                            // which is where its Downloaded state is still wanted.
+                                            if (!isCloudSong &&
+                                                downloadState != SongInfoBottomSheetViewModel.DownloadUiState.UNAVAILABLE
+                                            ) {
                                                 val done = downloadState == SongInfoBottomSheetViewModel.DownloadUiState.DOWNLOADED
                                                 val running = downloadState == SongInfoBottomSheetViewModel.DownloadUiState.IN_PROGRESS
                                                 val pct = song.ytVideoId?.let { downloadProgress[it] }
