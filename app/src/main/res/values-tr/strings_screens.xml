@@ -11,7 +11,7 @@
     <string name="about_signal_community_first">Önce topluluk</string>
     <string name="about_signal_material3">Etkileyici Material 3</string>
     <string name="about_signal_open_source">Açık kaynak</string>
-    <string name="about_support_body">FOSS sürümünün bakımının yapılmasına, gözden geçirilmesine ve gerçek Android cihazlarda test edilmesine destek olun.</string>
+    <string name="about_support_body">Helora bir türev. Bağış, üzerine kurulduğu oynatıcıyı yazan ve sürdüren @lostf1sh\'e gidiyor.</string>
     <string name="about_support_chip_ci">CI ve sürümler</string>
     <string name="about_support_chip_foss">FOSS bakımı</string>
     <string name="about_support_chip_streaming">Kendi barındırdığınız müzik</string>
@@ -226,7 +226,7 @@
     <string name="word_delimiter_toast_invalid">Zaten var veya geçersiz</string>
     <string name="word_delimiter_toast_reset">Kelime sınırlayıcıları varsayılana sıfırlandı</string>
     <string name="word_delimiters_screen_title">Kelime Sınırlayıcıları</string>
-    <string name="about_support_title">Helora\'ya destek olun</string>
+    <string name="about_support_title">PixelPlayerOSS\'a destek olun</string>
     <string name="crash_report_share_subject">Helora çökme raporu</string>
     <string name="easter_egg_thank_you">Helora\'yı kullandığınız için teşekkürler!</string>
     <string name="home_empty_placeholder_subtitle">Helora şarkı bulduğunda veya bir kaynağı eşitlediğinde karışımınız burada görünür.</string>

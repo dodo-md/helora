@@ -11,7 +11,7 @@
     <string name="about_signal_community_first">المجتمع أولاً</string>
     <string name="about_signal_material3">تصميم Material 3 معبر</string>
     <string name="about_signal_open_source">مفتوح المصدر</string>
-    <string name="about_support_body">ساعد في استمرار صيانة نسخة FOSS ومراجعتها واختبارها على أجهزة أندرويد حقيقية.</string>
+    <string name="about_support_body">Helora مشروع مشتق. يذهب الدعم إلى @lostf1sh الذي كتب المشغل الذي بُني عليه ويتولى صيانته.</string>
     <string name="about_support_chip_ci">التكامل المستمر والإصدارات</string>
     <string name="about_support_chip_foss">صيانة نسخة FOSS</string>
     <string name="about_support_chip_streaming">موسيقى مستضافة ذاتياً</string>
@@ -226,7 +226,7 @@
     <string name="word_delimiter_toast_invalid">موجود بالفعل أو غير صالح</string>
     <string name="word_delimiter_toast_reset">تمت إعادة تعيين محددات الكلمات إلى الافتراضية</string>
     <string name="word_delimiters_screen_title">محددات الكلمات</string>
-    <string name="about_support_title">ادعم Helora</string>
+    <string name="about_support_title">ادعم PixelPlayerOSS</string>
     <string name="crash_report_share_subject">تقرير انهيار Helora</string>
     <string name="easter_egg_thank_you">شكرًا لاستخدامك Helora!</string>
     <string name="home_empty_placeholder_subtitle">ستظهر مجموعتك هنا عندما يعثر Helora على أغانٍ أو يزامن مصدرًا.</string>
