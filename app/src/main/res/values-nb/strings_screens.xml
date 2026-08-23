@@ -226,4 +226,13 @@
     <string name="word_delimiter_toast_invalid">Finnes allerede eller er ugyldig</string>
     <string name="word_delimiter_toast_reset">Orddelimitere tilbakestilt til standard</string>
     <string name="word_delimiters_screen_title">Orddelimitere</string>
+    <string name="about_support_title">Støtt Helora</string>
+    <string name="crash_report_share_subject">Krasjrapport for Helora</string>
+    <string name="easter_egg_thank_you">Takk for at du bruker Helora!</string>
+    <string name="home_empty_placeholder_subtitle">Miksen din dukker opp her når Helora finner sanger eller synkroniserer en kilde.</string>
+    <string name="setup_backup_have_description">Har du allerede en Helora-sikkerhetskopi, gjenopprett den nå og hopp over det meste av resten av oppsettet på denne enheten.</string>
+    <string name="setup_external_services_subtitle">Helora fungerer uten nett som standard. Slå bare på oppslagene du vil ha.</string>
+    <string name="setup_permission_alarms_description">Valgfritt, men anbefalt hvis du bruker sovetimeren og vil at Helora skal stoppe avspillingen presis.</string>
+    <string name="setup_permission_media_description">Helora trenger tilgang til lydfilene dine for å bygge musikkbiblioteket.</string>
+    <string name="setup_theme_dark_description">Standard mørkt Material 3-utseende for Helora.</string>
 </resources>

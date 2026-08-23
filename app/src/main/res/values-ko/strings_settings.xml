@@ -249,4 +249,5 @@
     <string name="toast_regenerated_palettes_partial">%2$d개 중 %1$d개의 앨범 아트 팔레트가 재생성되었습니다</string>
     <string name="toast_stats_regeneration_started">통계 재생성 시작됨</string>
     <string name="working_ellipsis">작업 중…</string>
+    <string name="setcat_about_helora_title">Helora 정보</string>
 </resources>

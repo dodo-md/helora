@@ -226,4 +226,13 @@
     <string name="word_delimiter_toast_invalid">이미 존재하거나 유효하지 않습니다</string>
     <string name="word_delimiter_toast_reset">단어 구분 기호가 기본값으로 재설정되었습니다</string>
     <string name="word_delimiters_screen_title">단어 구분 기호</string>
+    <string name="about_support_title">Helora 후원하기</string>
+    <string name="crash_report_share_subject">Helora 오류 보고서</string>
+    <string name="easter_egg_thank_you">Helora를 사용해 주셔서 고맙습니다!</string>
+    <string name="home_empty_placeholder_subtitle">Helora가 곡을 찾거나 소스를 동기화하면 믹스가 여기에 표시됩니다.</string>
+    <string name="setup_backup_have_description">이미 Helora 백업이 있다면 지금 복원하고 이 기기에서 남은 설정 대부분을 건너뛰세요.</string>
+    <string name="setup_external_services_subtitle">Helora는 기본적으로 오프라인으로 동작합니다. 원하는 조회만 켜세요.</string>
+    <string name="setup_permission_alarms_description">선택 사항이지만, 취침 타이머를 쓰면서 Helora가 정확한 시각에 재생을 멈추길 원한다면 권장합니다.</string>
+    <string name="setup_permission_media_description">Helora가 음악 보관함을 만들려면 오디오 파일에 접근해야 합니다.</string>
+    <string name="setup_theme_dark_description">Helora의 기본 Material 3 다크 테마입니다.</string>
 </resources>

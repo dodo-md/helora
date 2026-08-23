@@ -374,4 +374,29 @@
     <string name="presentation_batch_g_topbar_build_stable">Stabil</string>
     <string name="presentation_batch_g_topbar_cd_changelog">Log Perubahan</string>
     <string name="presentation_batch_g_yes">Ya</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">Perbaikan</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>Radio kini sepenuhnya mengandalkan rekomendasi YouTube.</item>
+        <item>Saat sebuah stasiun habis, radio berpindah ke stasiun artis yang sudah diputar alih-alih berhenti.</item>
+        <item>Trek yang diunduh dapat diberi tag genre yang sebenarnya.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>Lagu yang diunduh kini muncul di pustaka, di lagu yang disukai, dan di statistik mendengarkan.</item>
+        <item>Trek YouTube disimpan atas nama artis, bukan kanal Topic miliknya.</item>
+        <item>Radio tidak lagi mengulang lagu atau memutar beberapa trek artis yang sama berturut-turut.</item>
+        <item>Nama baru, ikon baru, dan sebelas bahasa di seluruh aplikasi.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>Memperbaiki kegagalan saat mengunduh.</item>
+        <item>Antrean radio tidak lagi tumbuh tanpa batas.</item>
+        <item>Menghapus genre pengganti “YouTube Music”.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Rilis pertama Helora, fork dari PixelPlayerOSS dengan tambahan YouTube Music.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">Helora memisahkan tag artis memakai pemisah karakter (/, ;, &amp;) dan pemisah kata (feat., ft., vs., x). Pemisah kata dicocokkan tanpa membedakan huruf besar dan kecil.\n\n\"Ekstrak Artis dari Judul\" mengenali pola seperti (feat. Artis) pada judul lagu.\n\nGaris miring terbalik (\\) dapat dipakai untuk meloloskan pemisah karakter.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Perbarui ke versi Helora terbaru dan pastikan masalahnya masih terjadi.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Versi Helora:</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Selamat datang di Helora %1$s</string>
 </resources>

@@ -174,7 +174,7 @@
     <string name="browse_by_genre">Browse by genre</string>
     <string name="no_genres_available">No genres available.</string>
 
-    <string name="about_app_name">Helora</string>
+    <string name="about_app_name" translatable="false">Helora</string>
     <string name="about_tagline">Local-first music, self-hosted streaming, and Material 3 craft in one FOSS player.</string>
     <string name="about_version_format">Version v%1$s</string>
     <string name="about_contributions_format">%1$d contrib.</string>
@@ -184,7 +184,7 @@
     <string name="about_project_title">Project</string>
     <string name="about_project_subtitle">Source, releases, and community entry points.</string>
     <string name="about_link_source_title">Source code</string>
-    <string name="about_link_source_subtitle">github.com/dodo-md/helora</string>
+    <string name="about_link_source_subtitle" translatable="false">github.com/dodo-md/helora</string>
     <string name="about_link_fdroid_title">F-Droid</string>
     <string name="about_link_fdroid_subtitle">Available on the F-Droid catalog</string>
     <string name="cd_about_open_link">Open %1$s</string>

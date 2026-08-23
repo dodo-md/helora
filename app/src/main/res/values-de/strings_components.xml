@@ -162,4 +162,6 @@
     <string name="widget_tap_to_open">Antippen zum Öffnen</string>
     <string name="widget_tap_to_play">Antippen zum Abspielen</string>
     <string name="widget_wavy_progress_bar_desc">Fortschrittsbalken, %1$d Prozent</string>
+    <string name="song_info_ringtone_permission_prompt">Aktiviere "Systemeinstellungen ändern" und kehre dann zu Helora zurück, der Rest passiert automatisch.</string>
+    <string name="song_info_tone_picker_body">Wähle, wo Helora diesen Ton installieren soll.</string>
 </resources>

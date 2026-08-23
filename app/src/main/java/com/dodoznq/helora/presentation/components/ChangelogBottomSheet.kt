@@ -65,21 +65,18 @@ data class ChangelogVersion(
 private fun changelogVersions(): List<ChangelogVersion> = listOf(
     ChangelogVersion(
         version = "0.2.0",
-        date = "2026-07-12",
+        date = "2026-08-22",
         sections = listOf(
-            ChangelogSection(R.string.presentation_batch_g_changelog_sec_whats_new, R.array.presentation_batch_g_changelog_v020_whats_new),
-            ChangelogSection(R.string.presentation_batch_g_changelog_sec_improvements, R.array.presentation_batch_g_changelog_v020_improvements),
-            ChangelogSection(R.string.presentation_batch_g_changelog_sec_under_the_hood, R.array.presentation_batch_g_changelog_v020_under_the_hood)
+            ChangelogSection(R.string.presentation_batch_g_changelog_sec_whats_new, R.array.presentation_batch_g_changelog_020_whats_new),
+            ChangelogSection(R.string.presentation_batch_g_changelog_sec_improvements, R.array.presentation_batch_g_changelog_020_improvements),
+            ChangelogSection(R.string.presentation_batch_g_changelog_sec_fixes, R.array.presentation_batch_g_changelog_020_fixes)
         )
     ),
     ChangelogVersion(
         version = "0.1.0",
-        date = "2026-06-09",
+        date = "2026-08-21",
         sections = listOf(
-            ChangelogSection(R.string.presentation_batch_g_changelog_sec_initial_release, R.array.presentation_batch_g_changelog_070_whats_new),
-            ChangelogSection(R.string.presentation_batch_g_changelog_sec_removed_for_foss, R.array.presentation_batch_g_changelog_070_improvements),
-            ChangelogSection(R.string.presentation_batch_g_changelog_sec_release_readiness, R.array.presentation_batch_g_changelog_070_fixes),
-            ChangelogSection(R.string.presentation_batch_g_changelog_sec_security_privacy, R.array.presentation_batch_g_changelog_070_added)
+            ChangelogSection(R.string.presentation_batch_g_changelog_sec_initial_release, R.array.presentation_batch_g_changelog_010_initial)
         )
     )
 )

@@ -374,4 +374,29 @@
     <string name="presentation_batch_g_topbar_build_stable">Stable</string>
     <string name="presentation_batch_g_topbar_cd_changelog">Journal des modifications</string>
     <string name="presentation_batch_g_yes">Oui</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">Corrections</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>La radio puise désormais entièrement dans les recommandations de YouTube.</item>
+        <item>Quand une station s\'épuise, la radio bascule vers celle d\'un artiste déjà écouté au lieu de s\'arrêter.</item>
+        <item>Les titres téléchargés peuvent recevoir un vrai genre.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>Les morceaux téléchargés apparaissent maintenant dans votre bibliothèque, dans vos favoris et dans les statistiques d\'écoute.</item>
+        <item>Les titres YouTube sont classés sous le nom de l\'artiste plutôt que sous sa chaîne Topic.</item>
+        <item>La radio ne répète plus les morceaux et n\'enchaîne plus plusieurs titres du même artiste.</item>
+        <item>Nouveau nom, nouvelle icône et onze langues dans toute l\'application.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>Correction du plantage pendant le téléchargement.</item>
+        <item>La file d\'attente de la radio ne grossit plus indéfiniment.</item>
+        <item>Le genre de remplissage «YouTube Music» a été supprimé.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Première version de Helora, un fork de PixelPlayerOSS avec YouTube Music.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">Helora sépare les balises d\'artiste avec des séparateurs de caractères (/, ;, &amp;) et de mots (feat., ft., vs., x). Les séparateurs de mots ne tiennent pas compte de la casse.\n\n\"Extraire les artistes du titre\" détecte des motifs comme (feat. Artiste) dans les titres.\n\nLa barre oblique inverse (\\) permet d\'échapper les séparateurs de caractères.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Mettez à jour vers la dernière version de Helora et vérifiez que le problème persiste.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Version de Helora :</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Bienvenue dans Helora %1$s</string>
 </resources>

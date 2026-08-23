@@ -162,4 +162,6 @@
     <string name="widget_tap_to_open">Нажмите, чтобы открыть</string>
     <string name="widget_tap_to_play">Нажмите для воспроизведения</string>
     <string name="widget_wavy_progress_bar_desc">Индикатор прогресса, %1$d%%</string>
+    <string name="song_info_ringtone_permission_prompt">Включите "Изменение системных настроек", затем вернитесь в Helora, остальное завершится само.</string>
+    <string name="song_info_tone_picker_body">Выберите, куда Helora должна установить этот звук.</string>
 </resources>

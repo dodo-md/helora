@@ -181,11 +181,7 @@
     <string name="presentation_batch_g_artist_group_by_album_artist">按专辑艺术家分组</string>
     <string name="presentation_batch_g_artist_group_by_album_artist_sub">艺术家列表与专辑将按照专辑艺术家分组，避免合作、合辑艺术家扰乱列表。</string>
     <string name="presentation_batch_g_artist_info_title">关于多艺术家解析</string>
-    <string name="presentation_batch_g_artist_info_body">Helora 使用字符分隔符（/、;、&amp;）以及关键词分隔符（feat.、ft.、vs.、x）拆分艺术家标签，关键词分隔符匹配不区分大小写。
-
-“从歌曲标题提取艺术家”可以识别歌名内类似 (feat. 艺人) 的格式。
-
-反斜杠(\)可用来转义字符分隔符。</string>
+    <string name="presentation_batch_g_artist_info_body">Helora 使用字符分隔符（/、;、&amp;）和词语分隔符（feat.、ft.、vs.、x）来拆分艺人标签。词语分隔符匹配时不区分大小写。\n\n“从歌曲标题提取艺术家”会识别歌曲标题中形如 (feat. 艺人) 的写法。\n\n反斜杠（\\）可用于转义字符分隔符。</string>
     <string name="presentation_batch_g_artist_example_arrow"> → </string>
     <string name="presentation_batch_g_artist_examples_title">示例</string>
     <string name="presentation_batch_g_artist_ex_1_in">"Artist1/Artist2"</string>
@@ -381,136 +377,29 @@
     <string name="presentation_batch_g_changelog_sec_removed_for_foss">开源版移除内容</string>
     <string name="presentation_batch_g_changelog_sec_release_readiness">发布准备工作</string>
     <string name="presentation_batch_g_changelog_sec_security_privacy">安全与隐私</string>
-    <string-array name="presentation_batch_g_changelog_060_whats_new">
-        <item>最近播放记录与持久化队列恢复，保留你的播放会话。</item>
-        <item>内置备份恢复v3与账号管理工具。</item>
-        <item>歌词系统增强，支持手动搜索兜底方案，优化存储逻辑。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_060_improvements">
-        <item>大幅度优化启动、曲库、队列与播放器交互性能。</item>
-        <item>导航与搜索逻辑更稳定，路由处理更安全。</item>
-        <item>音频播放兼容性提升，适配更多设备与格式。</item>
-        <item>歌曲、专辑、歌单页面多选操作得到扩展。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_060_fixes">
-        <item>队列与随机播放行为更加稳定可控。</item>
-        <item>修复睡眠定时、文件页导航、专辑艺术家相关崩溃问题。</item>
-        <item>优化小组件加载与服务稳定性，缓解过热、内存异常问题。</item>
-        <item>全应用多处漏洞修复与界面细节打磨。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_050_highlights">
-        <item>Material3 表现力界面大更新</item>
-        <item>10段均衡器与音效模块</item>
-        <item>全新曲库同步流程</item>
-        <item>M3U歌单导入导出</item>
-        <item>接入Deezer艺术家封面</item>
-        <item>自定义歌单封面</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_050_improvements">
-        <item>设置模块架构重构</item>
-        <item>队列与播放器动画优化</item>
-        <item>基线配置文件，整体性能提升</item>
-        <item>增强歌词系统，支持歌词时间偏移调节</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_050_fixes">
-        <item>播放面板稳定性修复</item>
-        <item>通用漏洞修复与界面整理</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_040_highlights">
-        <item>导航界面大规模重新设计</item>
-        <item>全新文件浏览器，自定义扫描目录</item>
-        <item>跨设备无缝接续播放</item>
-        <item>歌曲间无缝衔接播放</item>
-        <item>交叉淡入淡出控制</item>
-        <item>新增自定义转场效果（仅歌单可用）</item>
-        <item>关闭应用后继续后台播放</item>
-        <item>界面性能优化</item>
-        <item>统计模块功能增强</item>
-        <item>重新设计队列控制面板，新增多项功能</item>
-        <item>增强音频格式支持与元数据编辑能力</item>
-        <item>权限控制器优化</item>
-        <item>若干小漏洞修复</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_030_whats_new">
-        <item>收听统计中心功能扩充，提供更详尽的会话分析。</item>
-        <item>悬浮快速播放器，可直接打开预览本地音频文件。</item>
-        <item>新增文件夹页面，树形目录导航，适配歌单视图。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_030_improvements">
-        <item>整体Material3界面打磨，布局更整洁统一。</item>
-        <item>元数据编辑支持更换专辑封面。</item>
-        <item>全局动画转场更加顺滑流畅。</item>
-        <item>艺术家页面布局优化，细节更加丰富。</item>
-        <item>每日精选与个性推荐算法升级，曲目选择更加多元。</item>
-        <item>搜索相关性与展示效果优化，查找内容更快。</item>
-        <item>支持更多音频文件格式。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_030_fixes">
-        <item>修复元数据异常，保证歌曲信息在各处保持准确。</item>
-        <item>修复通知快捷操作，可靠跳转回播放界面。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_020_added">
-        <item>内置更新日志，随时查看版本新特性。</item>
-        <item>支持内嵌与外部 .LRC 歌词文件。</item>
-        <item>离线歌词支持。</item>
-        <item>时间轴同步歌词。</item>
-        <item>全新完整队列页面。</item>
-        <item>队列歌曲重排序、删除。</item>
-        <item>迷你播放器手势（向下滑动关闭）。</item>
-        <item>更多Material风格动画。</item>
-        <item>新增界面外观自定义设置项。</item>
-        <item>新增清理缓存设置。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_020_changed">
-        <item>用户界面完整重制。</item>
-        <item>播放器页面完整重制。</item>
-        <item>曲库性能优化。</item>
-        <item>应用启动速度提升。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_020_fixed">
-        <item>修复标签编辑器各类漏洞。</item>
-        <item>修复播放通知无法清除的问题。</item>
-        <item>修复多项会造成闪退的程序缺陷。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_070_whats_new">
-        <item>Helora首个公开开源版本。</item>
-        <item>包含本地播放、歌单、收藏、歌词、收听统计、动态Material3主题、小组件、备份恢复。</item>
-        <item>保留自建Navidrome/Subsonic、Jellyfin服务支持，可选接入LRCLIB歌词与Deezer艺术家封面查询。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_070_improvements">
-        <item>移除Telegram、网易云、QQ音乐、Google云端、Gemini、投屏、Wear OS、应用商店付费、Firebase、崩溃收集、Google服务框架依赖。</item>
-        <item>移除公共Last.fm、ListenBrainz歌曲打卡；自建Navidrome/Subsonic上报仅限于用户私有服务器。</item>
-        <item>首个开源版本移除内置多语言包与应用内语言切换，优先提供英文资源。</item>
-        <item>去除依赖本地私有签名、虚拟签名值、商店专属条件的发布流程。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_070_fixes">
-        <item>补充F‑Droid元数据、Fastlane商店信息、隐私说明、安全提示、依赖许可文档、贡献者指引。</item>
-        <item>本地不存在签名密钥时，发布构建保持未签名状态。</item>
-        <item>新增pixelplayer.disableReleaseSigning=true参数，用于可复现的无签名校验构建。</item>
-        <item>整理资源与依赖许可溯源，包含Maven原生二进制包、JitPack依赖。</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_070_added">
-        <item>回环云端播放现在需要会话令牌。</item>
-        <item>备份恢复会跳过由专属模块处理器管理的配置项。</item>
-        <item>正式版日志收紧，避免HTTP请求头与原始Android日志绕过Timber发布过滤。</item>
-        <item>同时新增智能歌单持久化、重复曲目扫描、播放倍速控制、更清晰的播放/同步失败提示，以及无障碍能力改进。</item>
-    </string-array>
 
     <string name="presentation_batch_g_changelog_sec_whats_new">新增功能</string>
     <string name="presentation_batch_g_changelog_sec_improvements">优化改进</string>
     <string name="presentation_batch_g_changelog_sec_under_the_hood">底层改动</string>
-    <string-array name="presentation_batch_g_changelog_v020_whats_new">
-        <item>Material3表现力设计升级：全新动效体系、波浪进度条，全局形状形变动画。</item>
-        <item>允许VPN、局域网环境下使用HTTP协议连接Jellyfin服务器。</item>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">修复</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>电台现在完全来自 YouTube 自己的推荐。</item>
+        <item>某个电台播完后，会跳到你已经听过的艺人的电台，而不是直接停止。</item>
+        <item>下载的曲目可以写入真实的音乐流派。</item>
     </string-array>
-    <string-array name="presentation_batch_g_changelog_v020_improvements">
-        <item>安装包体积缩小：代码压缩规则优化，安装包减少约1.5MB。</item>
-        <item>启动更快更顺滑：基线配置文件完全重生成，适配新版UI与代码路径。</item>
-        <item>Compose大规模性能优化，列表、弹窗、均衡器响应更加灵敏。</item>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>下载的歌曲现在会出现在音乐库、喜欢的歌曲和收听统计中。</item>
+        <item>YouTube 曲目按艺人名称归档，而不是其 Topic 频道。</item>
+        <item>电台不再重复歌曲，也不会连续播放同一位艺人的多首曲目。</item>
+        <item>新名称、新图标，以及贯穿全应用的十一种语言。</item>
     </string-array>
-    <string-array name="presentation_batch_g_changelog_v020_under_the_hood">
-        <item>云端播放可靠性提升：快速切歌时，被取消的Navidrome/Jellyfin请求不再误报网络错误。</item>
-        <item>屏幕旋转不会丢失备份、恢复、初始化流程事件。</item>
-        <item>代码清理：删除废弃代码，迁移废弃API，升级第三方依赖。</item>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>修复了下载时的崩溃。</item>
+        <item>电台队列不再无限增长。</item>
+        <item>移除了占位流派“YouTube Music”。</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Helora 的首个版本，基于 PixelPlayerOSS 并加入了 YouTube Music。</item>
     </string-array>
 </resources>

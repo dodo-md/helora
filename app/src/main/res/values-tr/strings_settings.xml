@@ -249,4 +249,5 @@
     <string name="toast_regenerated_palettes_partial">%2$d albüm kapağı paletinden %1$d tanesi yeniden oluşturuldu</string>
     <string name="toast_stats_regeneration_started">İstatistikleri yeniden oluşturma işlemi başlatıldı</string>
     <string name="working_ellipsis">Çalışıyor…</string>
+    <string name="setcat_about_helora_title">Helora hakkında</string>
 </resources>

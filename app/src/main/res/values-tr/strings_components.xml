@@ -162,4 +162,6 @@
     <string name="widget_tap_to_open">Açmak için dokun</string>
     <string name="widget_tap_to_play">Oynatmak için dokun</string>
     <string name="widget_wavy_progress_bar_desc">İlerleme çubuğu, yüzde %1$d</string>
+    <string name="song_info_ringtone_permission_prompt">Sistem ayarlarını değiştirme iznini açın, sonra Helora\'ya dönün, gerisi kendiliğinden tamamlanır.</string>
+    <string name="song_info_tone_picker_body">Helora\'nın bu sesi nereye kuracağını seçin.</string>
 </resources>

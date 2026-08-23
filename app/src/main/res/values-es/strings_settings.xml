@@ -249,4 +249,5 @@
     <string name="toast_regenerated_palettes_partial">Regeneradas %1$d de %2$d paletas de carátula</string>
     <string name="toast_stats_regeneration_started">Regeneración de estadísticas iniciada</string>
     <string name="working_ellipsis">Trabajando…</string>
+    <string name="setcat_about_helora_title">Acerca de Helora</string>
 </resources>

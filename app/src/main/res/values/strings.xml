@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Helora</string>
+    <string name="app_name" translatable="false">Helora</string>
     <string name="app_name_change_title">App Name Change</string>
     <string name="app_name_change_message">This app is now Helora. Keep playing!</string>
     <string name="do_not_show_again">Do not show again</string>
@@ -39,7 +39,7 @@
     <string name="lyrics">Lyrics</string>
     <string name="loading_lyrics">Loading lyrics…</string>
     <string name="lyrics_provided_by">Lyrics provided by</string>
-    <string name="lrclib_uri">https://lrclib.net/</string>
+    <string name="lrclib_uri" translatable="false">https://lrclib.net/</string>
     <string name="lyrics_not_found">Lyrics not found</string>
     <string name="search_lyrics_online_prompt">Would you like to search for lyrics online?</string>
     <string name="lyrics_custom_search_hint">We couldn\'t find lyrics automatically. You can edit the title or artist and try searching manually.</string>
@@ -127,7 +127,7 @@
     <string name="playlist_share_failed">Share failed: %1$s</string>
     <string name="playlist_none_to_export">No playlists to export</string>
     <string name="playlist_export_failed">Export failed: %1$s</string>
-    <string name="playlist_export_folder_display">Music/Helora Exports</string>
+    <string name="playlist_export_folder_display" translatable="false">Music/Helora Exports</string>
     <string name="error_unknown">Unknown error</string>
 
 
@@ -241,7 +241,7 @@
     <string name="cloud_download_action">Download</string>
     <string name="cloud_download_queued">Queued</string>
     <string name="cloud_downloading">Downloading…</string>
-    <string name="cloud_download_progress">%1$d%%</string>
+    <string name="cloud_download_progress" translatable="false">%1$d%%</string>
     <string name="cloud_remove_download">Remove download</string>
     <string name="cloud_download_retry">Retry</string>
     <string name="cloud_album_download">Download album</string>
@@ -253,7 +253,7 @@
     <string name="cloud_downloads_active_section">Queued and downloading</string>
     <string name="cloud_downloads_failed_section">Failed</string>
     <string name="cloud_downloads_completed_section">Completed</string>
-    <string name="cloud_downloads_section_count">%1$s · %2$d</string>
+    <string name="cloud_downloads_section_count" translatable="false">%1$s · %2$d</string>
     <string name="cloud_downloads_unknown_track">Unknown track</string>
     <string name="cloud_downloads_downloaded_size">Downloaded · %1$s</string>
     <string name="cloud_downloads_failed_fallback">Download failed</string>
@@ -272,7 +272,7 @@
     <string name="musicbrainz_match_score">Match confidence: %1$d%%</string>
     <string name="musicbrainz_applied">MusicBrainz identifiers saved. Missing year and placeholder names were enriched.</string>
 
-    <string name="search_filter_youtube_music">YouTube Music</string>
+    <string name="search_filter_youtube_music" translatable="false">YouTube Music</string>
     <string name="search_youtube_offline">You’re offline. Connect to search YouTube Music.</string>
     <string name="search_youtube_error">Couldn’t reach YouTube Music.</string>
     <string name="search_youtube_retry">Retry</string>

@@ -181,11 +181,7 @@
     <string name="presentation_batch_g_artist_group_by_album_artist">Group by Album Artist</string>
     <string name="presentation_batch_g_artist_group_by_album_artist_sub">Group the Artists tab and albums by album artist, so featured and compilation artists don\'t clutter the list</string>
     <string name="presentation_batch_g_artist_info_title">About Multi-Artist Parsing</string>
-    <string name="presentation_batch_g_artist_info_body">Helora splits artist tags using character delimiters (/, ;, &amp;) and word delimiters (feat., ft., vs., x). Word delimiters are matched case-insensitively.
-
-"Extract Artists from Title" detects patterns like (feat. Artist) in song titles.
-
-Backslash (\) can be used to escape character delimiters.</string>
+    <string name="presentation_batch_g_artist_info_body">Helora splits artist tags using character delimiters (/, ;, &amp;) and word delimiters (feat., ft., vs., x). Word delimiters are matched case-insensitively.\n\n\"Extract Artists from Title\" detects patterns like (feat. Artist) in song titles.\n\nBackslash (\\) can be used to escape character delimiters.</string>
     <string name="presentation_batch_g_artist_example_arrow"> → </string>
     <string name="presentation_batch_g_artist_examples_title">Examples</string>
     <string name="presentation_batch_g_artist_ex_1_in">\"Artist1/Artist2\"</string>
@@ -339,7 +335,7 @@ Backslash (\) can be used to escape character delimiters.</string>
     <string name="presentation_batch_g_album_sel_selected">selected</string>
     <string name="presentation_batch_g_album_sel_queue_hint">Queue + play respects your selection order.</string>
     <string name="presentation_batch_g_album_sel_limit">Limit: %1$d albums per selection.</string>
-    <string name="presentation_batch_g_app_name">Helora</string>
+    <string name="presentation_batch_g_app_name" translatable="false">Helora</string>
     <string name="presentation_batch_g_app_tagline">Music Player</string>
     <string name="presentation_batch_g_brick_high">HIGH %1$d</string>
     <string name="presentation_batch_g_brick_cd_close">Close</string>
@@ -381,136 +377,29 @@ Backslash (\) can be used to escape character delimiters.</string>
     <string name="presentation_batch_g_changelog_sec_removed_for_foss">Removed for FOSS</string>
     <string name="presentation_batch_g_changelog_sec_release_readiness">Release readiness</string>
     <string name="presentation_batch_g_changelog_sec_security_privacy">Security and privacy</string>
-    <string-array name="presentation_batch_g_changelog_060_whats_new">
-        <item>Recently Played and persistent queue restoration keep your listening session ready.</item>
-        <item>Backup &amp; Restore v3 and account management tools are now included.</item>
-        <item>Lyrics got smarter with manual search fallback and storage improvements.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_060_improvements">
-        <item>Big performance pass across startup, library, queue, and player interactions.</item>
-        <item>Navigation and search flows are more reliable, with safer route handling.</item>
-        <item>Audio playback compatibility improved for more devices and formats.</item>
-        <item>Multi-selection workflows were expanded across songs, albums, and playlists.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_060_fixes">
-        <item>Queue and shuffle behavior is now more stable and predictable.</item>
-        <item>Sleep Timer, Files tab navigation, and album artist crash issues were fixed.</item>
-        <item>Widget loading and service stability were improved to reduce overheating/memory issues.</item>
-        <item>General bug fixes and UI polish across the app.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_050_highlights">
-        <item>Material 3 Expressive UI Update</item>
-        <item>10-band Equalizer &amp; Effects</item>
-        <item>New Library Sync Flow</item>
-        <item>M3U Playlist Import/Export</item>
-        <item>Deezer Artist Artwork Integration</item>
-        <item>Custom Playlist Covers</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_050_improvements">
-        <item>Settings Architecture Refactor</item>
-        <item>Queue &amp; Player Animations</item>
-        <item>Baseline Profiles &amp; Performance</item>
-        <item>Better Lyrics System with Sync Offset</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_050_fixes">
-        <item>Player Sheet Stability</item>
-        <item>General Bug Fixes &amp; Cleanup</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_040_highlights">
-        <item>Major navigation redesign</item>
-        <item>New file explorer for choosing source directories</item>
-        <item>Seamless continuity between remote devices</item>
-        <item>Gapless transition between songs</item>
-        <item>Crossfade control</item>
-        <item>New Custom Transitions feature (only for playlists)</item>
-        <item>Keep playing after closed the app</item>
-        <item>UI Optimizations</item>
-        <item>Improved stats feature</item>
-        <item>Redesigned Queue control with more features</item>
-        <item>Improved different filetypes support for playing and metadata editing</item>
-        <item>Improved permission controller</item>
-        <item>Minor bug fixes</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_030_whats_new">
-        <item>Introduced a richer listening stats hub with deeper insights into your sessions.</item>
-        <item>Launched a floating quick player to instantly open and preview local files.</item>
-        <item>Added a folders tab with a tree-style navigator and playlist-ready view.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_030_improvements">
-        <item>Refined the overall Material 3 UI for a cleaner and more cohesive experience.</item>
-        <item>Metadata editing now supports cover art change.</item>
-        <item>Smoothed out animations and transitions across the app for more fluid navigation.</item>
-        <item>Enhanced the artist screen layout with richer details and polish.</item>
-        <item>Upgraded DailyMix and YourMix generation with smarter, more diverse selections.</item>
-        <item>Improved search relevance and presentation for faster discovery.</item>
-        <item>Expanded support for a broader range of audio file formats.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_030_fixes">
-        <item>Resolved metadata quirks so song details stay accurate everywhere.</item>
-        <item>Restored notification shortcuts so they reliably jump back into playback.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_020_added">
-        <item>In-app changelog to keep you updated on the latest features.</item>
-        <item>Support for .LRC files, both embedded and external.</item>
-        <item>Offline lyrics support.</item>
-        <item>Synchronized lyrics (synced with the song).</item>
-        <item>New screen to view the full queue.</item>
-        <item>Reorder and remove songs from the queue.</item>
-        <item>Mini-player gestures (swipe down to close).</item>
-        <item>Added more material animations.</item>
-        <item>New settings to customize the look and feel.</item>
-        <item>New settings to clear the cache.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_020_changed">
-        <item>Complete redesign of the user interface.</item>
-        <item>Complete redesign of the player.</item>
-        <item>Performance improvements in the library.</item>
-        <item>Improved application startup speed.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_020_fixed">
-        <item>Fixed various bugs in the tag editor.</item>
-        <item>Fixed a bug where the playback notification was not clearing.</item>
-        <item>Fixed several bugs that caused the app to crash.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_070_whats_new">
-        <item>First public FOSS release of Helora.</item>
-        <item>Includes local playback, playlists, favorites, lyrics, listening stats, dynamic Material 3 theming, widgets, and backup/restore.</item>
-        <item>Keeps self-hosted Navidrome/Subsonic and Jellyfin support, plus optional LRCLIB lyrics and Deezer artist artwork lookup.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_070_improvements">
-        <item>Removed Telegram, NetEase, QQ Music, Google Drive, Gemini, Cast, Wear OS, Play Store billing, Firebase, Crashlytics, and Google Play Services runtime dependencies.</item>
-        <item>Removed public Last.fm and ListenBrainz scrobbling; self-hosted Navidrome/Subsonic reporting remains scoped to the user\'s own server.</item>
-        <item>Removed bundled translations and the in-app language selector for this first FOSS release; English resources ship first.</item>
-        <item>Removed release paths that depended on local/private signing artifacts, dummy signing values, or app-store-only assumptions.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_070_fixes">
-        <item>Added F-Droid metadata, Fastlane store metadata, privacy notes, security notes, dependency/license documentation, and contributor guidance.</item>
-        <item>Release builds stay unsigned when local signing keys are absent.</item>
-        <item>Added pixelplayer.disableReleaseSigning=true for deterministic unsigned verification builds.</item>
-        <item>Documented asset and dependency license trails, including native/binary Maven artifacts and JitPack dependencies.</item>
-    </string-array>
-    <string-array name="presentation_batch_g_changelog_070_added">
-        <item>Loopback cloud streaming now requires a per-session token.</item>
-        <item>Backup restore ignores preference keys owned by dedicated module handlers.</item>
-        <item>Release logging is tightened so HTTP request headers and raw Android logs do not bypass the Timber release filter.</item>
-        <item>Also includes smart playlist persistence, duplicate-track scanning, playback speed control, clearer playback/sync failure messages, and improved accessibility.</item>
-    </string-array>
 
     <string name="presentation_batch_g_changelog_sec_whats_new">What\'s new</string>
     <string name="presentation_batch_g_changelog_sec_improvements">Improvements</string>
     <string name="presentation_batch_g_changelog_sec_under_the_hood">Under the hood</string>
-    <string-array name="presentation_batch_g_changelog_v020_whats_new">
-        <item>Material 3 Expressive design pass: a new motion scheme, wavy progress indicators, and shape-morphing animations throughout the app.</item>
-        <item>Jellyfin servers over plain HTTP are now allowed for VPN and local-network hosts.</item>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">Fixes</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>Radio now draws entirely from YouTube\'s own recommendations.</item>
+        <item>When a station runs dry, the radio hops to the station of an artist you already heard instead of stopping.</item>
+        <item>Downloaded tracks can be tagged with a real genre.</item>
     </string-array>
-    <string-array name="presentation_batch_g_changelog_v020_improvements">
-        <item>Smaller app: leaner code-shrinking rules trim about 1.5 MB off the install size.</item>
-        <item>Faster, smoother startup: Baseline Profiles were regenerated from scratch to match the new UI and code paths.</item>
-        <item>Snappier lists, sheets, and the equalizer thanks to a wide Compose performance pass.</item>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>Downloaded songs now show up in your library, in liked songs, and in listening stats.</item>
+        <item>YouTube tracks are filed under the artist instead of their Topic channel.</item>
+        <item>The radio no longer repeats songs or plays several tracks by one artist in a row.</item>
+        <item>New name, new launcher icon, and eleven languages throughout the app.</item>
     </string-array>
-    <string-array name="presentation_batch_g_changelog_v020_under_the_hood">
-        <item>More reliable cloud playback: cancelled Navidrome/Jellyfin requests are no longer misreported as network errors when skipping tracks quickly.</item>
-        <item>Backup, restore, and setup events can no longer be lost during screen rotation.</item>
-        <item>Spring cleaning: dead code removed, deprecated APIs migrated, and dependencies updated.</item>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>Fixed the crash while downloading.</item>
+        <item>The radio queue no longer grows without limit.</item>
+        <item>Removed the “YouTube Music” placeholder genre.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>First release of Helora, a fork of PixelPlayerOSS with YouTube Music added.</item>
     </string-array>
 </resources>

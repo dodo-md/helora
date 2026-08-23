@@ -374,4 +374,29 @@
     <string name="presentation_batch_g_topbar_build_stable">Stabil</string>
     <string name="presentation_batch_g_topbar_cd_changelog">Changelog</string>
     <string name="presentation_batch_g_yes">Ja</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">Fehlerbehebungen</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>Das Radio speist sich jetzt vollständig aus den Empfehlungen von YouTube.</item>
+        <item>Ist eine Station erschöpft, wechselt das Radio zur Station eines bereits gespielten Künstlers, statt zu stoppen.</item>
+        <item>Heruntergeladene Titel können mit einem echten Genre versehen werden.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>Heruntergeladene Songs erscheinen jetzt in deiner Bibliothek, unter den Favoriten und in den Hörstatistiken.</item>
+        <item>YouTube-Titel werden unter dem Künstlernamen abgelegt statt unter dem Topic-Kanal.</item>
+        <item>Das Radio wiederholt keine Songs mehr und spielt nicht mehrere Titel desselben Künstlers hintereinander.</item>
+        <item>Neuer Name, neues App-Symbol und durchgehend elf Sprachen.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>Absturz beim Herunterladen behoben.</item>
+        <item>Die Radio-Warteschlange wächst nicht mehr unbegrenzt.</item>
+        <item>Das Platzhalter-Genre „YouTube Music“ wurde entfernt.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Erste Version von Helora, einem Fork von PixelPlayerOSS mit YouTube Music.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">Helora trennt Künstler-Tags anhand von Zeichentrennern (/, ;, &amp;) und Worttrennern (feat., ft., vs., x). Worttrenner werden ohne Beachtung der Groß- und Kleinschreibung erkannt.\n\n\"Künstler aus Titel extrahieren\" erkennt Muster wie (feat. Künstler) in Songtiteln.\n\nMit einem Backslash (\\) lassen sich Zeichentrenner maskieren.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Aktualisiere auf die neueste Helora-Version und prüfe, ob das Problem weiterhin auftritt.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Helora-Version:</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Willkommen bei Helora %1$s</string>
 </resources>

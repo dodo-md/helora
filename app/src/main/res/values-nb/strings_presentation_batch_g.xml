@@ -374,4 +374,29 @@
     <string name="presentation_batch_g_topbar_build_stable">Stabil</string>
     <string name="presentation_batch_g_topbar_cd_changelog">Endringslogg</string>
     <string name="presentation_batch_g_yes">Ja</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">Feilrettinger</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>Radioen henter nå alt fra YouTubes egne anbefalinger.</item>
+        <item>Når en stasjon går tom, hopper radioen til stasjonen til en artist du allerede har hørt i stedet for å stoppe.</item>
+        <item>Nedlastede spor kan merkes med en ekte sjanger.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>Nedlastede sanger vises nå i biblioteket, blant likte sanger og i lyttestatistikken.</item>
+        <item>YouTube-spor lagres under artistnavnet i stedet for Topic-kanalen.</item>
+        <item>Radioen gjentar ikke lenger sanger og spiller ikke flere spor av samme artist på rad.</item>
+        <item>Nytt navn, nytt ikon og elleve språk gjennom hele appen.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>Fikset krasjen under nedlasting.</item>
+        <item>Radiokøen vokser ikke lenger uten grense.</item>
+        <item>Fjernet plassholdersjangeren «YouTube Music».</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Første utgivelse av Helora, en fork av PixelPlayerOSS med YouTube Music.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">Helora deler artisttagger med tegnskilletegn (/, ;, &amp;) og ordskilletegn (feat., ft., vs., x). Ordskilletegn matches uten hensyn til store og små bokstaver.\n\n\"Hent artister fra tittel\" finner mønstre som (feat. Artist) i sangtitler.\n\nOmvendt skråstrek (\\) kan brukes til å skjerme tegnskilletegn.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Oppdater til nyeste Helora-versjon og bekreft at problemet fortsatt oppstår.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Helora-versjon:</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Velkommen til Helora %1$s</string>
 </resources>

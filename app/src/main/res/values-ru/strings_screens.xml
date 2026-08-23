@@ -226,4 +226,13 @@
     <string name="word_delimiter_toast_invalid">Уже существует или недопустим</string>
     <string name="word_delimiter_toast_reset">Словесные разделители сброшены</string>
     <string name="word_delimiters_screen_title">Словесные разделители</string>
+    <string name="about_support_title">Поддержать Helora</string>
+    <string name="crash_report_share_subject">Отчёт о сбое Helora</string>
+    <string name="easter_egg_thank_you">Спасибо, что пользуетесь Helora!</string>
+    <string name="home_empty_placeholder_subtitle">Ваш микс появится здесь, когда Helora найдёт песни или синхронизирует источник.</string>
+    <string name="setup_backup_have_description">Если у вас уже есть резервная копия Helora, восстановите её сейчас и пропустите большую часть оставшейся настройки на этом устройстве.</string>
+    <string name="setup_external_services_subtitle">По умолчанию Helora работает офлайн. Включайте только те запросы, которые вам нужны.</string>
+    <string name="setup_permission_alarms_description">Необязательно, но пригодится, если вы пользуетесь таймером сна и хотите, чтобы Helora останавливала воспроизведение точно вовремя.</string>
+    <string name="setup_permission_media_description">Helora нужен доступ к вашим аудиофайлам, чтобы собрать музыкальную библиотеку.</string>
+    <string name="setup_theme_dark_description">Стандартное тёмное оформление Material 3 для Helora.</string>
 </resources>

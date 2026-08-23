@@ -249,4 +249,5 @@
     <string name="toast_regenerated_palettes_partial">Meregenerasi %1$d dari %2$d palet sampul album</string>
     <string name="toast_stats_regeneration_started">Regenerasi statistik dimulai</string>
     <string name="working_ellipsis">Bekerja…</string>
+    <string name="setcat_about_helora_title">Tentang Helora</string>
 </resources>

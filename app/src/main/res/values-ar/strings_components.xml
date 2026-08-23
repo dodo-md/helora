@@ -162,4 +162,6 @@
     <string name="widget_tap_to_open">انقر للفتح</string>
     <string name="widget_tap_to_play">انقر للتشغيل</string>
     <string name="widget_wavy_progress_bar_desc">شريط التقدم، %1$d بالمئة</string>
+    <string name="song_info_ringtone_permission_prompt">فعّل "تعديل إعدادات النظام" ثم عد إلى Helora، وسيكتمل الباقي تلقائيًا.</string>
+    <string name="song_info_tone_picker_body">اختر المكان الذي يثبّت فيه Helora هذا الصوت.</string>
 </resources>

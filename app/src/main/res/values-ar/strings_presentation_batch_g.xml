@@ -374,4 +374,29 @@
     <string name="presentation_batch_g_topbar_build_stable">مستقر</string>
     <string name="presentation_batch_g_topbar_cd_changelog">سجل التغييرات</string>
     <string name="presentation_batch_g_yes">نعم</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">إصلاحات</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>أصبح الراديو يعتمد كليًا على توصيات YouTube.</item>
+        <item>عند نفاد محطة، ينتقل الراديو إلى محطة فنان سبق تشغيله بدل أن يتوقف.</item>
+        <item>يمكن وسم المقاطع المنزّلة بنوع موسيقي حقيقي.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>تظهر الأغاني المنزّلة الآن في مكتبتك وفي المفضلة وفي إحصاءات الاستماع.</item>
+        <item>تُحفظ مقاطع YouTube باسم الفنان بدلًا من قناة Topic.</item>
+        <item>لم يعد الراديو يكرر الأغاني ولا يشغّل عدة مقاطع لنفس الفنان تباعًا.</item>
+        <item>اسم جديد وأيقونة جديدة وإحدى عشرة لغة في كامل التطبيق.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>إصلاح الانهيار أثناء التنزيل.</item>
+        <item>لم تعد قائمة انتظار الراديو تنمو بلا حدود.</item>
+        <item>إزالة النوع النائب “YouTube Music”.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>الإصدار الأول من Helora، وهو اشتقاق من PixelPlayerOSS مع إضافة YouTube Music.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">يفصل Helora وسوم الفنانين باستخدام فواصل الأحرف (/, ;, &amp;) وفواصل الكلمات (feat., ft., vs., x). ولا تفرّق فواصل الكلمات بين الأحرف الكبيرة والصغيرة.\n\nيكتشف \"استخراج الفنانين من العنوان\" أنماطًا مثل (feat. الفنان) في عناوين الأغاني.\n\nويمكن استخدام الشرطة المائلة العكسية (\\) لتجاوز فواصل الأحرف.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">حدّث إلى أحدث إصدار من Helora وتأكد أن المشكلة ما زالت تحدث.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">إصدار Helora:</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">أهلًا بك في Helora %1$s</string>
 </resources>

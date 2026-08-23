@@ -249,4 +249,5 @@
     <string name="toast_regenerated_palettes_partial">تم إعادة توليد %1$d من أصل %2$d من لوحات ألوان الألبومات</string>
     <string name="toast_stats_regeneration_started">بدأت عملية إعادة توليد الإحصائيات</string>
     <string name="working_ellipsis">جاري العمل…</string>
+    <string name="setcat_about_helora_title">عن Helora</string>
 </resources>

@@ -21,7 +21,7 @@
     <string name="auth_navidrome_title">Subsonic / Navidrome</string>
     <string name="auth_navidrome_subtitle">Connect to your self-hosted music server</string>
     <string name="auth_navidrome_info_card">Supports Navidrome, Airsonic, Gonic, Ampache and other servers compatible with the Subsonic API.</string>
-    <string name="auth_navidrome_server_placeholder">http://192.168.1.100:4533</string>
+    <string name="auth_navidrome_server_placeholder" translatable="false">http://192.168.1.100:4533</string>
     <string name="auth_navidrome_server_url_hint">Use the full server URL, including http:// for local servers or https:// for remote servers.</string>
     <string name="auth_navidrome_username_hint">This is your Subsonic or Navidrome account name.</string>
     <string name="auth_navidrome_password_hint">App password also works if your server supports it.</string>
@@ -35,7 +35,7 @@
     <string name="auth_jellyfin_info_card">Connects to Jellyfin servers. Both HTTP and HTTPS are supported for local network access.</string>
     <string name="auth_jellyfin_subtitle">Connect to your Jellyfin media server</string>
     <string name="auth_jellyfin_connection_subtitle">Enter your Jellyfin server URL and account credentials.</string>
-    <string name="auth_jellyfin_server_placeholder">http://192.168.1.100:8096</string>
+    <string name="auth_jellyfin_server_placeholder" translatable="false">http://192.168.1.100:8096</string>
     <string name="auth_jellyfin_server_url_hint">Full URL including port. Local, Tailscale, .local, and .lan addresses can use HTTP.</string>
     <string name="auth_jellyfin_username_hint">Your Jellyfin account username.</string>
     <string name="auth_jellyfin_password_hint">Your Jellyfin account password.</string>

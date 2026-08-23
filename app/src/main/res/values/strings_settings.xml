@@ -250,7 +250,7 @@
     <string name="dialog_regenerate_stats_title">Regenerate Stats?</string>
     <string name="dialog_regenerate_stats_body">This will clear the statistics cache and force a recalculation from the database history.</string>
     <string name="toast_stats_regeneration_started">Stats regeneration started</string>
-    <string name="backup_file_name_format">Helora_Backup_%1$d.pxpl</string>
+    <string name="backup_file_name_format" translatable="false">Helora_Backup_%1$d.pxpl</string>
 
     <string name="setcat_regenerate_daily_mix_action">Regenerate Daily Mix</string>
     <string name="setcat_regenerate_stats_action">Regenerate Stats</string>

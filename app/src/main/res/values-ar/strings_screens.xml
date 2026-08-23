@@ -226,4 +226,13 @@
     <string name="word_delimiter_toast_invalid">موجود بالفعل أو غير صالح</string>
     <string name="word_delimiter_toast_reset">تمت إعادة تعيين محددات الكلمات إلى الافتراضية</string>
     <string name="word_delimiters_screen_title">محددات الكلمات</string>
+    <string name="about_support_title">ادعم Helora</string>
+    <string name="crash_report_share_subject">تقرير انهيار Helora</string>
+    <string name="easter_egg_thank_you">شكرًا لاستخدامك Helora!</string>
+    <string name="home_empty_placeholder_subtitle">ستظهر مجموعتك هنا عندما يعثر Helora على أغانٍ أو يزامن مصدرًا.</string>
+    <string name="setup_backup_have_description">إن كانت لديك نسخة احتياطية من Helora، فاستعدها الآن وتخطَّ معظم بقية الإعداد على هذا الجهاز.</string>
+    <string name="setup_external_services_subtitle">يعمل Helora دون اتصال افتراضيًا. فعّل ما تريده من عمليات البحث فقط.</string>
+    <string name="setup_permission_alarms_description">اختياري، لكنه مستحسن إن كنت تستخدم مؤقت النوم وتريد أن يوقف Helora التشغيل في موعده بالضبط.</string>
+    <string name="setup_permission_media_description">يحتاج Helora إلى الوصول إلى ملفاتك الصوتية لبناء مكتبتك الموسيقية.</string>
+    <string name="setup_theme_dark_description">المظهر الداكن الافتراضي بنمط Material 3 في Helora.</string>
 </resources>

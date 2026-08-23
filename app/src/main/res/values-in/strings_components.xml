@@ -162,4 +162,6 @@
     <string name="widget_tap_to_open">Ketuk untuk membuka</string>
     <string name="widget_tap_to_play">Ketuk untuk memutar</string>
     <string name="widget_wavy_progress_bar_desc">Bilah progres, %1$d persen</string>
+    <string name="song_info_ringtone_permission_prompt">Aktifkan "Ubah setelan sistem", lalu kembali ke Helora, sisanya selesai otomatis.</string>
+    <string name="song_info_tone_picker_body">Pilih tempat Helora memasang suara ini.</string>
 </resources>

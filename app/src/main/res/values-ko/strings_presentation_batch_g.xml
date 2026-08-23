@@ -373,4 +373,30 @@
     <string name="presentation_batch_g_topbar_build_stable">정식</string>
     <string name="presentation_batch_g_topbar_cd_changelog">변경 로그</string>
     <string name="presentation_batch_g_yes">예</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">수정</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>라디오가 이제 전적으로 YouTube의 추천을 사용합니다.</item>
+        <item>스테이션이 바닥나면 멈추는 대신 이미 재생한 아티스트의 스테이션으로 넘어갑니다.</item>
+        <item>다운로드한 트랙에 실제 장르를 붙일 수 있습니다.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>다운로드한 곡이 이제 보관함, 좋아요, 감상 통계에 나타납니다.</item>
+        <item>YouTube 트랙이 Topic 채널이 아니라 아티스트 이름으로 저장됩니다.</item>
+        <item>라디오가 같은 곡을 반복하거나 한 아티스트의 곡을 연달아 틀지 않습니다.</item>
+        <item>새 이름, 새 아이콘, 그리고 앱 전체에 걸친 열한 개 언어.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>다운로드 중 발생하던 비정상 종료를 고쳤습니다.</item>
+        <item>라디오 대기열이 무한정 늘어나지 않습니다.</item>
+        <item>“YouTube Music” 임시 장르를 없앴습니다.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Helora의 첫 릴리스. YouTube Music을 더한 PixelPlayerOSS 포크입니다.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">Helora는 문자 구분자(/, ;, &amp;)와 단어 구분자(feat., ft., vs., x)로 아티스트 태그를 나눕니다. 단어 구분자는 대소문자를 가리지 않습니다.\n\n\"제목에서 아티스트 추출\"은 곡 제목에서 (feat. 아티스트) 같은 형태를 찾아냅니다.\n\n역슬래시(\\)로 문자 구분자를 이스케이프할 수 있습니다.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">최신 Helora 버전으로 업데이트한 뒤 문제가 여전한지 확인하세요.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Helora 버전:</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Helora %1$s에 오신 것을 환영합니다</string>
+    <string name="presentation_batch_g_selection_n_songs">곡 선택됨</string>
 </resources>

@@ -374,4 +374,29 @@
     <string name="presentation_batch_g_topbar_build_stable">Kararlı</string>
     <string name="presentation_batch_g_topbar_cd_changelog">Değişiklik Günlüğü</string>
     <string name="presentation_batch_g_yes">Evet</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">Düzeltmeler</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>Radyo artık tamamen YouTube\'un kendi önerilerinden besleniyor.</item>
+        <item>Bir istasyon tükendiğinde radyo durmak yerine daha önce çaldığı bir sanatçının istasyonuna geçiyor.</item>
+        <item>İndirilen parçalara gerçek tür etiketi yazılabiliyor.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>İndirilen şarkılar artık kütüphanede, beğenilenlerde ve dinleme istatistiklerinde görünüyor.</item>
+        <item>YouTube parçaları Topic kanalı yerine sanatçı adıyla kaydediliyor.</item>
+        <item>Radyo aynı şarkıyı tekrarlamıyor ve aynı sanatçıdan arka arkaya birden çok parça çalmıyor.</item>
+        <item>Yeni ad, yeni uygulama simgesi ve baştan sona on bir dil.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>İndirme sırasındaki çökme giderildi.</item>
+        <item>Radyo kuyruğu artık sınırsız büyümüyor.</item>
+        <item>“YouTube Music” yer tutucu türü kaldırıldı.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Helora\'nın ilk sürümü. YouTube Music eklenmiş bir PixelPlayerOSS türevi.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">Helora, sanatçı etiketlerini karakter ayırıcılarla (/, ;, &amp;) ve kelime ayırıcılarla (feat., ft., vs., x) böler. Kelime ayırıcılar büyük küçük harf gözetmeden eşleşir.\n\n\"Başlıktan Sanatçıları Çıkar\", şarkı başlıklarındaki (feat. Sanatçı) gibi kalıpları algılar.\n\nKarakter ayırıcılardan kaçmak için ters bölü (\\) kullanılabilir.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">En son Helora sürümüne güncelleyin ve sorunun hâlâ olduğunu doğrulayın.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Helora sürümü:</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Helora %1$s sürümüne hoş geldiniz</string>
 </resources>

@@ -374,4 +374,29 @@
     <string name="presentation_batch_g_topbar_build_stable">Стабильная</string>
     <string name="presentation_batch_g_topbar_cd_changelog">Список изменений</string>
     <string name="presentation_batch_g_yes">Да</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">Исправления</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>Радио теперь целиком опирается на рекомендации YouTube.</item>
+        <item>Когда станция исчерпана, радио переходит к станции уже прозвучавшего исполнителя, а не останавливается.</item>
+        <item>Загруженным трекам можно проставить настоящий жанр.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>Загруженные песни теперь видны в медиатеке, в понравившемся и в статистике прослушивания.</item>
+        <item>Треки с YouTube записываются под именем исполнителя, а не его канала Topic.</item>
+        <item>Радио больше не повторяет песни и не ставит подряд несколько треков одного исполнителя.</item>
+        <item>Новое имя, новый значок и одиннадцать языков во всём приложении.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>Исправлен сбой при загрузке.</item>
+        <item>Очередь радио больше не растёт без ограничений.</item>
+        <item>Убран жанр-заглушка «YouTube Music».</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Первый выпуск Helora, форка PixelPlayerOSS с добавленным YouTube Music.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">Helora разделяет теги исполнителей по символам-разделителям (/, ;, &amp;) и словам-разделителям (feat., ft., vs., x). Слова-разделители распознаются без учёта регистра.\n\n\"Извлекать исполнителей из названия\" находит в названиях песен шаблоны вида (feat. Исполнитель).\n\nОбратная косая черта (\\) экранирует символы-разделители.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Обновитесь до последней версии Helora и убедитесь, что проблема сохраняется.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Версия Helora:</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Добро пожаловать в Helora %1$s</string>
 </resources>

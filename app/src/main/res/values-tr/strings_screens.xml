@@ -226,4 +226,13 @@
     <string name="word_delimiter_toast_invalid">Zaten var veya geçersiz</string>
     <string name="word_delimiter_toast_reset">Kelime sınırlayıcıları varsayılana sıfırlandı</string>
     <string name="word_delimiters_screen_title">Kelime Sınırlayıcıları</string>
+    <string name="about_support_title">Helora\'ya destek olun</string>
+    <string name="crash_report_share_subject">Helora çökme raporu</string>
+    <string name="easter_egg_thank_you">Helora\'yı kullandığınız için teşekkürler!</string>
+    <string name="home_empty_placeholder_subtitle">Helora şarkı bulduğunda veya bir kaynağı eşitlediğinde karışımınız burada görünür.</string>
+    <string name="setup_backup_have_description">Elinizde bir Helora yedeği varsa şimdi geri yükleyin ve bu cihazdaki kurulumun çoğunu atlayın.</string>
+    <string name="setup_external_services_subtitle">Helora varsayılan olarak çevrimdışı çalışır. Yalnızca istediğiniz aramaları açın.</string>
+    <string name="setup_permission_alarms_description">İsteğe bağlı, ama Uyku Zamanlayıcı kullanıyorsanız ve Helora\'nın çalmayı tam zamanında durdurmasını istiyorsanız önerilir.</string>
+    <string name="setup_permission_media_description">Helora, müzik kütüphanenizi oluşturmak için ses dosyalarınıza erişmelidir.</string>
+    <string name="setup_theme_dark_description">Helora için varsayılan Material 3 koyu görünümü.</string>
 </resources>

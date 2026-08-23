@@ -249,4 +249,5 @@
     <string name="toast_regenerated_palettes_partial">Rigenerate %1$d di %2$d palette copertine album</string>
     <string name="toast_stats_regeneration_started">Rigenerazione statistiche avviata</string>
     <string name="working_ellipsis">Elaborazione…</string>
+    <string name="setcat_about_helora_title">Informazioni su Helora</string>
 </resources>

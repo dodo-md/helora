@@ -374,4 +374,29 @@
     <string name="presentation_batch_g_topbar_build_stable">Estable</string>
     <string name="presentation_batch_g_topbar_cd_changelog">Registro de cambios</string>
     <string name="presentation_batch_g_yes">Sí</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">Correcciones</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>La radio ahora se nutre por completo de las recomendaciones de YouTube.</item>
+        <item>Cuando una emisora se agota, la radio salta a la de un artista que ya sonó en vez de detenerse.</item>
+        <item>Las pistas descargadas pueden etiquetarse con un género real.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>Las canciones descargadas ya aparecen en tu biblioteca, en las que te gustan y en las estadísticas de escucha.</item>
+        <item>Las pistas de YouTube se guardan con el nombre del artista y no con el de su canal Topic.</item>
+        <item>La radio ya no repite canciones ni encadena varias del mismo artista.</item>
+        <item>Nombre nuevo, icono nuevo y once idiomas en toda la aplicación.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>Corregido el fallo al descargar.</item>
+        <item>La cola de la radio ya no crece sin límite.</item>
+        <item>Se quitó el género de relleno “YouTube Music”.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Primera versión de Helora, una bifurcación de PixelPlayerOSS con YouTube Music.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">Helora separa las etiquetas de artista con separadores de carácter (/, ;, &amp;) y de palabra (feat., ft., vs., x). Los separadores de palabra no distinguen mayúsculas de minúsculas.\n\n\"Extraer artistas del título\" detecta patrones como (feat. Artista) en los títulos.\n\nLa barra invertida (\\) sirve para escapar los separadores de carácter.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Actualiza a la última versión de Helora y confirma que el problema sigue ocurriendo.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Versión de Helora:</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Te damos la bienvenida a Helora %1$s</string>
 </resources>

@@ -249,4 +249,5 @@
     <string name="toast_regenerated_palettes_partial">Regenererte %1$d av %2$d paletter</string>
     <string name="toast_stats_regeneration_started">Regenerering av statistikk startet</string>
     <string name="working_ellipsis">Arbeider…</string>
+    <string name="setcat_about_helora_title">Om Helora</string>
 </resources>

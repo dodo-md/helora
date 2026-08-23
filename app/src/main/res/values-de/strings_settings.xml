@@ -249,4 +249,5 @@
     <string name="toast_regenerated_palettes_partial">%1$d von %2$d Cover-Paletten neu generiert</string>
     <string name="toast_stats_regeneration_started">Statistik-Regeneration gestartet</string>
     <string name="working_ellipsis">Wird bearbeitet…</string>
+    <string name="setcat_about_helora_title">Über Helora</string>
 </resources>

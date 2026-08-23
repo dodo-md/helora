@@ -226,4 +226,13 @@
     <string name="word_delimiter_toast_invalid">Sudah ada atau tidak valid</string>
     <string name="word_delimiter_toast_reset">Pemisah kata direset ke default</string>
     <string name="word_delimiters_screen_title">Pemisah Kata</string>
+    <string name="about_support_title">Dukung Helora</string>
+    <string name="crash_report_share_subject">Laporan kerusakan Helora</string>
+    <string name="easter_egg_thank_you">Terima kasih telah memakai Helora!</string>
+    <string name="home_empty_placeholder_subtitle">Mix Anda akan muncul di sini setelah Helora menemukan lagu atau menyinkronkan sebuah sumber.</string>
+    <string name="setup_backup_have_description">Jika Anda sudah punya cadangan Helora, pulihkan sekarang dan lewati sebagian besar sisa penyiapan di perangkat ini.</string>
+    <string name="setup_external_services_subtitle">Helora bekerja secara luring secara bawaan. Aktifkan hanya pencarian yang Anda inginkan.</string>
+    <string name="setup_permission_alarms_description">Opsional, tetapi disarankan jika Anda memakai Timer Tidur dan ingin Helora menghentikan pemutaran tepat waktu.</string>
+    <string name="setup_permission_media_description">Helora perlu mengakses berkas audio Anda untuk menyusun pustaka musik.</string>
+    <string name="setup_theme_dark_description">Tampilan gelap Material 3 bawaan untuk Helora.</string>
 </resources>

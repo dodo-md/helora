@@ -226,4 +226,13 @@
     <string name="word_delimiter_toast_invalid">Bereits vorhanden oder ungültig</string>
     <string name="word_delimiter_toast_reset">Wort-Trennzeichen zurückgesetzt</string>
     <string name="word_delimiters_screen_title">Wort-Trennzeichen</string>
+    <string name="about_support_title">Helora unterstützen</string>
+    <string name="crash_report_share_subject">Helora-Absturzbericht</string>
+    <string name="easter_egg_thank_you">Danke, dass du Helora nutzt!</string>
+    <string name="home_empty_placeholder_subtitle">Dein Mix erscheint hier, sobald Helora Songs findet oder eine Quelle synchronisiert.</string>
+    <string name="setup_backup_have_description">Wenn du schon ein Helora-Backup hast, stelle es jetzt wieder her und überspringe den Großteil der restlichen Einrichtung auf diesem Gerät.</string>
+    <string name="setup_external_services_subtitle">Helora arbeitet standardmäßig offline. Aktiviere nur die Abfragen, die du möchtest.</string>
+    <string name="setup_permission_alarms_description">Optional, aber empfohlen, wenn du den Sleeptimer nutzt und Helora die Wiedergabe punktgenau beenden soll.</string>
+    <string name="setup_permission_media_description">Helora braucht Zugriff auf deine Audiodateien, um deine Musikbibliothek aufzubauen.</string>
+    <string name="setup_theme_dark_description">Das voreingestellte dunkle Material-3-Design für Helora.</string>
 </resources>

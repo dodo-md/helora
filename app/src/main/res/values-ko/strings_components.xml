@@ -162,4 +162,6 @@
     <string name="widget_tap_to_open">탭하여 열기</string>
     <string name="widget_tap_to_play">탭하여 재생</string>
     <string name="widget_wavy_progress_bar_desc">진행 바, %1$d 퍼센트</string>
+    <string name="song_info_ringtone_permission_prompt">"시스템 설정 수정"을 켠 뒤 Helora로 돌아오면 나머지는 자동으로 끝납니다.</string>
+    <string name="song_info_tone_picker_body">Helora가 이 소리를 어디에 설치할지 고르세요.</string>
 </resources>

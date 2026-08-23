@@ -162,4 +162,6 @@
     <string name="widget_tap_to_open">Trykk for å åpne</string>
     <string name="widget_tap_to_play">Trykk for å spille</string>
     <string name="widget_wavy_progress_bar_desc">Fremdriftslinje, %1$d prosent</string>
+    <string name="song_info_ringtone_permission_prompt">Slå på "Endre systeminnstillinger", og gå så tilbake til Helora, resten fullføres av seg selv.</string>
+    <string name="song_info_tone_picker_body">Velg hvor Helora skal installere denne lyden.</string>
 </resources>

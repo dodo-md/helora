@@ -374,4 +374,29 @@
     <string name="presentation_batch_g_topbar_build_stable">Stabile</string>
     <string name="presentation_batch_g_topbar_cd_changelog">Changelog</string>
     <string name="presentation_batch_g_yes">Sì</string>
+
+    <string name="presentation_batch_g_changelog_sec_fixes">Correzioni</string>
+    <string-array name="presentation_batch_g_changelog_020_whats_new">
+        <item>La radio ora attinge interamente ai consigli di YouTube.</item>
+        <item>Quando una stazione si esaurisce, la radio passa a quella di un artista già ascoltato invece di fermarsi.</item>
+        <item>Ai brani scaricati può essere assegnato un genere reale.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_improvements">
+        <item>I brani scaricati ora compaiono nella libreria, tra i preferiti e nelle statistiche di ascolto.</item>
+        <item>I brani di YouTube vengono archiviati sotto il nome dell\'artista anziché del suo canale Topic.</item>
+        <item>La radio non ripete più i brani e non ne mette in fila diversi dello stesso artista.</item>
+        <item>Nome nuovo, icona nuova e undici lingue in tutta l\'app.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixes">
+        <item>Risolto il crash durante il download.</item>
+        <item>La coda della radio non cresce più senza limiti.</item>
+        <item>Rimosso il genere segnaposto “YouTube Music”.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_010_initial">
+        <item>Prima versione di Helora, un fork di PixelPlayerOSS con YouTube Music.</item>
+    </string-array>
+    <string name="presentation_batch_g_artist_info_body">Helora divide i tag artista usando separatori di carattere (/, ;, &amp;) e di parola (feat., ft., vs., x). I separatori di parola non distinguono maiuscole e minuscole.\n\n\"Estrai artisti dal titolo\" riconosce schemi come (feat. Artista) nei titoli dei brani.\n\nLa barra rovesciata (\\) serve a proteggere i separatori di carattere.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Aggiorna all\'ultima versione di Helora e verifica che il problema si ripresenti.</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Versione di Helora:</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Benvenuto in Helora %1$s</string>
 </resources>

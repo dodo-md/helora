@@ -162,4 +162,6 @@
     <string name="widget_tap_to_open">Appuyez pour ouvrir</string>
     <string name="widget_tap_to_play">Appuyez pour lire</string>
     <string name="widget_wavy_progress_bar_desc">Barre de progression, %1$d pour cent</string>
+    <string name="song_info_ringtone_permission_prompt">Activez "Modifier les paramètres système", puis revenez dans Helora, le reste se termine tout seul.</string>
+    <string name="song_info_tone_picker_body">Choisissez où Helora doit installer ce son.</string>
 </resources>
