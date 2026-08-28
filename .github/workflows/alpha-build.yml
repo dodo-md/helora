@@ -1,19 +1,6 @@
 name: Alpha Build
 
 on:
-  push:
-    branches:
-      - main
-    # Docs-only and CI-only merges shouldn't ship a new alpha. Use the manual
-    # trigger below to build one from a workflow change when needed.
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - "assets/**"
-      - "fastlane/**"
-      - "metadata/**"
-      - "LICENSE"
-      - ".github/**"
   workflow_dispatch:
 
 permissions:
