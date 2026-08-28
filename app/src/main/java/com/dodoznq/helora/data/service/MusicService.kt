@@ -702,7 +702,7 @@ class MusicService : MediaSessionService() {
             .build()
 
         val localOnlyProvider = LocalOnlyMediaNotificationProvider(this).also {
-            it.setSmallIcon(R.drawable.monochrome_player)
+            it.setSmallIcon(R.drawable.helora_base_monochrome)
         }
         setMediaNotificationProvider(localOnlyProvider)
         if (temporaryForegroundStartedInOnCreate) {
@@ -746,7 +746,7 @@ class MusicService : MediaSessionService() {
             this,
             HeloraApplication.NOTIFICATION_CHANNEL_ID
         )
-            .setSmallIcon(R.drawable.monochrome_player)
+            .setSmallIcon(R.drawable.helora_base_monochrome)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.service_processing_action))
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
