@@ -3,6 +3,7 @@ package com.dodoznq.helora.data.youtube
 import android.net.Uri
 import com.dodoznq.helora.data.stream.CloudStreamProxy
 import com.dodoznq.helora.data.stream.CloudStreamSecurity
+import com.dodoznq.helora.data.stream.StreamUrlExpiry
 import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -40,10 +41,14 @@ class YouTubeStreamProxy @Inject constructor(
     override val allowedHostSuffixes: Set<String> = setOf("googlevideo.com")
 
     /**
-     * Signed googlevideo URLs carry an `expire` roughly 6h out, but they are also IP-bound,
-     * so a shorter window limits how long a stale URL can linger after a network change.
+     * Fallback used when a stream URL doesn't carry a readable `expire` timestamp, and the
+     * hard ceiling in all cases: googlevideo URLs are IP-bound, so even a URL whose signed
+     * expiry is still far off can die on a network change well before then.
      */
     override val cacheExpirationMs = 30L * 60 * 1000
+
+    override fun expirationMsFor(url: String): Long =
+        StreamUrlExpiry.remainingTtlMs(url, fallbackMs = cacheExpirationMs)
 
     override val proxyTag = "YouTubeStreamProxy"
     override val routePath = "/ytmusic/{videoId}"
