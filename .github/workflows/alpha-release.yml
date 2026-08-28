@@ -105,5 +105,5 @@ jobs:
           gh release create "${{ steps.version.outputs.tag }}"
           --prerelease
           --generate-notes
-          --title "Helora ${{ steps.version.outputs.name }}"
+          --title "helora ${{ steps.version.outputs.name }} 🌌"
           release-apks/*.apk
