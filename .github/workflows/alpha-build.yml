@@ -24,8 +24,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-release:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+  build-and-apk:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
