@@ -274,6 +274,7 @@ class PlayerViewModel @Inject constructor(
     private val libraryStateHolder: LibraryStateHolder,
     private val remoteTrackCache: RemoteTrackCache,
     private val youTubeSearchStateHolder: YouTubeSearchStateHolder,
+    private val unifiedSearchStateHolder: UnifiedSearchStateHolder,
     private val youTubeMusicRepository: YouTubeMusicRepository,
     private val radioQueueExtender: RadioQueueExtender,
     private val cloudOfflineRepository: CloudOfflineRepository,
@@ -1650,6 +1651,7 @@ class PlayerViewModel @Inject constructor(
 
             searchStateHolder.initialize(viewModelScope)
             youTubeSearchStateHolder.initialize(viewModelScope)
+            unifiedSearchStateHolder.initialize(viewModelScope)
 
             viewModelScope.launch {
                 combine(
@@ -3961,6 +3963,9 @@ class PlayerViewModel @Inject constructor(
     /** State for the YouTube Music section of the search screen. */
     val youTubeSearchState = youTubeSearchStateHolder.state
 
+    /** Local and YouTube search results merged into one deduplicated row list. */
+    val unifiedSearchState: StateFlow<UnifiedSearchStateHolder.UnifiedSearchState> = unifiedSearchStateHolder.state
+
     fun retryYouTubeSearch() {
         youTubeSearchStateHolder.retry()
     }
@@ -4097,6 +4102,7 @@ class PlayerViewModel @Inject constructor(
         themeStateHolder.onCleared()
         searchStateHolder.onCleared()
         youTubeSearchStateHolder.onCleared()
+        unifiedSearchStateHolder.onCleared()
         libraryStateHolder.onCleared()
         sleepTimerStateHolder.onCleared()
         connectivityStateHolder.onCleared()
