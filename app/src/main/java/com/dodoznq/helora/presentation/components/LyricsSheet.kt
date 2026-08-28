@@ -137,6 +137,9 @@ import androidx.compose.ui.text.style.TextGeometricTransform
 import androidx.compose.ui.text.style.TextOverflow
 import com.dodoznq.helora.presentation.components.subcomps.PlayingEqIcon
 import com.dodoznq.helora.utils.MultiLangRomanizer
+import com.dodoznq.helora.utils.SyncedLineResolver
+import com.dodoznq.helora.presentation.components.lyrics.rememberActiveLineIndex
+import com.dodoznq.helora.presentation.components.lyrics.rememberPositionProvider
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -1161,16 +1164,9 @@ fun SyncedLyricsList(
     footer: LazyListScope.() -> Unit = {}
 ) {
     val density = LocalDensity.current
-    val playbackPosition by playbackPositionFlow.collectAsStateWithLifecycle()
-    val position = remember(playbackPosition, lyricsSyncOffset, positionOverrideMs) {
-        positionOverrideMs ?: (playbackPosition + lyricsSyncOffset).coerceAtLeast(0L)
-    }
+    val activeIndex by rememberActiveLineIndex(lines, playbackPositionFlow, lyricsSyncOffset, positionOverrideMs)
+    val positionProvider = rememberPositionProvider(playbackPositionFlow, lyricsSyncOffset)
     val isPreviewSeeking = positionOverrideMs != null
-    val currentLineIndex by remember(position, lines) {
-        derivedStateOf {
-            resolveCurrentLineIndex(lines = lines, position = position)
-        }
-    }
     var hasAlignedInitialLine by remember(lines) { mutableStateOf(false) }
     var lastAutoScrolledLineIndex by remember(lines) { mutableIntStateOf(-1) }
 
@@ -1189,54 +1185,54 @@ fun SyncedLyricsList(
         )
         val flingBehavior = rememberSnapperFlingBehavior(layoutInfo = snapperLayoutInfo)
 
-        LaunchedEffect(currentLineIndex, lines.size, metrics, isPreviewSeeking) {
+        LaunchedEffect(activeIndex, lines.size, metrics, isPreviewSeeking) {
             if (lines.isEmpty()) return@LaunchedEffect
-            if (currentLineIndex !in lines.indices) return@LaunchedEffect
+            if (activeIndex !in lines.indices) return@LaunchedEffect
             if (listState.layoutInfo.totalItemsCount == 0) return@LaunchedEffect
 
             if (!hasAlignedInitialLine) {
-                listState.scrollToItem(currentLineIndex)
+                listState.scrollToItem(activeIndex)
                 snapToSnapIndex(
                     listState = listState,
                     layoutInfo = snapperLayoutInfo,
-                    targetIndex = currentLineIndex
+                    targetIndex = activeIndex
                 )
                 hasAlignedInitialLine = true
-                lastAutoScrolledLineIndex = currentLineIndex
+                lastAutoScrolledLineIndex = activeIndex
                 return@LaunchedEffect
             }
 
             if (listState.isScrollInProgress && !isPreviewSeeking) return@LaunchedEffect
 
             val lineJumpDistance = if (lastAutoScrolledLineIndex >= 0) {
-                abs(currentLineIndex - lastAutoScrolledLineIndex)
+                abs(activeIndex - lastAutoScrolledLineIndex)
             } else {
                 0
             }
 
             if (isPreviewSeeking) {
                 if (lineJumpDistance > 2) {
-                    listState.scrollToItem(currentLineIndex)
+                    listState.scrollToItem(activeIndex)
                     snapToSnapIndex(
                         listState = listState,
                         layoutInfo = snapperLayoutInfo,
-                        targetIndex = currentLineIndex
+                        targetIndex = activeIndex
                     )
                 } else {
                     animateToSnapIndex(
                         listState = listState,
                         layoutInfo = snapperLayoutInfo,
-                        targetIndex = currentLineIndex,
+                        targetIndex = activeIndex,
                         animationSpec = tween(durationMillis = 110, easing = FastOutSlowInEasing)
                     )
                 }
-                lastAutoScrolledLineIndex = currentLineIndex
+                lastAutoScrolledLineIndex = activeIndex
                 return@LaunchedEffect
             }
 
             val dynamicAnimationSpec = if (useAnimatedLyrics) {
-                val currentLineTime = lines.getOrNull(currentLineIndex)?.time ?: 0
-                val nextLineTime = lines.getOrNull(currentLineIndex + 1)?.time ?: (currentLineTime + 1000)
+                val currentLineTime = lines.getOrNull(activeIndex)?.time ?: 0
+                val nextLineTime = lines.getOrNull(activeIndex + 1)?.time ?: (currentLineTime + 1000)
                 val timeDiff = (nextLineTime - currentLineTime).coerceIn(250, 2000)
                 
                 tween<Float>(
@@ -1250,10 +1246,10 @@ fun SyncedLyricsList(
             animateToSnapIndex(
                 listState = listState,
                 layoutInfo = snapperLayoutInfo,
-                targetIndex = currentLineIndex,
+                targetIndex = activeIndex,
                 animationSpec = dynamicAnimationSpec
             )
-            lastAutoScrolledLineIndex = currentLineIndex
+            lastAutoScrolledLineIndex = activeIndex
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -1268,7 +1264,7 @@ fun SyncedLyricsList(
                     key = { index, item -> "${item.time}_$index" }
                 ) { index, line ->
                     val nextTime = lines.getOrNull(index + 1)?.time ?: Int.MAX_VALUE
-                    val distanceFromCurrent = if (currentLineIndex != -1) abs(currentLineIndex - index) else 100
+                    val distanceFromCurrent = if (activeIndex != -1) abs(activeIndex - index) else 100
                     
                     val parallaxModifier = if (useAnimatedLyrics) {
                         Modifier.graphicsLayer {
@@ -1289,7 +1285,8 @@ fun SyncedLyricsList(
                         LyricLineRow(
                             line = line,
                             nextTime = nextTime,
-                            position = position,
+                            positionProvider = positionProvider,
+                            isActive = index == activeIndex,
                             distanceFromCurrent = distanceFromCurrent,
                             useAnimatedLyrics = useAnimatedLyrics,
                             animatedLyricsBlurEnabled = animatedLyricsBlurEnabled,
@@ -1329,7 +1326,8 @@ fun SyncedLyricsList(
 fun LyricLineRow(
     line: SyncedLine,
     nextTime: Int,
-    position: Long,
+    positionProvider: () -> Long,
+    isActive: Boolean,
     distanceFromCurrent: Int = 100,
     useAnimatedLyrics: Boolean = false,
     animatedLyricsBlurEnabled: Boolean = true,
@@ -1353,12 +1351,9 @@ fun LyricLineRow(
     val lineEndTime = remember(line, nextTime) {
         resolveLineEndTimeMs(line, nextTime)
     }
-    val isCurrentLine by remember(position, line.time, lineEndTime) {
-        derivedStateOf { position in line.time.toLong()..<lineEndTime }
-    }
     val unhighlightedColor = LocalContentColor.current.copy(alpha = 0.45f)
     val lineColor by animateColorAsState(
-        targetValue = if (isCurrentLine) accentColor else unhighlightedColor,
+        targetValue = if (isActive) accentColor else unhighlightedColor,
         animationSpec = if (useAnimatedLyrics) spring(
             stiffness = Spring.StiffnessVeryLow,
             dampingRatio = Spring.DampingRatioMediumBouncy
@@ -1490,7 +1485,7 @@ fun LyricLineRow(
                     text = sanitizedLine,
                     style = style,
                     color = lineColor,
-                    fontWeight = if (isCurrentLine) FontWeight.Bold else FontWeight.Normal,
+                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
                     textAlign = textAlign
                 )
             }
@@ -1516,17 +1511,6 @@ fun LyricLineRow(
             }
         }
     } else {
-        val highlightedWordIndex by remember(position, sanitizedWords, line.time, lineEndTime) {
-            derivedStateOf {
-                resolveHighlightedWordIndex(
-                    words = requireNotNull(sanitizedWords),
-                    positionMs = position,
-                    lineStartTimeMs = line.time.toLong(),
-                    lineEndTimeMs = lineEndTime
-                )
-            }
-        }
-
         Column(
             modifier = animatedModifier
                 .fillMaxWidth()
@@ -1547,10 +1531,14 @@ fun LyricLineRow(
                 sanitizedWordClusters.forEach { cluster ->
                     cluster.words.forEachIndexed { clusterOffset, word ->
                         val wordIndex = cluster.startIndex + clusterOffset
+                        val wordEndTime = sanitizedWords?.getOrNull(wordIndex + 1)?.time?.toLong() ?: lineEndTime
                         key("${line.time}_${word.time}_${word.word}_$wordIndex") {
                             LyricWordSpan(
                                 word = word,
-                                isHighlighted = isCurrentLine && wordIndex == highlightedWordIndex,
+                                isActive = isActive,
+                                wordStartMs = word.time.toLong(),
+                                wordEndMs = wordEndTime,
+                                positionProvider = positionProvider,
                                 useAnimatedLyrics = useAnimatedLyrics,
                                 style = style,
                                 highlightedColor = accentColor,
@@ -1587,38 +1575,17 @@ fun LyricLineRow(
 @Composable
 fun LyricWordSpan(
     word: SyncedWord,
-    isHighlighted: Boolean,
+    isActive: Boolean,
+    wordStartMs: Long,
+    wordEndMs: Long,
+    positionProvider: () -> Long,
     useAnimatedLyrics: Boolean = false,
     style: TextStyle,
     highlightedColor: Color,
     unhighlightedColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val wordAnimSpec = if (useAnimatedLyrics) spring<Float>(
-        stiffness = Spring.StiffnessVeryLow,
-        dampingRatio = Spring.DampingRatioMediumBouncy
-    ) else tween(durationMillis = 200)
-
-    val color by animateColorAsState(
-        targetValue = if (isHighlighted) highlightedColor else unhighlightedColor,
-        animationSpec = if (useAnimatedLyrics) spring(
-            stiffness = Spring.StiffnessVeryLow,
-            dampingRatio = Spring.DampingRatioMediumBouncy
-        ) else tween(durationMillis = 200),
-        label = "wordColor"
-    )
-
-    val scale by animateFloatAsState(
-        targetValue = if (useAnimatedLyrics && isHighlighted) 1.10f else 1f,
-        animationSpec = wordAnimSpec,
-        label = "wordScale"
-    )
-
-    val alpha by animateFloatAsState(
-        targetValue = if (useAnimatedLyrics && !isHighlighted) 0.55f else 1f,
-        animationSpec = wordAnimSpec,
-        label = "wordAlpha"
-    )
+    val restingAlpha = if (useAnimatedLyrics) 0.55f else 1f
 
     Box(
         modifier = modifier,
@@ -1633,14 +1600,33 @@ fun LyricWordSpan(
         Text(
             text = word.word,
             style = style,
-            color = color,
-            fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Normal,
-            modifier = Modifier.graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-                this.alpha = alpha
-            }
+            color = unhighlightedColor,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier.graphicsLayer { alpha = restingAlpha }
         )
+        if (isActive) {
+            Text(
+                text = word.word,
+                style = style,
+                color = highlightedColor,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.graphicsLayer {
+                    val pos = positionProvider()
+                    val progress = if (pos < wordStartMs || pos >= wordEndMs) {
+                        0f
+                    } else {
+                        minOf(
+                            ((pos - wordStartMs) / 150f).coerceIn(0f, 1f),
+                            ((wordEndMs - pos) / 150f).coerceIn(0f, 1f)
+                        )
+                    }
+                    alpha = progress
+                    val pop = if (useAnimatedLyrics) progress * 0.10f else 0f
+                    scaleX = 1f + pop
+                    scaleY = 1f + pop
+                }
+            )
+        }
     }
 }
 
@@ -1894,15 +1880,7 @@ internal suspend fun snapToSnapIndex(
 internal fun resolveCurrentLineIndex(
     lines: List<SyncedLine>,
     position: Long
-): Int {
-    if (lines.isEmpty()) return -1
-
-    return lines.withIndex().lastOrNull { (index, line) ->
-        val nextTime = lines.getOrNull(index + 1)?.time ?: Int.MAX_VALUE
-        val lineEndTime = resolveLineEndTimeMs(line, nextTime)
-        position in line.time.toLong()..<lineEndTime
-    }?.index ?: -1
-}
+): Int = SyncedLineResolver.activeLineIndex(lines, position)
 
 @Composable
 private fun LyricsTrackInfo(
