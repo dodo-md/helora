@@ -259,6 +259,11 @@
     <string name="cloud_downloads_failed_fallback">Download failed</string>
     <string name="cloud_downloads_empty_title">No offline downloads</string>
     <string name="cloud_downloads_empty_subtitle">Cloud tracks you download will appear here.</string>
+    <string name="stream_cache_section_title">Streaming cache</string>
+    <string name="stream_cache_section_subtitle">Recently played tracks are kept on disk so replaying them doesn\'t use data</string>
+    <string name="stream_cache_usage">%1$s of %2$s used</string>
+    <string name="stream_cache_size_restart_note">Takes effect the next time the app starts</string>
+    <string name="stream_cache_clear_button">Clear cache</string>
     <string name="cloud_download_selected">Download selected cloud tracks</string>
     <string name="cloud_download_selected_count">Download %1$d cloud tracks</string>
     <string name="cloud_download_selected_started">Preparing %1$d cloud tracks for offline playback</string>
@@ -273,6 +278,7 @@
     <string name="musicbrainz_applied">MusicBrainz identifiers saved. Missing year and placeholder names were enriched.</string>
 
     <string name="search_filter_youtube_music" translatable="false">YouTube Music</string>
+    <string name="unified_search_youtube_badge" translatable="false">YouTube</string>
     <string name="search_youtube_offline">You’re offline. Connect to search YouTube Music.</string>
     <string name="search_youtube_error">Couldn’t reach YouTube Music.</string>
     <string name="search_youtube_retry">Retry</string>

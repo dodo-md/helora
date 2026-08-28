@@ -21,6 +21,7 @@ import com.dodoznq.helora.data.model.LyricsSourcePreference
 import com.dodoznq.helora.data.model.TransitionSettings
 import com.dodoznq.helora.data.equalizer.EqualizerPreset
 import com.dodoznq.helora.data.model.StorageFilter
+import com.dodoznq.helora.data.stream.StreamCacheConfig
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.text.get
@@ -209,6 +210,7 @@ constructor(
 
         val ALBUM_ART_QUALITY = stringPreferencesKey("album_art_quality")
         val ALBUM_ART_CACHE_LIMIT_MB = intPreferencesKey("album_art_cache_limit_mb")
+        val STREAM_CACHE_MAX_BYTES = longPreferencesKey("stream_cache_max_bytes")
         val TAP_BACKGROUND_CLOSES_PLAYER = booleanPreferencesKey("tap_background_closes_player")
         val HAPTICS_ENABLED = booleanPreferencesKey("haptics_enabled")
         val ADVANCED_PERFORMANCE_DIAGNOSTICS_ENABLED =
@@ -1608,6 +1610,20 @@ constructor(
     suspend fun setAlbumArtCacheLimitMb(limitMb: Int) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.ALBUM_ART_CACHE_LIMIT_MB] = limitMb.coerceIn(50, 1500)
+        }
+    }
+
+    val streamCacheMaxBytesFlow: Flow<Long> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.STREAM_CACHE_MAX_BYTES] ?: StreamCacheConfig.DEFAULT_MAX_BYTES
+        }
+
+    suspend fun setStreamCacheMaxBytes(bytes: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.STREAM_CACHE_MAX_BYTES] = bytes.coerceIn(
+                StreamCacheConfig.MIN_MAX_BYTES,
+                StreamCacheConfig.MAX_MAX_BYTES
+            )
         }
     }
 

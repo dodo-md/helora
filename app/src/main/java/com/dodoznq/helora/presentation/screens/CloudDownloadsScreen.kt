@@ -2,6 +2,7 @@ package com.dodoznq.helora.presentation.screens
 
 import android.text.format.Formatter
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -30,6 +32,7 @@ import androidx.compose.material.icons.rounded.Storage
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -37,6 +40,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -55,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dodoznq.helora.R
 import com.dodoznq.helora.data.offline.OfflineDownload
 import com.dodoznq.helora.data.offline.OfflineDownloadStatus
+import com.dodoznq.helora.data.stream.StreamCacheConfig
 import com.dodoznq.helora.presentation.components.MiniPlayerHeight
 import com.dodoznq.helora.presentation.viewmodel.CloudDownloadsViewModel
 
@@ -110,6 +115,15 @@ fun CloudDownloadsScreen(
                     usedBytes = state.usedBytes,
                     completedCount = state.completed.size,
                     totalCount = state.totalCount
+                )
+            }
+
+            item {
+                StreamCacheCard(
+                    usedBytes = state.streamCacheUsedBytes,
+                    maxBytes = state.streamCacheMaxBytes,
+                    onMaxBytesSelected = viewModel::setStreamCacheMaxBytes,
+                    onClear = viewModel::clearStreamCache
                 )
             }
 
@@ -208,6 +222,70 @@ private fun StorageSummaryCard(usedBytes: Long, completedCount: Int, totalCount:
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun StreamCacheCard(
+    usedBytes: Long,
+    maxBytes: Long,
+    onMaxBytesSelected: (Long) -> Unit,
+    onClear: () -> Unit
+) {
+    val context = LocalContext.current
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = stringResource(R.string.stream_cache_section_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = stringResource(R.string.stream_cache_section_subtitle),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = stringResource(
+                    R.string.stream_cache_usage,
+                    Formatter.formatShortFileSize(context, usedBytes),
+                    Formatter.formatShortFileSize(context, maxBytes)
+                ),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                StreamCacheConfig.SELECTABLE_MAX_BYTES.forEach { option ->
+                    FilterChip(
+                        selected = option == maxBytes,
+                        onClick = { onMaxBytesSelected(option) },
+                        label = { Text(Formatter.formatShortFileSize(context, option)) }
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.stream_cache_size_restart_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onClear) {
+                Text(stringResource(R.string.stream_cache_clear_button))
             }
         }
     }

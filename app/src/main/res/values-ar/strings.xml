@@ -236,6 +236,11 @@
     <string name="cloud_downloads_completed_section">مكتملة</string>
     <string name="cloud_downloads_downloaded_size">تم التنزيل · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">ستظهر هنا المقاطع السحابية التي تنزّلها.</string>
+    <string name="stream_cache_section_title">ذاكرة التخزين المؤقت للبث</string>
+    <string name="stream_cache_section_subtitle">يتم الاحتفاظ بالمقاطع التي شُغّلت مؤخرًا على القرص حتى لا تستهلك إعادة تشغيلها بيانات الإنترنت</string>
+    <string name="stream_cache_usage">%1$s من %2$s مستخدَم</string>
+    <string name="stream_cache_size_restart_note">يسري التغيير عند تشغيل التطبيق التالي</string>
+    <string name="stream_cache_clear_button">مسح ذاكرة التخزين المؤقت</string>
     <string name="cloud_downloads_empty_title">لا توجد تنزيلات دون اتصال</string>
     <string name="cloud_downloads_failed_fallback">فشل التنزيل</string>
     <string name="cloud_downloads_failed_section">فاشلة</string>

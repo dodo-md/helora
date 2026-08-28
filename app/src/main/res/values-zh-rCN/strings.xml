@@ -256,6 +256,11 @@
     <string name="cloud_downloads_completed_section">已完成</string>
     <string name="cloud_downloads_downloaded_size">已下载 · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">你下载的云端曲目会显示在这里。</string>
+    <string name="stream_cache_section_title">流媒体缓存</string>
+    <string name="stream_cache_section_subtitle">最近播放的曲目会保存在本地，再次播放时不会消耗流量</string>
+    <string name="stream_cache_usage">已使用 %1$s / %2$s</string>
+    <string name="stream_cache_size_restart_note">将在应用下次启动时生效</string>
+    <string name="stream_cache_clear_button">清除缓存</string>
     <string name="cloud_downloads_empty_title">暂无离线下载</string>
     <string name="cloud_downloads_failed_fallback">下载失败</string>
     <string name="cloud_downloads_failed_section">失败</string>

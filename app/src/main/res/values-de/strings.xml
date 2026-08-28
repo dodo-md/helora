@@ -236,6 +236,11 @@
     <string name="cloud_downloads_completed_section">Abgeschlossen</string>
     <string name="cloud_downloads_downloaded_size">Heruntergeladen · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">Heruntergeladene Cloud-Titel erscheinen hier.</string>
+    <string name="stream_cache_section_title">Streaming-Cache</string>
+    <string name="stream_cache_section_subtitle">Zuletzt gespielte Titel werden auf dem Gerät gespeichert, damit das erneute Abspielen keine Daten verbraucht</string>
+    <string name="stream_cache_usage">%1$s von %2$s belegt</string>
+    <string name="stream_cache_size_restart_note">Wird beim nächsten App-Start wirksam</string>
+    <string name="stream_cache_clear_button">Cache leeren</string>
     <string name="cloud_downloads_empty_title">Keine Offline-Downloads</string>
     <string name="cloud_downloads_failed_fallback">Download fehlgeschlagen</string>
     <string name="cloud_downloads_failed_section">Fehlgeschlagen</string>

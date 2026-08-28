@@ -7,13 +7,18 @@ import com.dodoznq.helora.data.offline.CloudOfflineRepository
 import com.dodoznq.helora.data.offline.OfflineDownload
 import com.dodoznq.helora.data.offline.OfflineDownloadStatus
 import com.dodoznq.helora.data.model.Song
+import com.dodoznq.helora.data.preferences.UserPreferencesRepository
+import com.dodoznq.helora.data.stream.StreamCacheConfig
+import com.dodoznq.helora.data.stream.StreamCacheManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -23,7 +28,9 @@ data class CloudDownloadsUiState(
     val completed: ImmutableList<OfflineDownload> = persistentListOf(),
     val active: ImmutableList<OfflineDownload> = persistentListOf(),
     val failed: ImmutableList<OfflineDownload> = persistentListOf(),
-    val usedBytes: Long = 0L
+    val usedBytes: Long = 0L,
+    val streamCacheUsedBytes: Long = 0L,
+    val streamCacheMaxBytes: Long = StreamCacheConfig.DEFAULT_MAX_BYTES
 ) {
     val totalCount: Int get() = completed.size + active.size + failed.size
 }
@@ -46,15 +53,42 @@ internal fun List<OfflineDownload>.toCloudDownloadsUiState(): CloudDownloadsUiSt
 
 @HiltViewModel
 class CloudDownloadsViewModel @Inject constructor(
-    private val repository: CloudOfflineRepository
+    private val repository: CloudOfflineRepository,
+    private val streamCacheManager: StreamCacheManager,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
-    val uiState: StateFlow<CloudDownloadsUiState> = repository.observeAll()
-        .map(List<OfflineDownload>::toCloudDownloadsUiState)
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = CloudDownloadsUiState()
-        )
+    private val streamCacheUsedBytes = MutableStateFlow(0L)
+
+    val uiState: StateFlow<CloudDownloadsUiState> = combine(
+        repository.observeAll().map(List<OfflineDownload>::toCloudDownloadsUiState),
+        userPreferencesRepository.streamCacheMaxBytesFlow,
+        streamCacheUsedBytes
+    ) { downloadsState, maxBytes, usedBytes ->
+        downloadsState.copy(streamCacheMaxBytes = maxBytes, streamCacheUsedBytes = usedBytes)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = CloudDownloadsUiState()
+    )
+
+    init {
+        refreshStreamCacheUsedBytes()
+    }
+
+    fun refreshStreamCacheUsedBytes() {
+        viewModelScope.launch { streamCacheUsedBytes.value = streamCacheManager.currentSizeBytes() }
+    }
+
+    fun setStreamCacheMaxBytes(bytes: Long) {
+        viewModelScope.launch { userPreferencesRepository.setStreamCacheMaxBytes(bytes) }
+    }
+
+    fun clearStreamCache() {
+        viewModelScope.launch {
+            streamCacheManager.clear()
+            streamCacheUsedBytes.value = 0L
+        }
+    }
 
     fun remove(download: OfflineDownload) {
         viewModelScope.launch { repository.remove(download.sourceUri) }

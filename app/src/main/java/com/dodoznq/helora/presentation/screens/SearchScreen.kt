@@ -1,6 +1,7 @@
 package com.dodoznq.helora.presentation.screens
 
 import com.dodoznq.helora.presentation.viewmodel.YouTubeSearchStateHolder
+import com.dodoznq.helora.presentation.screens.search.UnifiedResultsList
 import com.dodoznq.helora.presentation.screens.search.youTubeSearchSections
 import com.dodoznq.helora.presentation.navigation.navigateSafely
 import com.dodoznq.helora.presentation.navigation.navigateSafelyReplacing
@@ -186,11 +187,12 @@ fun SearchScreen(
     LaunchedEffect(searchQuery, currentFilter) {
         playerViewModel.performSearch(searchQuery)
     }
-    val searchResults = searchUiState.searchResults
-    val youTubeSearchState by playerViewModel.youTubeSearchState.collectAsStateWithLifecycle()
-    val handleSongMoreOptionsClick: (Song) -> Unit = { song ->
-        playerViewModel.selectSongForInfo(song)
-        showSongInfoBottomSheet = true
+    val unifiedSearchState by playerViewModel.unifiedSearchState.collectAsStateWithLifecycle()
+    val handleSongMoreOptionsClick = remember(playerViewModel) {
+        { song: Song ->
+            playerViewModel.selectSongForInfo(song)
+            showSongInfoBottomSheet = true
+        }
     }
 
     val searchbarCornerRadius = 28.dp
@@ -392,10 +394,29 @@ fun SearchScreen(
                             SearchFilterChip(SearchFilterType.PLAYLISTS, currentFilter, playerViewModel)
                             SearchFilterChip(SearchFilterType.YOUTUBE, currentFilter, playerViewModel)
                         }
+                        val onLocalClick = remember(playerViewModel, navController) {
+                            { item: SearchResultItem ->
+                                when (item) {
+                                    is SearchResultItem.SongItem -> playerViewModel.showAndPlaySong(item.song)
+                                    is SearchResultItem.AlbumItem -> playerViewModel.playAlbum(item.album)
+                                    is SearchResultItem.ArtistItem -> playerViewModel.playArtist(item.artist)
+                                    is SearchResultItem.PlaylistItem ->
+                                        navController.navigateSafely(Screen.PlaylistDetail.createRoute(item.playlist.id))
+                                }
+                                if (searchQuery.isNotBlank()) playerViewModel.onSearchQuerySubmitted(searchQuery)
+                            }
+                        }
+                        val onYouTubeClick = remember(playerViewModel) {
+                            { song: Song ->
+                                playerViewModel.playYouTubeSong(song)
+                                if (searchQuery.isNotBlank()) playerViewModel.onSearchQuerySubmitted(searchQuery)
+                            }
+                        }
                         Crossfade(
                             // A query matching only YouTube results must not show the
                             // "nothing found" state.
-                            targetState = searchResults.isEmpty() && youTubeSearchState.isIdle,
+                            targetState = unifiedSearchState.rows.isEmpty() &&
+                                !unifiedSearchState.isYouTubeLoading && unifiedSearchState.youTubeError == null,
                             animationSpec = tween(durationMillis = 190),
                             label = "search_results_fade"
                         ) { isEmpty ->
@@ -405,20 +426,14 @@ fun SearchScreen(
                                     colorScheme = colorScheme
                                 )
                             } else {
-                                SearchResultsList(
-                                    results = searchResults,
-                                    youTubeState = youTubeSearchState,
-                                    searchQuery = searchQuery,
-                                    playerViewModel = playerViewModel,
-                                    onItemSelected = {
-                                        if (searchQuery.isNotBlank()) {
-                                            playerViewModel.onSearchQuerySubmitted(searchQuery)
-                                        }
-                                    },
-                                    currentPlayingSongId = stablePlayerState.currentSong?.id,
-                                    isPlaying = stablePlayerState.isPlaying,
-                                    onSongMoreOptionsClick = handleSongMoreOptionsClick,
-                                    navController = navController
+                                UnifiedResultsList(
+                                    rows = unifiedSearchState.rows,
+                                    isYouTubeLoading = unifiedSearchState.isYouTubeLoading,
+                                    youTubeError = unifiedSearchState.youTubeError,
+                                    onLocalClick = onLocalClick,
+                                    onYouTubeClick = onYouTubeClick,
+                                    onMoreClick = handleSongMoreOptionsClick,
+                                    onRetryYouTube = remember(playerViewModel) { playerViewModel::retryYouTubeSearch }
                                 )
                             }
                         }
