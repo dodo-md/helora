@@ -22,6 +22,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.ResolvingDataSource
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -174,7 +176,8 @@ class DualPlayerEngine @Inject constructor(
     private val navidromeStreamProxy: NavidromeStreamProxy,
     private val jellyfinStreamProxy: com.dodoznq.helora.data.jellyfin.JellyfinStreamProxy,
     private val youTubeStreamProxy: com.dodoznq.helora.data.youtube.YouTubeStreamProxy,
-    private val cloudOfflineRepository: CloudOfflineRepository
+    private val cloudOfflineRepository: CloudOfflineRepository,
+    private val streamCache: Cache
 ) {
     private companion object {
         private const val AUDIO_OFFLOAD_STALL_FALLBACK_MS = 4_000L
@@ -587,6 +590,17 @@ class DualPlayerEngine @Inject constructor(
     private var isReleased = false
     private val resolvedUriCache = LruCache<String, Uri>(100)
 
+    /**
+     * Drops every cached proxy URL. Entries embed the local proxy's port and session token,
+     * both of which are only valid for the proxy instance that issued them — if the proxy is
+     * ever stopped and restarted, stale entries here would point at dead 404s. No caller yet;
+     * nothing currently stops the proxy in production, so this is unused on purpose until one
+     * does.
+     */
+    internal fun invalidateResolvedUriCache() {
+        resolvedUriCache.evictAll()
+    }
+
     fun initialize() {
         if (!isReleased && ::playerA.isInitialized && playerA.applicationLooper.thread.isAlive) return
         if (scope.coroutineContext[Job]?.isActive != true) {
@@ -950,8 +964,21 @@ class DualPlayerEngine @Inject constructor(
             }
         }
         
-        val dataSourceFactory = DefaultDataSource.Factory(context)
-        val resolvingFactory = ResolvingDataSource.Factory(dataSourceFactory, resolver)
+        val baseFactory = DefaultDataSource.Factory(context)
+        val resolvingFactory = ResolvingDataSource.Factory(baseFactory, resolver)
+        // The cache must sit upstream of the resolver so it keys on the stable ytmusic://
+        // URI, not the per-launch proxy URL (random port + session token) the resolver
+        // produces. A cache hit then never calls the resolver at all.
+        val cachingFactory = CacheDataSource.Factory()
+            .setCache(streamCache)
+            .setUpstreamDataSourceFactory(resolvingFactory)
+            .setCacheKeyFactory { dataSpec -> dataSpec.key ?: dataSpec.uri.toString() }
+            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+        val mediaDataSourceFactory = SchemeAwareDataSource.Factory(
+            cachedFactory = cachingFactory,
+            directFactory = resolvingFactory,
+            cachedSchemes = REMOTE_MEDIA_SCHEMES
+        )
         val extractorsFactory = DefaultExtractorsFactory()
             .setMp3ExtractorFlags(Mp3Extractor.FLAG_ENABLE_CONSTANT_BITRATE_SEEKING)
             .setFlacExtractorFlags(FlacExtractor.FLAG_DISABLE_ID3_METADATA)
@@ -959,7 +986,7 @@ class DualPlayerEngine @Inject constructor(
         val loadControl = buildAdaptiveLoadControl()
 
         return ExoPlayer.Builder(context, renderersFactory)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(resolvingFactory, extractorsFactory))
+            .setMediaSourceFactory(DefaultMediaSourceFactory(mediaDataSourceFactory, extractorsFactory))
             .setLoadControl(loadControl)
             .build().apply {
             sharedAudioSessionIdOrNull()?.let { setAudioSessionId(it) }

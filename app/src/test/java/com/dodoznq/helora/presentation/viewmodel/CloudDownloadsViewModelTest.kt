@@ -6,6 +6,9 @@ import com.dodoznq.helora.data.offline.CloudOfflineRepository
 import com.dodoznq.helora.data.offline.OfflineDownload
 import com.dodoznq.helora.data.offline.OfflineDownloadStatus
 import com.dodoznq.helora.data.model.Song
+import com.dodoznq.helora.data.preferences.UserPreferencesRepository
+import com.dodoznq.helora.data.stream.StreamCacheConfig
+import com.dodoznq.helora.data.stream.StreamCacheManager
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -19,6 +22,12 @@ import org.junit.jupiter.api.extension.ExtendWith
 @OptIn(ExperimentalCoroutinesApi::class)
 @ExtendWith(MainCoroutineExtension::class)
 class CloudDownloadsViewModelTest {
+
+    private fun streamCacheManager() = mockk<StreamCacheManager>(relaxed = true)
+
+    private fun userPreferencesRepository() = mockk<UserPreferencesRepository>(relaxed = true).also {
+        every { it.streamCacheMaxBytesFlow } returns flowOf(StreamCacheConfig.DEFAULT_MAX_BYTES)
+    }
 
     @Test
     fun `downloads are grouped and storage includes completed and partial files`() {
@@ -45,7 +54,7 @@ class CloudDownloadsViewModelTest {
         val failed = download("failed", OfflineDownloadStatus.FAILED)
         val repository = mockk<CloudOfflineRepository>(relaxed = true)
         every { repository.observeAll() } returns flowOf(listOf(failed))
-        val viewModel = CloudDownloadsViewModel(repository)
+        val viewModel = CloudDownloadsViewModel(repository, streamCacheManager(), userPreferencesRepository())
 
         advanceUntilIdle()
         viewModel.retry(failed)
@@ -61,7 +70,7 @@ class CloudDownloadsViewModelTest {
         val complete = download("complete", OfflineDownloadStatus.COMPLETE)
         val repository = mockk<CloudOfflineRepository>(relaxed = true)
         every { repository.observeAll() } returns flowOf(listOf(complete))
-        val viewModel = CloudDownloadsViewModel(repository)
+        val viewModel = CloudDownloadsViewModel(repository, streamCacheManager(), userPreferencesRepository())
 
         viewModel.retry(complete)
         advanceUntilIdle()
@@ -77,7 +86,7 @@ class CloudDownloadsViewModelTest {
         val local = song("local", "content://media/audio/3")
         val repository = mockk<CloudOfflineRepository>(relaxed = true)
         every { repository.observeAll() } returns flowOf(emptyList())
-        val viewModel = CloudDownloadsViewModel(repository)
+        val viewModel = CloudDownloadsViewModel(repository, streamCacheManager(), userPreferencesRepository())
 
         viewModel.downloadSelected(listOf(navidrome, duplicate, jellyfin, local))
         advanceUntilIdle()
@@ -89,7 +98,7 @@ class CloudDownloadsViewModelTest {
     fun `batch download ignores a local only selection`() = runTest {
         val repository = mockk<CloudOfflineRepository>(relaxed = true)
         every { repository.observeAll() } returns flowOf(emptyList())
-        val viewModel = CloudDownloadsViewModel(repository)
+        val viewModel = CloudDownloadsViewModel(repository, streamCacheManager(), userPreferencesRepository())
 
         viewModel.downloadSelected(listOf(song("local", "content://media/audio/3")))
         advanceUntilIdle()

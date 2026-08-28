@@ -236,6 +236,11 @@
     <string name="cloud_downloads_completed_section">Completati</string>
     <string name="cloud_downloads_downloaded_size">Scaricato · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">I brani cloud che scarichi compariranno qui.</string>
+    <string name="stream_cache_section_title">Cache di streaming</string>
+    <string name="stream_cache_section_subtitle">I brani riprodotti di recente restano sul dispositivo, così riascoltarli non consuma dati</string>
+    <string name="stream_cache_usage">%1$s di %2$s utilizzati</string>
+    <string name="stream_cache_size_restart_note">Ha effetto al prossimo avvio dell\'app</string>
+    <string name="stream_cache_clear_button">Svuota cache</string>
     <string name="cloud_downloads_empty_title">Nessun download offline</string>
     <string name="cloud_downloads_failed_fallback">Download non riuscito</string>
     <string name="cloud_downloads_failed_section">Non riusciti</string>

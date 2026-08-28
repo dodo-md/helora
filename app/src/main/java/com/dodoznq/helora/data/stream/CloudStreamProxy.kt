@@ -178,6 +178,12 @@ abstract class CloudStreamProxy<K : Any>(
     protected open fun extractIdFromUri(uri: Uri): String? = uri.host
 
     /**
+     * How long this URL may be cached for. Defaults to the constant [cacheExpirationMs];
+     * sources whose stream URL carries its own expiry override this to narrow it.
+     */
+    protected open fun expirationMsFor(url: String): Long = cacheExpirationMs
+
+    /**
      * Extra headers for the upstream stream request. Lets subclasses send auth tokens as
      * headers instead of baking them into the cached stream URL (where they'd end up in
      * URL caches and server access logs).
@@ -211,7 +217,7 @@ abstract class CloudStreamProxy<K : Any>(
             if (!cached.isExpired()) return cached.url
         }
         return resolveStreamUrl(id)?.also { url ->
-            urlCache[id] = CachedUrl(url, System.currentTimeMillis(), cacheExpirationMs)
+            urlCache[id] = CachedUrl(url, System.currentTimeMillis(), expirationMsFor(url))
         }
     }
 

@@ -236,6 +236,11 @@
     <string name="cloud_downloads_completed_section">Terminés</string>
     <string name="cloud_downloads_downloaded_size">Téléchargé · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">Les titres cloud que vous téléchargez apparaîtront ici.</string>
+    <string name="stream_cache_section_title">Cache de streaming</string>
+    <string name="stream_cache_section_subtitle">Les titres récemment écoutés restent sur l\'appareil pour que les relire ne consomme pas de données</string>
+    <string name="stream_cache_usage">%1$s sur %2$s utilisés</string>
+    <string name="stream_cache_size_restart_note">Prend effet au prochain démarrage de l\'application</string>
+    <string name="stream_cache_clear_button">Vider le cache</string>
     <string name="cloud_downloads_empty_title">Aucun téléchargement hors ligne</string>
     <string name="cloud_downloads_failed_fallback">Échec du téléchargement</string>
     <string name="cloud_downloads_failed_section">Échecs</string>

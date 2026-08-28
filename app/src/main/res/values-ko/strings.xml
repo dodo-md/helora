@@ -236,6 +236,11 @@
     <string name="cloud_downloads_completed_section">완료</string>
     <string name="cloud_downloads_downloaded_size">다운로드됨 · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">다운로드한 클라우드 트랙이 여기에 표시됩니다.</string>
+    <string name="stream_cache_section_title">스트리밍 캐시</string>
+    <string name="stream_cache_section_subtitle">최근 재생한 트랙은 기기에 저장되어 다시 재생할 때 데이터를 사용하지 않습니다</string>
+    <string name="stream_cache_usage">%2$s 중 %1$s 사용됨</string>
+    <string name="stream_cache_size_restart_note">앱을 다음에 시작할 때 적용됩니다</string>
+    <string name="stream_cache_clear_button">캐시 지우기</string>
     <string name="cloud_downloads_empty_title">오프라인 다운로드 없음</string>
     <string name="cloud_downloads_failed_fallback">다운로드 실패</string>
     <string name="cloud_downloads_failed_section">실패</string>
