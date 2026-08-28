@@ -236,6 +236,11 @@
     <string name="cloud_downloads_completed_section">Selesai</string>
     <string name="cloud_downloads_downloaded_size">Terunduh · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">Trek cloud yang Anda unduh akan muncul di sini.</string>
+    <string name="stream_cache_section_title">Cache streaming</string>
+    <string name="stream_cache_section_subtitle">Trek yang baru diputar disimpan di penyimpanan agar memutarnya lagi tidak memakai kuota data</string>
+    <string name="stream_cache_usage">%1$s dari %2$s terpakai</string>
+    <string name="stream_cache_size_restart_note">Berlaku saat aplikasi dibuka lagi</string>
+    <string name="stream_cache_clear_button">Hapus cache</string>
     <string name="cloud_downloads_empty_title">Belum ada unduhan luring</string>
     <string name="cloud_downloads_failed_fallback">Unduhan gagal</string>
     <string name="cloud_downloads_failed_section">Gagal</string>

@@ -236,6 +236,11 @@
     <string name="cloud_downloads_completed_section">Завершено</string>
     <string name="cloud_downloads_downloaded_size">Загружено · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">Скачанные облачные треки появятся здесь.</string>
+    <string name="stream_cache_section_title">Кеш потоковой передачи</string>
+    <string name="stream_cache_section_subtitle">Недавно воспроизведённые треки хранятся на диске, поэтому повторное воспроизведение не расходует трафик</string>
+    <string name="stream_cache_usage">%1$s из %2$s использовано</string>
+    <string name="stream_cache_size_restart_note">Вступит в силу при следующем запуске приложения</string>
+    <string name="stream_cache_clear_button">Очистить кеш</string>
     <string name="cloud_downloads_empty_title">Нет офлайн-загрузок</string>
     <string name="cloud_downloads_failed_fallback">Не удалось скачать</string>
     <string name="cloud_downloads_failed_section">С ошибкой</string>

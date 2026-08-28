@@ -236,6 +236,11 @@
     <string name="cloud_downloads_completed_section">Fullført</string>
     <string name="cloud_downloads_downloaded_size">Lastet ned · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">Skyspor du laster ned, dukker opp her.</string>
+    <string name="stream_cache_section_title">Strømmecache</string>
+    <string name="stream_cache_section_subtitle">Nylig spilte spor lagres på enheten, så avspilling på nytt bruker ikke data</string>
+    <string name="stream_cache_usage">%1$s av %2$s brukt</string>
+    <string name="stream_cache_size_restart_note">Trer i kraft neste gang appen starter</string>
+    <string name="stream_cache_clear_button">Tøm buffer</string>
     <string name="cloud_downloads_empty_title">Ingen nedlastinger uten nett</string>
     <string name="cloud_downloads_failed_fallback">Nedlastingen mislyktes</string>
     <string name="cloud_downloads_failed_section">Mislyktes</string>

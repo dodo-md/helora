@@ -236,6 +236,11 @@
     <string name="cloud_downloads_completed_section">Completadas</string>
     <string name="cloud_downloads_downloaded_size">Descargado · %1$s</string>
     <string name="cloud_downloads_empty_subtitle">Las pistas de la nube que descargues aparecerán aquí.</string>
+    <string name="stream_cache_section_title">Caché de streaming</string>
+    <string name="stream_cache_section_subtitle">Las pistas reproducidas recientemente se guardan en el disco para que reproducirlas de nuevo no consuma datos</string>
+    <string name="stream_cache_usage">%1$s de %2$s usados</string>
+    <string name="stream_cache_size_restart_note">Se aplicará la próxima vez que inicies la app</string>
+    <string name="stream_cache_clear_button">Vaciar caché</string>
     <string name="cloud_downloads_empty_title">Sin descargas sin conexión</string>
     <string name="cloud_downloads_failed_fallback">Error en la descarga</string>
     <string name="cloud_downloads_failed_section">Fallidas</string>

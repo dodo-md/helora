@@ -233,6 +233,11 @@
     <string name="cloud_downloads_failed_fallback">İndirme başarısız oldu</string>
     <string name="cloud_downloads_empty_title">Çevrimdışı indirme yok</string>
     <string name="cloud_downloads_empty_subtitle">İndirdiğiniz bulut parçaları burada görünür.</string>
+    <string name="stream_cache_section_title">Akış önbelleği</string>
+    <string name="stream_cache_section_subtitle">Son çalınan parçalar diskte tutulur, böylece tekrar çalmak veri harcamaz</string>
+    <string name="stream_cache_usage">%2$s üzerinden %1$s kullanıldı</string>
+    <string name="stream_cache_size_restart_note">Uygulama bir sonraki açılışta geçerli olur</string>
+    <string name="stream_cache_clear_button">Önbelleği temizle</string>
     <string name="cloud_download_selected">Seçili bulut parçalarını indir</string>
     <string name="cloud_download_selected_count">%1$d bulut parçasını indir</string>
     <string name="cloud_download_selected_started">%1$d bulut parçası çevrimdışı dinleme için hazırlanıyor</string>
