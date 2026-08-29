@@ -196,12 +196,12 @@ fun FullPlayerContent(
     isShuffleEnabled: Boolean,
     shuffleTransitionInProgress: Boolean,
     repeatMode: Int,
-    allowRealtimeUpdates: Boolean = true,
+    allowRealtimeUpdatesProvider: () -> Boolean = { true },
     expansionFractionProvider: () -> Float,
-    currentSheetState: PlayerSheetState,
+    currentSheetStateProvider: () -> PlayerSheetState,
     carouselStyle: String,
     loadingTweaks: FullPlayerLoadingTweaks,
-    isSheetDragGestureActive: Boolean = false,
+    isSheetDragGestureActiveProvider: () -> Boolean = { false },
     playerViewModel: PlayerViewModel,
     currentPositionProvider: () -> Long,
     isPlayingProvider: () -> Boolean,
@@ -513,9 +513,9 @@ fun FullPlayerContent(
             currentMediaItemIndex = currentQueueIndex ?: currentMediaItemIndex,
             carouselStyle = carouselStyle,
             loadingTweaks = loadingTweaks,
-            isSheetDragGestureActive = isSheetDragGestureActive,
+            isSheetDragGestureActiveProvider = isSheetDragGestureActiveProvider,
             expansionFractionProvider = expansionFractionProvider,
-            currentSheetState = currentSheetState,
+            currentSheetStateProvider = currentSheetStateProvider,
             isPlayingProvider = isPlayingProvider,
             playWhenReadyProvider = playWhenReadyProvider,
             placeholderColor = placeholderColor,
@@ -543,11 +543,11 @@ fun FullPlayerContent(
             onSeek = onSeek,
             expansionFractionProvider = expansionFractionProvider,
             isPlayingProvider = isPlayingProvider,
-            currentSheetState = currentSheetState,
+            currentSheetStateProvider = currentSheetStateProvider,
             progressActiveColor = progressActiveColor,
             playerOnBaseColor = playerOnBaseColor,
-            allowRealtimeUpdates = allowRealtimeUpdates,
-            isSheetDragGestureActive = isSheetDragGestureActive,
+            allowRealtimeUpdatesProvider = allowRealtimeUpdatesProvider,
+            isSheetDragGestureActiveProvider = isSheetDragGestureActiveProvider,
             loadingTweaks = loadingTweaks
         )
     }
@@ -555,9 +555,9 @@ fun FullPlayerContent(
     val controlsSection: @Composable () -> Unit = {
         FullPlayerControlsSection(
             loadingTweaks = loadingTweaks,
-            isSheetDragGestureActive = isSheetDragGestureActive,
+            isSheetDragGestureActiveProvider = isSheetDragGestureActiveProvider,
             expansionFractionProvider = expansionFractionProvider,
-            currentSheetState = currentSheetState,
+            currentSheetStateProvider = currentSheetStateProvider,
             placeholderColor = placeholderColor,
             placeholderOnColor = placeholderOnColor,
             isPlayingProvider = isPlayingProvider,
@@ -581,9 +581,9 @@ fun FullPlayerContent(
             song = song,
             currentSongArtists = currentSongArtists,
             loadingTweaks = loadingTweaks,
-            isSheetDragGestureActive = isSheetDragGestureActive,
+            isSheetDragGestureActiveProvider = isSheetDragGestureActiveProvider,
             expansionFractionProvider = expansionFractionProvider,
-            currentSheetState = currentSheetState,
+            currentSheetStateProvider = currentSheetStateProvider,
             placeholderColor = placeholderColor,
             placeholderOnColor = placeholderOnColor,
             isLandscape = false,
@@ -604,9 +604,9 @@ fun FullPlayerContent(
             song = song,
             currentSongArtists = currentSongArtists,
             loadingTweaks = loadingTweaks,
-            isSheetDragGestureActive = isSheetDragGestureActive,
+            isSheetDragGestureActiveProvider = isSheetDragGestureActiveProvider,
             expansionFractionProvider = expansionFractionProvider,
-            currentSheetState = currentSheetState,
+            currentSheetStateProvider = currentSheetStateProvider,
             placeholderColor = placeholderColor,
             placeholderOnColor = placeholderOnColor,
             isLandscape = true,
@@ -624,13 +624,13 @@ fun FullPlayerContent(
 
     Scaffold(
         containerColor = Color.Transparent,
-        modifier = Modifier.pointerInput(currentSheetState, queueGestureBottomExclusionPx) {
+        modifier = Modifier.pointerInput(queueGestureBottomExclusionPx) {
             val queueDragActivationThresholdPx = 4.dp.toPx()
             val quickFlickVelocityThreshold = -520f
 
             awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false)
-                val isFullyExpanded = currentSheetState == PlayerSheetState.EXPANDED && expansionFractionProvider() >= 0.99f
+                val isFullyExpanded = currentSheetStateProvider() == PlayerSheetState.EXPANDED && expansionFractionProvider() >= 0.99f
 
                 if (!isFullyExpanded) {
                     return@awaitEachGesture
@@ -896,9 +896,9 @@ private fun FullPlayerAlbumCoverSection(
     currentMediaItemIndex: Int,
     carouselStyle: String,
     loadingTweaks: FullPlayerLoadingTweaks,
-    isSheetDragGestureActive: Boolean,
+    isSheetDragGestureActiveProvider: () -> Boolean,
     expansionFractionProvider: () -> Float,
-    currentSheetState: PlayerSheetState,
+    currentSheetStateProvider: () -> PlayerSheetState,
     isPlayingProvider: () -> Boolean,
     playWhenReadyProvider: () -> Boolean,
     placeholderColor: Color,
@@ -934,10 +934,10 @@ private fun FullPlayerAlbumCoverSection(
             showPlaceholders = loadingTweaks.showPlaceholders,
             applyPlaceholderDelayOnClose = loadingTweaks.applyPlaceholdersOnClose,
             switchOnDragRelease = loadingTweaks.switchOnDragRelease,
-            isSheetDragGestureActive = isSheetDragGestureActive,
+            isSheetDragGestureActive = isSheetDragGestureActiveProvider(),
             sharedBoundsModifier = Modifier.fillMaxWidth().height(carouselHeight),
             expansionFractionProvider = expansionFractionProvider,
-            isExpandedOverride = currentSheetState == PlayerSheetState.EXPANDED,
+            isExpandedOverride = currentSheetStateProvider() == PlayerSheetState.EXPANDED,
             normalStartThreshold = 0.08f,
             delayAppearThreshold = loadingTweaks.contentAppearThresholdPercent / 100f,
             delayCloseThreshold = 1f - (loadingTweaks.contentCloseThresholdPercent / 100f),
@@ -993,9 +993,9 @@ private fun FullPlayerAlbumCoverSection(
 @Composable
 private fun FullPlayerControlsSection(
     loadingTweaks: FullPlayerLoadingTweaks,
-    isSheetDragGestureActive: Boolean,
+    isSheetDragGestureActiveProvider: () -> Boolean,
     expansionFractionProvider: () -> Float,
-    currentSheetState: PlayerSheetState,
+    currentSheetStateProvider: () -> PlayerSheetState,
     placeholderColor: Color,
     placeholderOnColor: Color,
     isPlayingProvider: () -> Boolean,
@@ -1022,10 +1022,10 @@ private fun FullPlayerControlsSection(
         showPlaceholders = loadingTweaks.showPlaceholders,
         applyPlaceholderDelayOnClose = loadingTweaks.applyPlaceholdersOnClose,
         switchOnDragRelease = loadingTweaks.switchOnDragRelease,
-        isSheetDragGestureActive = isSheetDragGestureActive,
+        isSheetDragGestureActive = isSheetDragGestureActiveProvider(),
         sharedBoundsModifier = Modifier.fillMaxWidth().height(182.dp),
         expansionFractionProvider = expansionFractionProvider,
-        isExpandedOverride = currentSheetState == PlayerSheetState.EXPANDED,
+        isExpandedOverride = currentSheetStateProvider() == PlayerSheetState.EXPANDED,
         normalStartThreshold = 0.42f,
         delayAppearThreshold = loadingTweaks.contentAppearThresholdPercent / 100f,
         delayCloseThreshold = 1f - (loadingTweaks.contentCloseThresholdPercent / 100f),
@@ -1093,11 +1093,11 @@ private fun FullPlayerProgressSection(
     onSeek: (Long) -> Unit,
     expansionFractionProvider: () -> Float,
     isPlayingProvider: () -> Boolean,
-    currentSheetState: PlayerSheetState,
+    currentSheetStateProvider: () -> PlayerSheetState,
     progressActiveColor: Color,
     playerOnBaseColor: Color,
-    allowRealtimeUpdates: Boolean,
-    isSheetDragGestureActive: Boolean,
+    allowRealtimeUpdatesProvider: () -> Boolean,
+    isSheetDragGestureActiveProvider: () -> Boolean,
     loadingTweaks: FullPlayerLoadingTweaks
 ) {
     val isMetadataForCurrentSong = playbackMetadataMediaId == song.id
@@ -1129,13 +1129,13 @@ private fun FullPlayerProgressSection(
         onSeek = onSeek,
         expansionFractionProvider = expansionFractionProvider,
         isPlayingProvider = isPlayingProvider,
-        currentSheetState = currentSheetState,
+        currentSheetStateProvider = currentSheetStateProvider,
         activeTrackColor = progressActiveColor,
         inactiveTrackColor = playerOnBaseColor.copy(alpha = 0.2f),
         thumbColor = progressActiveColor,
         timeTextColor = playerOnBaseColor,
-        allowRealtimeUpdates = allowRealtimeUpdates,
-        isSheetDragGestureActive = isSheetDragGestureActive,
+        allowRealtimeUpdatesProvider = allowRealtimeUpdatesProvider,
+        isSheetDragGestureActiveProvider = isSheetDragGestureActiveProvider,
         loadingTweaks = loadingTweaks
     )
 }
@@ -1191,9 +1191,9 @@ private fun FullPlayerSongMetadataSection(
     song: Song,
     currentSongArtists: ImmutableList<Artist>,
     loadingTweaks: FullPlayerLoadingTweaks,
-    isSheetDragGestureActive: Boolean,
+    isSheetDragGestureActiveProvider: () -> Boolean,
     expansionFractionProvider: () -> Float,
-    currentSheetState: PlayerSheetState,
+    currentSheetStateProvider: () -> PlayerSheetState,
     placeholderColor: Color,
     placeholderOnColor: Color,
     isLandscape: Boolean,
@@ -1214,10 +1214,10 @@ private fun FullPlayerSongMetadataSection(
         showPlaceholders = loadingTweaks.showPlaceholders,
         applyPlaceholderDelayOnClose = loadingTweaks.applyPlaceholdersOnClose,
         switchOnDragRelease = loadingTweaks.switchOnDragRelease,
-        isSheetDragGestureActive = isSheetDragGestureActive,
+        isSheetDragGestureActive = isSheetDragGestureActiveProvider(),
         sharedBoundsModifier = Modifier.fillMaxWidth().heightIn(min = 70.dp),
         expansionFractionProvider = expansionFractionProvider,
-        isExpandedOverride = currentSheetState == PlayerSheetState.EXPANDED,
+        isExpandedOverride = currentSheetStateProvider() == PlayerSheetState.EXPANDED,
         normalStartThreshold = 0.20f,
         delayAppearThreshold = loadingTweaks.contentAppearThresholdPercent / 100f,
         delayCloseThreshold = 1f - (loadingTweaks.contentCloseThresholdPercent / 100f),
@@ -1525,13 +1525,13 @@ private fun PlayerProgressBarSection(
     onSeek: (Long) -> Unit,
     expansionFractionProvider: () -> Float,
     isPlayingProvider: () -> Boolean,
-    currentSheetState: PlayerSheetState,
+    currentSheetStateProvider: () -> PlayerSheetState,
     activeTrackColor: Color,
     inactiveTrackColor: Color,
     thumbColor: Color,
     timeTextColor: Color,
-    allowRealtimeUpdates: Boolean = true,
-    isSheetDragGestureActive: Boolean = false,
+    allowRealtimeUpdatesProvider: () -> Boolean = { true },
+    isSheetDragGestureActiveProvider: () -> Boolean = { false },
     loadingTweaks: FullPlayerLoadingTweaks? = null,
     modifier: Modifier = Modifier
 ) {
@@ -1539,12 +1539,12 @@ private fun PlayerProgressBarSection(
     val isVisible by remember(expansionFractionProvider) {
         derivedStateOf { expansionFractionProvider() > 0.01f }
     }
-    val isExpanded by remember(currentSheetState, expansionFractionProvider) {
+    val isExpanded by remember(expansionFractionProvider) {
         derivedStateOf {
-            currentSheetState == PlayerSheetState.EXPANDED && expansionFractionProvider() >= 0.995f
+            currentSheetStateProvider() == PlayerSheetState.EXPANDED && expansionFractionProvider() >= 0.995f
         }
     }
-    val shouldRunRealtimeUpdates = allowRealtimeUpdates && isVisible
+    val shouldRunRealtimeUpdates = allowRealtimeUpdatesProvider() && isVisible
     val shouldSampleProgress = isVisible
 
     val reportedDuration = totalDurationValue.coerceAtLeast(0L)
@@ -1644,10 +1644,10 @@ private fun PlayerProgressBarSection(
         showPlaceholders = loadingTweaks?.showPlaceholders ?: false,
         applyPlaceholderDelayOnClose = loadingTweaks?.applyPlaceholdersOnClose ?: true,
         switchOnDragRelease = loadingTweaks?.switchOnDragRelease ?: false,
-        isSheetDragGestureActive = isSheetDragGestureActive,
+        isSheetDragGestureActive = isSheetDragGestureActiveProvider(),
         sharedBoundsModifier = Modifier.fillMaxWidth().heightIn(min = 70.dp),
         expansionFractionProvider = expansionFractionProvider,
-        isExpandedOverride = currentSheetState == PlayerSheetState.EXPANDED,
+        isExpandedOverride = currentSheetStateProvider() == PlayerSheetState.EXPANDED,
         normalStartThreshold = 0.08f,
         delayAppearThreshold = (loadingTweaks?.contentAppearThresholdPercent ?: 0) / 100f,
         delayCloseThreshold = 1f - ((loadingTweaks?.contentCloseThresholdPercent ?: 0) / 100f),
