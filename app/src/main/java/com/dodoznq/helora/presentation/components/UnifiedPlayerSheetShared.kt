@@ -33,9 +33,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.key
+import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,7 +52,7 @@ import com.dodoznq.helora.R
 import com.dodoznq.helora.data.model.Song
 import com.dodoznq.helora.ui.theme.RoundedSans
 
-internal val LocalMaterialTheme = staticCompositionLocalOf<ColorScheme> { error("No ColorScheme provided") }
+internal val LocalMaterialTheme = compositionLocalOf<ColorScheme>(referentialEqualityPolicy()) { error("No ColorScheme provided") }
 
 val MiniPlayerHeight = 64.dp
 const val ANIMATION_DURATION_MS = 255
