@@ -168,7 +168,6 @@ fun SearchScreen(
     }.collectAsStateWithLifecycle(initialValue = SearchUiSlice())
     val currentFilter = searchUiState.selectedSearchFilter
     val genres by playerViewModel.genres.collectAsStateWithLifecycle()
-    val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
     val favoriteSongIds by playerViewModel.favoriteSongIds.collectAsStateWithLifecycle()
     val selectedSongForInfo by playerViewModel.selectedSongForInfo.collectAsStateWithLifecycle()
     var showSongInfoBottomSheet by remember { mutableStateOf(false) }
@@ -827,7 +826,6 @@ fun SearchResultsList(
     youTubeState: YouTubeSearchStateHolder.State = YouTubeSearchStateHolder.State()
 ) {
     val localDensity = LocalDensity.current
-    val playerStableState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
 
     if (results.isEmpty() && youTubeState.isIdle) {
         Box(
@@ -1022,7 +1020,7 @@ fun SearchResultsList(
                                                 songs.first(),
                                                 item.playlist.name
                                             )
-                                            if (playerStableState.isShuffleEnabled) playerViewModel.toggleShuffle()
+                                            if (playerViewModel.stablePlayerState.value.isShuffleEnabled) playerViewModel.toggleShuffle()
                                         } else {
                                             playerViewModel.sendToast("Empty playlist")
                                         }
