@@ -1,4 +1,4 @@
-name: Alpha Release
+name: Latest Release
 
 on:
   push:
@@ -80,7 +80,7 @@ jobs:
             echo "keyPassword=${CI_KEY_PASSWORD:-$CI_KEYSTORE_PASSWORD}"
           } > keystore.properties
 
-      - name: Build alpha release APKs
+      - name: Build release APKs
         run: >
           ./gradlew :app:assembleRelease
           -Phelora.enableAbiSplits=true
@@ -98,7 +98,7 @@ jobs:
             cp "$apk" "release-apks/Helora-${{ steps.version.outputs.name }}-$abi.apk"
           done
 
-      - name: Create GitHub prerelease
+      - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: >
