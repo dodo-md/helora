@@ -346,9 +346,12 @@ fun AlbumDetailScreen(
                                 key = { song -> "album_song_${song.id}" },
                                 contentType = { "album_song" }
                             ) { song ->
-                                LibraryPlaybackAwareSongItem(
+                                val isCurrentSong = stablePlayerState.currentSong?.id == song.id
+                                EnhancedSongListItem(
                                     song = song,
-                                    playerViewModel = playerViewModel,
+                                    isPlaying = isCurrentSong && stablePlayerState.isPlaying,
+                                    isCurrentSong = isCurrentSong,
+                                    isLoading = false,
                                     showAlbumArt = false,
                                     onMoreOptionsClick = {
                                         playerViewModel.selectSongForInfo(song)
