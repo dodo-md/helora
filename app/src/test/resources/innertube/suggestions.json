@@ -1,0 +1,445 @@
+{
+  "contents": [
+    {
+      "searchSuggestionsSectionRenderer": {
+        "contents": [
+          {
+            "searchSuggestionRenderer": {
+              "suggestion": {
+                "runs": [
+                  {
+                    "text": "radiohead cre",
+                    "bold": true
+                  },
+                  {
+                    "text": "ep"
+                  }
+                ]
+              },
+              "navigationEndpoint": {
+                "searchEndpoint": {
+                  "query": "radiohead creep"
+                }
+              },
+              "icon": {
+                "iconType": "SEARCH"
+              }
+            }
+          },
+          {
+            "searchSuggestionRenderer": {
+              "suggestion": {
+                "runs": [
+                  {
+                    "text": "radiohead",
+                    "bold": true
+                  },
+                  {
+                    "text": " - "
+                  },
+                  {
+                    "text": "cre",
+                    "bold": true
+                  },
+                  {
+                    "text": "ep"
+                  }
+                ]
+              },
+              "navigationEndpoint": {
+                "searchEndpoint": {
+                  "query": "radiohead - creep"
+                }
+              },
+              "icon": {
+                "iconType": "SEARCH"
+              }
+            }
+          },
+          {
+            "searchSuggestionRenderer": {
+              "suggestion": {
+                "runs": [
+                  {
+                    "text": "radiohead cre",
+                    "bold": true
+                  },
+                  {
+                    "text": "ep cover"
+                  }
+                ]
+              },
+              "navigationEndpoint": {
+                "searchEndpoint": {
+                  "query": "radiohead creep cover"
+                }
+              },
+              "icon": {
+                "iconType": "SEARCH"
+              }
+            }
+          },
+          {
+            "searchSuggestionRenderer": {
+              "suggestion": {
+                "runs": [
+                  {
+                    "text": "radiohead cre",
+                    "bold": true
+                  },
+                  {
+                    "text": "ep live"
+                  }
+                ]
+              },
+              "navigationEndpoint": {
+                "searchEndpoint": {
+                  "query": "radiohead creep live"
+                }
+              },
+              "icon": {
+                "iconType": "SEARCH"
+              }
+            }
+          },
+          {
+            "searchSuggestionRenderer": {
+              "suggestion": {
+                "runs": [
+                  {
+                    "text": "radiohead cre",
+                    "bold": true
+                  },
+                  {
+                    "text": "ep türkçe"
+                  }
+                ]
+              },
+              "navigationEndpoint": {
+                "searchEndpoint": {
+                  "query": "radiohead creep türkçe"
+                }
+              },
+              "icon": {
+                "iconType": "SEARCH"
+              }
+            }
+          },
+          {
+            "searchSuggestionRenderer": {
+              "suggestion": {
+                "runs": [
+                  {
+                    "text": "radiohead cre",
+                    "bold": true
+                  },
+                  {
+                    "text": "ep acoustic"
+                  }
+                ]
+              },
+              "navigationEndpoint": {
+                "searchEndpoint": {
+                  "query": "radiohead creep acoustic"
+                }
+              },
+              "icon": {
+                "iconType": "SEARCH"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "searchSuggestionsSectionRenderer": {
+        "contents": [
+          {
+            "musicResponsiveListItemRenderer": {
+              "thumbnail": {
+                "musicThumbnailRenderer": {
+                  "thumbnail": {
+                    "thumbnails": [
+                      {
+                        "url": "https://yt3.googleusercontent.com/-h_EmlrGLsJwhih3lVHGDmK3CAmLdpqEIeerAuJ71qmJeZ_5zYf9ElWIEBNiB_6_CbXh4qHchBpOqhCu=w60-h60-l90-rj",
+                        "width": 60,
+                        "height": 60
+                      },
+                      {
+                        "url": "https://yt3.googleusercontent.com/-h_EmlrGLsJwhih3lVHGDmK3CAmLdpqEIeerAuJ71qmJeZ_5zYf9ElWIEBNiB_6_CbXh4qHchBpOqhCu=w120-h120-l90-rj",
+                        "width": 120,
+                        "height": 120
+                      }
+                    ]
+                  }
+                }
+              },
+              "overlay": {
+                "musicItemThumbnailOverlayRenderer": {
+                  "background": {
+                    "verticalGradient": {
+                      "gradientLayerColors": [
+                        "3422552064",
+                        "3422552064"
+                      ]
+                    }
+                  },
+                  "content": {
+                    "musicPlayButtonRenderer": {
+                      "playNavigationEndpoint": {
+                        "watchEndpoint": {
+                          "videoId": "9RfVp-GhKfs"
+                        }
+                      },
+                      "playIcon": {
+                        "iconType": "PLAY_ARROW"
+                      },
+                      "pauseIcon": {
+                        "iconType": "PAUSE"
+                      },
+                      "iconColor": 4294967295,
+                      "backgroundColor": 0,
+                      "activeBackgroundColor": 0,
+                      "loadingIndicatorColor": 14745645,
+                      "playingIcon": {
+                        "iconType": "VOLUME_UP"
+                      },
+                      "iconLoadingColor": 0,
+                      "activeScaleFactor": 1,
+                      "buttonSize": "MUSIC_PLAY_BUTTON_SIZE_SMALL",
+                      "rippleTarget": "MUSIC_PLAY_BUTTON_RIPPLE_TARGET_SELF",
+                      "accessibilityPlayData": {
+                        "accessibilityData": {
+                          "label": "Play Creep - Radiohead"
+                        }
+                      },
+                      "accessibilityPauseData": {
+                        "accessibilityData": {
+                          "label": "Pause Creep - Radiohead"
+                        }
+                      }
+                    }
+                  },
+                  "contentPosition": "MUSIC_ITEM_THUMBNAIL_OVERLAY_CONTENT_POSITION_CENTERED",
+                  "displayStyle": "MUSIC_ITEM_THUMBNAIL_OVERLAY_DISPLAY_STYLE_PERSISTENT"
+                }
+              },
+              "flexColumns": [
+                {
+                  "musicResponsiveListItemFlexColumnRenderer": {
+                    "text": {
+                      "runs": [
+                        {
+                          "text": "Creep",
+                          "navigationEndpoint": {
+                            "watchEndpoint": {
+                              "videoId": "9RfVp-GhKfs"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "musicResponsiveListItemFlexColumnRenderer": {
+                    "text": {
+                      "runs": [
+                        {
+                          "text": "Song"
+                        },
+                        {
+                          "text": " • "
+                        },
+                        {
+                          "text": "Radiohead",
+                          "navigationEndpoint": {
+                            "browseEndpoint": {
+                              "browseId": "UCr_iyUANcn9OX_yy9piYoLw"
+                            }
+                          }
+                        },
+                        {
+                          "text": " • "
+                        },
+                        {
+                          "text": "2.2B plays"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "musicResponsiveListItemFlexColumnRenderer": {
+                    "text": {
+                      "runs": [
+                        {
+                          "text": "Creep",
+                          "navigationEndpoint": {
+                            "browseEndpoint": {
+                              "browseId": "MPREb_TgQPwAzodvg"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "playlistItemData": {
+                "videoId": "9RfVp-GhKfs"
+              },
+              "navigationEndpoint": {
+                "watchEndpoint": {
+                  "videoId": "9RfVp-GhKfs"
+                }
+              }
+            }
+          },
+          {
+            "musicResponsiveListItemRenderer": {
+              "thumbnail": {
+                "musicThumbnailRenderer": {
+                  "thumbnail": {
+                    "thumbnails": [
+                      {
+                        "url": "https://yt3.googleusercontent.com/8S9qg8RnB0P8PEIhOBqw67Sviv6vppBuI8E6CWiMvil_duD48uYzMGEdgsAPzPpLWjAXbyh7alkkHmo=w60-h60-l90-rj",
+                        "width": 60,
+                        "height": 60
+                      },
+                      {
+                        "url": "https://yt3.googleusercontent.com/8S9qg8RnB0P8PEIhOBqw67Sviv6vppBuI8E6CWiMvil_duD48uYzMGEdgsAPzPpLWjAXbyh7alkkHmo=w120-h120-l90-rj",
+                        "width": 120,
+                        "height": 120
+                      }
+                    ]
+                  }
+                }
+              },
+              "overlay": {
+                "musicItemThumbnailOverlayRenderer": {
+                  "background": {
+                    "verticalGradient": {
+                      "gradientLayerColors": [
+                        "3422552064",
+                        "3422552064"
+                      ]
+                    }
+                  },
+                  "content": {
+                    "musicPlayButtonRenderer": {
+                      "playNavigationEndpoint": {
+                        "watchEndpoint": {
+                          "videoId": "8HQMy-9nDKs"
+                        }
+                      },
+                      "playIcon": {
+                        "iconType": "PLAY_ARROW"
+                      },
+                      "pauseIcon": {
+                        "iconType": "PAUSE"
+                      },
+                      "iconColor": 4294967295,
+                      "backgroundColor": 0,
+                      "activeBackgroundColor": 0,
+                      "loadingIndicatorColor": 14745645,
+                      "playingIcon": {
+                        "iconType": "VOLUME_UP"
+                      },
+                      "iconLoadingColor": 0,
+                      "activeScaleFactor": 1,
+                      "buttonSize": "MUSIC_PLAY_BUTTON_SIZE_SMALL",
+                      "rippleTarget": "MUSIC_PLAY_BUTTON_RIPPLE_TARGET_SELF",
+                      "accessibilityPlayData": {
+                        "accessibilityData": {
+                          "label": "Play Creep - Jennel Garcia"
+                        }
+                      },
+                      "accessibilityPauseData": {
+                        "accessibilityData": {
+                          "label": "Pause Creep - Jennel Garcia"
+                        }
+                      }
+                    }
+                  },
+                  "contentPosition": "MUSIC_ITEM_THUMBNAIL_OVERLAY_CONTENT_POSITION_CENTERED",
+                  "displayStyle": "MUSIC_ITEM_THUMBNAIL_OVERLAY_DISPLAY_STYLE_PERSISTENT"
+                }
+              },
+              "flexColumns": [
+                {
+                  "musicResponsiveListItemFlexColumnRenderer": {
+                    "text": {
+                      "runs": [
+                        {
+                          "text": "Creep",
+                          "navigationEndpoint": {
+                            "watchEndpoint": {
+                              "videoId": "8HQMy-9nDKs"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "musicResponsiveListItemFlexColumnRenderer": {
+                    "text": {
+                      "runs": [
+                        {
+                          "text": "Song"
+                        },
+                        {
+                          "text": " • "
+                        },
+                        {
+                          "text": "Jennel Garcia",
+                          "navigationEndpoint": {
+                            "browseEndpoint": {
+                              "browseId": "UCK7bDAaRc7sGSqTIh9J5QYg"
+                            }
+                          }
+                        },
+                        {
+                          "text": " • "
+                        },
+                        {
+                          "text": "16M plays"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "musicResponsiveListItemFlexColumnRenderer": {
+                    "text": {
+                      "runs": [
+                        {
+                          "text": "Creep",
+                          "navigationEndpoint": {
+                            "browseEndpoint": {
+                              "browseId": "MPREb_Fo2b2dSAyo1"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "playlistItemData": {
+                "videoId": "8HQMy-9nDKs"
+              },
+              "navigationEndpoint": {
+                "watchEndpoint": {
+                  "videoId": "8HQMy-9nDKs"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -16,7 +16,7 @@ private val EmphasizedDecelerateEasing = CubicBezierEasing(0.2f, 0.85f, 0.7f, 1f
 
 private val EmphasizedAccelerateEasing = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
 
-const val TRANSITION_DURATION = 450
+const val TRANSITION_DURATION = 350
 
 fun enterTransition() = slideInHorizontally(
     animationSpec = tween(TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),

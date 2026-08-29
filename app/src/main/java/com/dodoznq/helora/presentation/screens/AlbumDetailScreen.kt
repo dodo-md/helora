@@ -103,6 +103,8 @@ import com.dodoznq.helora.presentation.viewmodel.PlayerViewModel
 import com.dodoznq.helora.presentation.viewmodel.PlaylistViewModel
 import com.dodoznq.helora.utils.formatSongCount
 import com.dodoznq.helora.utils.shapes.RoundedStarShape
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.compose.ui.res.stringResource
@@ -125,6 +127,16 @@ fun AlbumDetailScreen(
     val isMiniPlayerVisible by remember {
         derivedStateOf { stablePlayerState.currentSong != null }
     }
+    val currentSongId by remember(playerViewModel) {
+        playerViewModel.stablePlayerState
+            .map { it.currentSong?.id }
+            .distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val isCurrentSongPlaying by remember(playerViewModel) {
+        playerViewModel.stablePlayerState
+            .map { it.isPlaying }
+            .distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = false)
     val favoriteIds by playerViewModel.favoriteSongIds.collectAsStateWithLifecycle()
     val navBarCompactMode by playerViewModel.navBarCompactMode.collectAsStateWithLifecycle()
     val completedOfflineUris by viewModel.completedOfflineUris.collectAsStateWithLifecycle()
@@ -346,9 +358,12 @@ fun AlbumDetailScreen(
                                 key = { song -> "album_song_${song.id}" },
                                 contentType = { "album_song" }
                             ) { song ->
-                                LibraryPlaybackAwareSongItem(
+                                val isCurrentSong = song.id == currentSongId
+                                EnhancedSongListItem(
                                     song = song,
-                                    playerViewModel = playerViewModel,
+                                    isPlaying = isCurrentSong && isCurrentSongPlaying,
+                                    isCurrentSong = isCurrentSong,
+                                    isLoading = false,
                                     showAlbumArt = false,
                                     onMoreOptionsClick = {
                                         playerViewModel.selectSongForInfo(song)

@@ -40,6 +40,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -332,8 +333,9 @@ private fun SongPickerItem(song: Song, onClick: () -> Unit) {
             modifier = Modifier.size(40.dp)
         )
         Column(modifier = Modifier.weight(1f)) {
+            val displayArtist = remember(song.id) { song.displayArtist }
             Text(text = song.title, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Bold)
-            Text(text = song.displayArtist, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
+            Text(text = displayArtist, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

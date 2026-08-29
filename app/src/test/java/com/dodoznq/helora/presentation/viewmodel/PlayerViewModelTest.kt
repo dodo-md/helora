@@ -87,6 +87,7 @@ class PlayerViewModelTest {
     // Real instance: a plain in-memory cache with no collaborators to stub.
     private val remoteTrackCache = RemoteTrackCache()
     private val mockYouTubeSearchStateHolder: YouTubeSearchStateHolder = mockk(relaxed = true)
+    private val mockYouTubeSearchSuggestionsStateHolder: YouTubeSearchSuggestionsStateHolder = mockk(relaxed = true)
     private val mockUnifiedSearchStateHolder: UnifiedSearchStateHolder = mockk(relaxed = true)
     private val mockYouTubeMusicRepository: YouTubeMusicRepository = mockk(relaxed = true)
     private val mockRadioQueueExtender: RadioQueueExtender = mockk(relaxed = true)
@@ -235,6 +236,7 @@ class PlayerViewModelTest {
             mockLibraryStateHolder,
             remoteTrackCache,
             mockYouTubeSearchStateHolder,
+            mockYouTubeSearchSuggestionsStateHolder,
             mockUnifiedSearchStateHolder,
             mockYouTubeMusicRepository,
             mockRadioQueueExtender,

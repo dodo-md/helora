@@ -1,0 +1,203 @@
+{
+  "contents": {
+    "tabbedSearchResultsRenderer": {
+      "tabs": [
+        {
+          "tabRenderer": {
+            "content": {
+              "sectionListRenderer": {
+                "contents": [
+                  {
+                    "musicShelfRenderer": {
+                      "title": {
+                        "runs": [
+                          {
+                            "text": "Artists"
+                          }
+                        ]
+                      },
+                      "contents": [
+                        {
+                          "musicResponsiveListItemRenderer": {
+                            "thumbnail": {
+                              "musicThumbnailRenderer": {
+                                "thumbnail": {
+                                  "thumbnails": [
+                                    {
+                                      "url": "https://lh3.googleusercontent.com/G-Vsaq4pw6Bl5Ny4p_wV9obzu_eyZxynQycvCvQru4Wglzfxg4NO9owDKnSlKys_-WRzPEc0O6ydGA=w60-h60-p-l90-rj",
+                                      "width": 60,
+                                      "height": 60
+                                    },
+                                    {
+                                      "url": "https://lh3.googleusercontent.com/G-Vsaq4pw6Bl5Ny4p_wV9obzu_eyZxynQycvCvQru4Wglzfxg4NO9owDKnSlKys_-WRzPEc0O6ydGA=w120-h120-p-l90-rj",
+                                      "width": 120,
+                                      "height": 120
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            "flexColumns": [
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Radiohead"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Artist"
+                                      },
+                                      {
+                                        "text": " • "
+                                      },
+                                      {
+                                        "text": "214M monthly audience"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ],
+                            "navigationEndpoint": {
+                              "browseEndpoint": {
+                                "browseId": "UCr_iyUANcn9OX_yy9piYoLw"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "musicResponsiveListItemRenderer": {
+                            "thumbnail": {
+                              "musicThumbnailRenderer": {
+                                "thumbnail": {
+                                  "thumbnails": [
+                                    {
+                                      "url": "https://lh3.googleusercontent.com/2xRbt_iwYTfOr2FIXvkjR76pEEwGhZidE6aTCbahbwHZzr_QwaaWBJcNLGGx8oT0o8O9_NKiDxIhsos=w60-h60-p-l90-rj",
+                                      "width": 60,
+                                      "height": 60
+                                    },
+                                    {
+                                      "url": "https://lh3.googleusercontent.com/2xRbt_iwYTfOr2FIXvkjR76pEEwGhZidE6aTCbahbwHZzr_QwaaWBJcNLGGx8oT0o8O9_NKiDxIhsos=w120-h120-p-l90-rj",
+                                      "width": 120,
+                                      "height": 120
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            "flexColumns": [
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Thom Yorke"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Artist"
+                                      },
+                                      {
+                                        "text": " • "
+                                      },
+                                      {
+                                        "text": "789K monthly audience"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ],
+                            "navigationEndpoint": {
+                              "browseEndpoint": {
+                                "browseId": "UCgXVrNtoMd3CusXrRMX3Tqg"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "musicResponsiveListItemRenderer": {
+                            "thumbnail": {
+                              "musicThumbnailRenderer": {
+                                "thumbnail": {
+                                  "thumbnails": [
+                                    {
+                                      "url": "https://lh3.googleusercontent.com/lJdTdRlF6Joj9ALjZ36FUE6U2ec0U7h78xeV5yhOKyxUrecgKyC4Fdlcjts6ZXbadkAiqz4xUESU6Tw=w60-h60-p-l90-rj",
+                                      "width": 60,
+                                      "height": 60
+                                    },
+                                    {
+                                      "url": "https://lh3.googleusercontent.com/lJdTdRlF6Joj9ALjZ36FUE6U2ec0U7h78xeV5yhOKyxUrecgKyC4Fdlcjts6ZXbadkAiqz4xUESU6Tw=w120-h120-p-l90-rj",
+                                      "width": 120,
+                                      "height": 120
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            "flexColumns": [
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Jonny Greenwood"
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              {
+                                "musicResponsiveListItemFlexColumnRenderer": {
+                                  "text": {
+                                    "runs": [
+                                      {
+                                        "text": "Artist"
+                                      },
+                                      {
+                                        "text": " • "
+                                      },
+                                      {
+                                        "text": "16.1K subscribers"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            ],
+                            "navigationEndpoint": {
+                              "browseEndpoint": {
+                                "browseId": "UCPPqwe6duBC_TOfzMihfCVw"
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "continuations": null
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

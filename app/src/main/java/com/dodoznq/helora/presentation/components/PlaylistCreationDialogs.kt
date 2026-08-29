@@ -319,6 +319,7 @@ fun DescribePlaylistDialog(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(state.songs, key = { it.id }) { song ->
+                                val displayArtist = remember(song.id) { song.displayArtist }
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     Text(
                                         text = song.title,
@@ -328,7 +329,7 @@ fun DescribePlaylistDialog(
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
-                                        text = song.displayArtist,
+                                        text = displayArtist,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         maxLines = 1,

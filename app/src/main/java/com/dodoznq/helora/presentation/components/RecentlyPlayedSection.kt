@@ -313,6 +313,7 @@ private fun RecentlyPlayedPill(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
             ) {
+                val displayArtist = remember(item.song.id) { item.song.displayArtist }
                 Text(
                     text = item.song.title,
                     style = MaterialTheme.typography.titleSmall,
@@ -321,7 +322,7 @@ private fun RecentlyPlayedPill(
                     color = titleColor
                 )
                 Text(
-                    text = item.song.displayArtist,
+                    text = displayArtist,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

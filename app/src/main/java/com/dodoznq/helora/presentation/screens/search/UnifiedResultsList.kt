@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,6 +33,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,6 +71,9 @@ fun UnifiedResultsList(
     onRetryYouTube: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    hasMoreYouTubeSongs: Boolean = false,
+    isYouTubeLoadingMore: Boolean = false,
+    onLoadMoreYouTube: () -> Unit = {},
 ) {
     val localDensity = LocalDensity.current
     val imeBottomPadding = WindowInsets.ime.getBottom(localDensity).dp
@@ -76,7 +84,25 @@ fun UnifiedResultsList(
         imeBottomPadding
     }
 
+    val listState = rememberLazyListState()
+
+    // One page per trigger, not several ahead: these are unauthenticated requests, and paging
+    // aggressively risks getting rate limited. The threshold just needs to fire before the user
+    // hits the literal bottom, not to prefetch far ahead of where they are scrolling.
+    val shouldLoadMore by remember(rows) {
+        derivedStateOf {
+            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            lastVisible >= rows.size - LOAD_MORE_THRESHOLD
+        }
+    }
+    LaunchedEffect(shouldLoadMore, hasMoreYouTubeSongs, isYouTubeLoadingMore) {
+        if (shouldLoadMore && hasMoreYouTubeSongs && !isYouTubeLoadingMore) {
+            onLoadMoreYouTube()
+        }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = modifier
             .fillMaxSize()
             .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)),
@@ -125,9 +151,16 @@ fun UnifiedResultsList(
             }
         } else if (isYouTubeLoading) {
             item(key = "unified_youtube_loading") { UnifiedYouTubeLoadingRow() }
+        } else if (isYouTubeLoadingMore) {
+            // Separate from the initial-search spinner above: that one occupies the whole
+            // section before any result exists, this one is a footer under results already on
+            // screen, so the two must never render at the same time.
+            item(key = "unified_youtube_loading_more") { UnifiedYouTubeLoadingRow() }
         }
     }
 }
+
+private const val LOAD_MORE_THRESHOLD = 6
 
 @Composable
 private fun LocalResultRow(

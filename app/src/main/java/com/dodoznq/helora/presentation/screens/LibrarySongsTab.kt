@@ -103,6 +103,11 @@ fun LibrarySongsTab(
             .map { it.currentSong?.id }
             .distinctUntilChanged()
     }.collectAsStateWithLifecycle(initialValue = null)
+    val isCurrentSongPlaying by remember(playerViewModel) {
+        playerViewModel.stablePlayerState
+            .map { it.isPlaying }
+            .distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = false)
 
     
     val currentSongListIndex = remember(songs.itemSnapshotList, currentSongId) {
@@ -326,9 +331,12 @@ fun LibrarySongsTab(
                                         { onSongLongPress(song) }
                                     }
 
-                                    LibraryPlaybackAwareSongItem(
+                                    val isCurrentSong = song.id == currentSongId
+                                    EnhancedSongListItem(
                                         song = song,
-                                        playerViewModel = playerViewModel,
+                                        isPlaying = isCurrentSong && isCurrentSongPlaying,
+                                        isCurrentSong = isCurrentSong,
+                                        isLoading = false,
                                         isSelected = isSelected,
                                         isSelectionMode = isSelectionMode,
                                         selectionIndex = if (isSelectionMode) getSelectionIndex(song.id) else null,

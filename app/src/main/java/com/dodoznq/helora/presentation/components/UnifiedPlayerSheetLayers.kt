@@ -149,6 +149,18 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
                 ) {
                     val latestInfrequentPlayerState = rememberUpdatedState(infrequentPlayerState)
                     val latestIsFavorite = rememberUpdatedState(isFavorite)
+                    val latestCurrentSheetState = rememberUpdatedState(currentSheetContentState)
+                    val latestAllowRealtimeUpdates = rememberUpdatedState(fullPlayerRuntimePolicy.allowRealtimeUpdates)
+                    val latestIsSheetDragGestureActive = rememberUpdatedState(isSheetDragGestureActive)
+                    val currentSheetStateProvider = remember {
+                        { latestCurrentSheetState.value }
+                    }
+                    val allowRealtimeUpdatesProvider = remember {
+                        { latestAllowRealtimeUpdates.value }
+                    }
+                    val isSheetDragGestureActiveProvider = remember {
+                        { latestIsSheetDragGestureActive.value }
+                    }
                     val expansionFractionProvider = remember(playerContentExpansionFraction) {
                         { playerContentExpansionFraction.value }
                     }
@@ -194,12 +206,12 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
                         isShuffleEnabled = infrequentPlayerState.isShuffleEnabled,
                         shuffleTransitionInProgress = infrequentPlayerState.isShuffleTransitionInProgress,
                         repeatMode = infrequentPlayerState.repeatMode,
-                        allowRealtimeUpdates = fullPlayerRuntimePolicy.allowRealtimeUpdates,
+                        allowRealtimeUpdatesProvider = allowRealtimeUpdatesProvider,
                         expansionFractionProvider = expansionFractionProvider,
-                        currentSheetState = currentSheetContentState,
+                        currentSheetStateProvider = currentSheetStateProvider,
                         carouselStyle = carouselStyle,
                         loadingTweaks = fullPlayerLoadingTweaks,
-                        isSheetDragGestureActive = isSheetDragGestureActive,
+                        isSheetDragGestureActiveProvider = isSheetDragGestureActiveProvider,
                         playerViewModel = playerViewModel,
                         currentPositionProvider = currentPositionProvider,
                         isPlayingProvider = isPlayingProvider,
@@ -287,9 +299,9 @@ internal fun UnifiedPlayerPrewarmLayer(
                     isShuffleEnabled = infrequentPlayerState.isShuffleEnabled,
                     shuffleTransitionInProgress = infrequentPlayerState.isShuffleTransitionInProgress,
                     repeatMode = infrequentPlayerState.repeatMode,
-                    allowRealtimeUpdates = false,
+                    allowRealtimeUpdatesProvider = { false },
                     expansionFractionProvider = { 1f },
-                    currentSheetState = PlayerSheetState.EXPANDED,
+                    currentSheetStateProvider = { PlayerSheetState.EXPANDED },
                     carouselStyle = carouselStyle,
                     loadingTweaks = fullPlayerLoadingTweaks,
                     playerViewModel = playerViewModel,

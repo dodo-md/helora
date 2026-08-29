@@ -10,8 +10,6 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dodoznq.helora.R
-import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
@@ -641,67 +638,34 @@ private fun String.toRoute(): String = when (this) {
     else -> Screen.Home.route
 }
 
-private enum class MainRootDirection {
-    FORWARD,
-    BACKWARD
-}
-
-private const val BOTTOM_NAV_TRANSITION_DURATION = 380
+private const val BOTTOM_NAV_TRANSITION_DURATION = 220
 
 private val BottomNavEasing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
 
-private val MAIN_ROOT_TRANSITION_SPEC =
-    tween<IntOffset>(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = BottomNavEasing)
-
 private val MAIN_ROOT_FADE_SPEC =
-    tween<Float>(durationMillis = BOTTOM_NAV_TRANSITION_DURATION / 2, easing = BottomNavEasing)
+    tween<Float>(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = BottomNavEasing)
 
-private fun mainRootDirection(
-    fromRoute: String?,
-    toRoute: String?
-): MainRootDirection? {
-    val fromIndex = mainRootRouteIndex(fromRoute) ?: return null
-    val toIndex = mainRootRouteIndex(toRoute) ?: return null
-    if (fromIndex == toIndex) return null
-    return if (toIndex > fromIndex) MainRootDirection.FORWARD else MainRootDirection.BACKWARD
+/**
+ * Switching directly between bottom-nav tabs (Home, Search, Library) uses a plain crossfade
+ * instead of the slide+scale fallback: it is cheaper (no offset/layout animation, just alpha)
+ * and reads better for a same-level tab switch than a directional slide.
+ */
+private fun isMainRootSwitch(fromRoute: String?, toRoute: String?): Boolean {
+    val fromIndex = mainRootRouteIndex(fromRoute) ?: return false
+    val toIndex = mainRootRouteIndex(toRoute) ?: return false
+    return fromIndex != toIndex
 }
 
 private fun mainRootEnterTransition(
     fromRoute: String?,
     toRoute: String?,
     fallback: EnterTransition
-): EnterTransition = when (mainRootDirection(fromRoute, toRoute)) {
-    MainRootDirection.FORWARD -> {
-        slideInHorizontally(
-            animationSpec = MAIN_ROOT_TRANSITION_SPEC,
-            initialOffsetX = { (it * 0.5f).toInt() }
-        ) + fadeIn(animationSpec = MAIN_ROOT_FADE_SPEC)
-    }
-    MainRootDirection.BACKWARD -> {
-        slideInHorizontally(
-            animationSpec = MAIN_ROOT_TRANSITION_SPEC,
-            initialOffsetX = { -(it * 0.5f).toInt() }
-        ) + fadeIn(animationSpec = MAIN_ROOT_FADE_SPEC)
-    }
-    null -> fallback
-}
+): EnterTransition =
+    if (isMainRootSwitch(fromRoute, toRoute)) fadeIn(animationSpec = MAIN_ROOT_FADE_SPEC) else fallback
 
 private fun mainRootExitTransition(
     fromRoute: String?,
     toRoute: String?,
     fallback: ExitTransition
-): ExitTransition = when (mainRootDirection(fromRoute, toRoute)) {
-    MainRootDirection.FORWARD -> {
-        slideOutHorizontally(
-            animationSpec = MAIN_ROOT_TRANSITION_SPEC,
-            targetOffsetX = { -(it * 0.5f).toInt() }
-        ) + fadeOut(animationSpec = MAIN_ROOT_FADE_SPEC)
-    }
-    MainRootDirection.BACKWARD -> {
-        slideOutHorizontally(
-            animationSpec = MAIN_ROOT_TRANSITION_SPEC,
-            targetOffsetX = { (it * 0.5f).toInt() }
-        ) + fadeOut(animationSpec = MAIN_ROOT_FADE_SPEC)
-    }
-    null -> fallback
-}
+): ExitTransition =
+    if (isMainRootSwitch(fromRoute, toRoute)) fadeOut(animationSpec = MAIN_ROOT_FADE_SPEC) else fallback

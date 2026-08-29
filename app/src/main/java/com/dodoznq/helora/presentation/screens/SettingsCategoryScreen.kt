@@ -286,14 +286,17 @@ fun SettingsCategoryScreen(
     var paletteSongSearchQuery by remember { mutableStateOf("") }
     val paletteRegenerateSheetState = rememberModalSheetState(skipPartiallyExpanded = true)
     val isAnyPaletteRegenerateRunning = isPaletteRegenerateRunning || isPaletteBulkRegenerateRunning
-    val filteredPaletteSongs = remember(paletteRegenerateTargets, paletteSongSearchQuery) {
+    val paletteSongDisplayArtists = remember(paletteRegenerateTargets) {
+        paletteRegenerateTargets.associate { it.id to it.displayArtist }
+    }
+    val filteredPaletteSongs = remember(paletteRegenerateTargets, paletteSongSearchQuery, paletteSongDisplayArtists) {
         val query = paletteSongSearchQuery.trim()
         if (query.isBlank()) {
             paletteRegenerateTargets
         } else {
             paletteRegenerateTargets.filter { song ->
                 song.title.contains(query, ignoreCase = true) ||
-                    song.displayArtist.contains(query, ignoreCase = true) ||
+                    (paletteSongDisplayArtists[song.id] ?: "").contains(query, ignoreCase = true) ||
                     song.album.contains(query, ignoreCase = true)
             }
         }.toImmutableList()
@@ -2534,8 +2537,9 @@ private fun PaletteRegenerateSongSheetContent(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
+                            val displayArtist = remember(song.id) { song.displayArtist }
                             Text(
-                                text = song.displayArtist,
+                                text = displayArtist,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
