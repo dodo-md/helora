@@ -48,7 +48,7 @@ class ColorSchemeProcessor @Inject constructor(
     @ApplicationContext private val context: Context,
     private val albumArtThemeDao: AlbumArtThemeDao
 ) {
-    private val memoryCache = LruCache<String, ColorSchemePair>(20)
+    private val memoryCache = LruCache<String, ColorSchemePair>(128)
     private val processingMutex = Mutex()
     private val inProgressUris = mutableSetOf<String>()
 
