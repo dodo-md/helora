@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -51,6 +52,14 @@ class YouTubeSearchSuggestionsStateHolder @Inject constructor(
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
+    /**
+     * Bumped by [clear] so a fetch already in flight when the dropdown is dismissed (query
+     * submitted, completion tapped) drops its result instead of repopulating the just-cleared
+     * state out from under the caller. `collectLatest` alone only cancels a fetch superseded by
+     * a *newer input*; it does not see [clear], which bypasses [inputs] entirely.
+     */
+    private val generation = AtomicLong(0L)
+
     private var scope: CoroutineScope? = null
     private var job: Job? = null
 
@@ -70,6 +79,7 @@ class YouTubeSearchSuggestionsStateHolder @Inject constructor(
     }
 
     fun clear() {
+        generation.incrementAndGet()
         if (_state.value != State()) {
             _state.value = State()
         }
@@ -92,7 +102,10 @@ class YouTubeSearchSuggestionsStateHolder @Inject constructor(
     }
 
     private suspend fun execute(query: String) {
+        val requestGeneration = generation.get()
         val result: YouTubeSearchSuggestions = repository.searchSuggestions(query) ?: return
+        // Dropped by a clear() while the fetch was in flight; don't repopulate over it.
+        if (requestGeneration != generation.get()) return
         _state.value = State(
             query = query,
             completions = result.completions.toImmutableList(),
