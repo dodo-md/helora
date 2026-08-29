@@ -81,7 +81,7 @@ class InnerTubeSearchClient @Inject constructor(
      */
     fun continuation(token: String, country: String, language: String): JsonObject? {
         val request = Request.Builder()
-            .url("$SEARCH_URL?prettyPrint=false")
+            .url("$SEARCH_URL?key=$API_KEY&prettyPrint=false")
             .header("Origin", ORIGIN)
             .header("Referer", "$ORIGIN/search")
             .header("Cookie", "SOCS=CAI") // skips the EU consent interstitial
