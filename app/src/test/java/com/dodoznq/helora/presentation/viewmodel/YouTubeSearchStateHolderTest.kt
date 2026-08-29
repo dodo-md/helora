@@ -192,4 +192,40 @@ class YouTubeSearchStateHolderTest {
         assertThat(finalState.songs.map { it.ytVideoId }).containsExactly("m1")
         assertThat(finalState.isLoadingMore).isFalse()
     }
+
+    @Test
+    fun `loadMore called during a new query's debounce window does not page the old query`() = runTest {
+        val repository = mockk<YouTubeMusicRepository>(relaxed = true)
+        coEvery { repository.search("radiohead") } returns YouTubeSearchResult(
+            songs = listOf(song("v1", "Creep", "Radiohead")),
+            songsContinuation = "songs-token-1"
+        )
+        coEvery { repository.search("muse") } returns YouTubeSearchResult(
+            songs = listOf(song("m1", "Hysteria", "Muse")),
+            songsContinuation = null
+        )
+        val holder = holder(repository)
+        holder.initialize(backgroundScope)
+        testScheduler.runCurrent()
+
+        holder.performSearch("radiohead", SearchFilterType.ALL)
+        drain()
+        assertThat(holder.state.value.hasMoreSongs).isTrue()
+
+        // A new query lands and bumps requestId/query right away, but "muse" is still inside
+        // its debounce window: repository.search("muse") has not run yet. The old query's
+        // continuation token must already be gone, or loadMore() below would page "radiohead"
+        // under a state that already reads as "muse".
+        holder.performSearch("muse", SearchFilterType.ALL)
+        assertThat(holder.state.value.query).isEqualTo("muse")
+        assertThat(holder.state.value.hasMoreSongs).isFalse()
+
+        holder.loadMore()
+        drain()
+
+        coVerify(exactly = 0) { repository.searchNextPage("songs-token-1", any()) }
+        val finalState = holder.state.value
+        assertThat(finalState.query).isEqualTo("muse")
+        assertThat(finalState.songs.map { it.ytVideoId }).containsExactly("m1")
+    }
 }

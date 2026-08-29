@@ -106,7 +106,16 @@ class YouTubeSearchStateHolder @Inject constructor(
         }
         lastQuery = trimmed
         val requestId = latestRequestId.incrementAndGet()
-        _state.value = _state.value.copy(query = trimmed, isLoading = true, error = null)
+        // Drop the previous query's pagination tokens along with bumping the query: they belong
+        // to a different result set, and leaving them in place would let loadMore() page through
+        // the old query's shelf during the debounce window before this request's results land.
+        _state.value = _state.value.copy(
+            query = trimmed,
+            isLoading = true,
+            error = null,
+            songsContinuation = null,
+            videosContinuation = null
+        )
         requests.tryEmit(SearchRequest(trimmed, requestId))
     }
 
