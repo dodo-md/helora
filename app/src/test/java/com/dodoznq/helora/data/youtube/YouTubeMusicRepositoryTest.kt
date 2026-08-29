@@ -11,6 +11,11 @@ import com.dodoznq.helora.data.youtube.YouTubeMusicRepository.Companion.trackKey
 import com.dodoznq.helora.data.youtube.YouTubeMusicRepository.Companion.musicStationUrl
 import com.dodoznq.helora.data.youtube.YouTubeMusicRepository.Companion.genericStationUrl
 import com.dodoznq.helora.data.youtube.YouTubeMusicRepository.Companion.videoIdOrNull
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
 /**
@@ -217,4 +222,154 @@ class YouTubeMusicRepositoryTest {
     fun `stacked decoration comes off in one pass`() {
         assertThat(key("Snap - Official Dance Video - HD")).isEqualTo(key("Snap"))
     }
+
+    // --- album mapping from the Songs shelf --------------------------------------------------
+    //
+    // song.albumId flows into AlbumEntity.id / SongEntity.albumId (YouTubeLibraryWriter.promote)
+    // and song.album into the download folder path (MediaStoreDownloadPublisher /
+    // DownloadPaths.relativePath), so a wrong album here corrupts both at once. Exercised
+    // through the public searchSongs entry point, against the same real fixtures
+    // InnerTubeSearchParserTest uses, since InnerTubeSongItem.toSong() is private.
+
+    private fun fixture(name: String): JsonObject {
+        val stream = javaClass.classLoader?.getResourceAsStream("innertube/$name.json")
+            ?: error("Missing test fixture: innertube/$name.json")
+        return JsonParser.parseString(stream.bufferedReader().readText()).asJsonObject
+    }
+
+    private fun repositoryWith(
+        songsResponse: JsonObject? = null,
+        videosResponse: JsonObject? = null
+    ): YouTubeMusicRepository {
+        val client = mockk<InnerTubeSearchClient> {
+            every {
+                search(any(), any(), any(), InnerTubeSearchClient.SearchFilter.SONGS.params)
+            } returns songsResponse
+            every {
+                search(any(), any(), any(), InnerTubeSearchClient.SearchFilter.VIDEOS.params)
+            } returns videosResponse
+        }
+        val downloader = mockk<NewPipeOkHttpDownloader>(relaxed = true)
+        return YouTubeMusicRepository(downloader, client)
+    }
+
+    @Test
+    fun `a Songs shelf row carries its real album, not the placeholder`() = runBlocking<Unit> {
+        val repository = repositoryWith(songsResponse = fixture("search_songs"))
+
+        val songs = repository.searchSongs("radiohead creep")
+
+        val creep = songs.first { it.ytVideoId == "9RfVp-GhKfs" }
+        assertThat(creep.album).isEqualTo("Creep")
+        assertThat(creep.albumId).isEqualTo(YouTubeIds.albumId("MPREb_TgQPwAzodvg"))
+        assertThat(creep.albumId).isNotEqualTo(YouTubeMusicRepository.DEFAULT_ALBUM_ID)
+    }
+
+    @Test
+    fun `a Videos shelf row keeps the placeholder album, since it carries none`() = runBlocking<Unit> {
+        val repository = repositoryWith(videosResponse = fixture("search_videos"))
+
+        val songs = repository.searchSongs("radiohead creep")
+
+        val officialVideo = songs.first { it.ytVideoId == "XFkzRNyygfk" }
+        assertThat(officialVideo.album).isEqualTo(YouTubeMusicRepository.DEFAULT_ALBUM_NAME)
+        assertThat(officialVideo.albumId).isEqualTo(YouTubeMusicRepository.DEFAULT_ALBUM_ID)
+    }
+
+    @Test
+    fun `dedupe still groups by title and artist alone, ignoring album`() = runBlocking<Unit> {
+        // Two rows named the same recording by the same artist but filed under two different
+        // album editions must still collapse to one result. trackKey does not read album, and
+        // this is what would break first if it ever did.
+        val twoEditions = page(
+            shelf(
+                songItem(videoId = "aaa11111111", title = "Numb", artist = "Linkin Park", artistBrowseId = "UC1", albumTitle = "Meteora", albumBrowseId = "MPRE1"),
+                songItem(videoId = "bbb22222222", title = "Numb", artist = "Linkin Park", artistBrowseId = "UC1", albumTitle = "Meteora (Bonus Edition)", albumBrowseId = "MPRE2")
+            )
+        )
+        val repository = repositoryWith(songsResponse = twoEditions)
+
+        val songs = repository.searchSongs("numb linkin park")
+
+        assertThat(songs).hasSize(1)
+    }
+
+    @Test
+    fun `a row with no usable artist text is dropped rather than crashing`() = runBlocking<Unit> {
+        // Never observed live (346 real rows across 8 queries all carried an artist), but the
+        // parser's own contract allows an empty second column, so toSong() must not throw.
+        val noArtistColumn = page(
+            shelf(
+                """
+                {
+                  "musicResponsiveListItemRenderer": {
+                    "flexColumns": [
+                      { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [ { "text": "No Artist Row" } ] } } }
+                    ],
+                    "playlistItemData": { "videoId": "noartist0001" }
+                  }
+                }
+                """.trimIndent()
+            )
+        )
+        val repository = repositoryWith(songsResponse = noArtistColumn)
+
+        val songs = repository.searchSongs("edge case")
+
+        assertThat(songs).isEmpty()
+    }
+
+    private fun songItem(
+        videoId: String,
+        title: String,
+        artist: String,
+        artistBrowseId: String,
+        albumTitle: String,
+        albumBrowseId: String
+    ): String = """
+        {
+          "musicResponsiveListItemRenderer": {
+            "flexColumns": [
+              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [ { "text": "$title" } ] } } },
+              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [
+                  { "text": "$artist", "navigationEndpoint": { "browseEndpoint": { "browseId": "$artistBrowseId" } } },
+                  { "text": " • " },
+                  { "text": "$albumTitle", "navigationEndpoint": { "browseEndpoint": { "browseId": "$albumBrowseId" } } },
+                  { "text": " • " },
+                  { "text": "3:45" }
+              ] } } }
+            ],
+            "playlistItemData": { "videoId": "$videoId" }
+          }
+        }
+    """.trimIndent()
+
+    private fun shelf(vararg items: String): String = """
+        {
+          "musicShelfRenderer": {
+            "title": { "runs": [ { "text": "Songs" } ] },
+            "contents": [ ${items.joinToString(",")} ]
+          }
+        }
+    """.trimIndent()
+
+    private fun page(shelfJson: String): JsonObject = JsonParser.parseString(
+        """
+        {
+          "contents": {
+            "tabbedSearchResultsRenderer": {
+              "tabs": [ {
+                "tabRenderer": {
+                  "content": {
+                    "sectionListRenderer": {
+                      "contents": [ $shelfJson ]
+                    }
+                  }
+                }
+              } ]
+            }
+          }
+        }
+        """.trimIndent()
+    ).asJsonObject
 }

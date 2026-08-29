@@ -54,6 +54,9 @@ class YouTubeSearchStateHolder @Inject constructor(
         val albums: ImmutableList<Album> = persistentListOf(),
         val artists: ImmutableList<Artist> = persistentListOf(),
         val error: Error? = null,
+        val songsContinuation: String? = null,
+        val videosContinuation: String? = null,
+        val isLoadingMore: Boolean = false,
     ) {
         val isEmpty: Boolean
             get() = songs.isEmpty() && albums.isEmpty() && artists.isEmpty()
@@ -61,6 +64,10 @@ class YouTubeSearchStateHolder @Inject constructor(
         /** True when the section has nothing at all to draw and should stay collapsed. */
         val isIdle: Boolean
             get() = isEmpty && !isLoading && error == null
+
+        /** Whether a scroll-triggered [loadMore] call would actually do anything. */
+        val hasMoreSongs: Boolean
+            get() = songsContinuation != null || videosContinuation != null
     }
 
     private val _state = MutableStateFlow(State())
@@ -110,6 +117,60 @@ class YouTubeSearchStateHolder @Inject constructor(
         }
     }
 
+    /**
+     * Fetches one more page of songs, continuing the Songs and/or Videos shelf.
+     *
+     * `isLoadingMore` guards concurrent calls (a fast scroll can trigger this more than once
+     * before the first finishes). The `requestId` snapshot guards against a slower one: if a
+     * new query lands while this page is still in flight, the stale page must not get applied
+     * on top of it, the same way [publish] already protects a plain search.
+     */
+    fun loadMore() {
+        val current = _state.value
+        if (current.isLoadingMore || !current.hasMoreSongs) return
+
+        val requestId = latestRequestId.get()
+        _state.value = current.copy(isLoadingMore = true)
+
+        scope?.launch {
+            try {
+                val next = repository.searchNextPage(current.songsContinuation, current.videosContinuation)
+                if (requestId != latestRequestId.get()) return@launch
+
+                if (next == null) {
+                    // Either both chains ended, or the request failed; either way, stop
+                    // offering more rather than retrying forever against a dead token.
+                    _state.value = _state.value.copy(
+                        isLoadingMore = false,
+                        songsContinuation = null,
+                        videosContinuation = null
+                    )
+                    return@launch
+                }
+
+                remoteTrackCache.putAll(next.songs)
+
+                // Songs before the new page's own songs, so a duplicate already shown on an
+                // earlier page loses to the one already on screen rather than jumping position.
+                val merged = (_state.value.songs + next.songs)
+                    .distinctBy { YouTubeMusicRepository.trackKey(it.title, it.artist) }
+                    .toImmutableList()
+
+                _state.value = _state.value.copy(
+                    isLoadingMore = false,
+                    songs = merged,
+                    songsContinuation = next.songsContinuation,
+                    videosContinuation = next.videosContinuation
+                )
+            } catch (_: CancellationException) {
+                // Superseded by a newer query, or the holder was torn down.
+            } catch (e: Exception) {
+                Timber.w(e, "YouTube search loadMore failed")
+                _state.value = _state.value.copy(isLoadingMore = false)
+            }
+        }
+    }
+
     fun clear() {
         latestRequestId.incrementAndGet()
         lastQuery = ""
@@ -155,7 +216,10 @@ class YouTubeSearchStateHolder @Inject constructor(
                     artists = result.artists.toImmutableList(),
                     // The repository already isolates each section, so a wholly empty result
                     // after a successful call is "no matches", not a failure.
-                    error = null
+                    error = null,
+                    songsContinuation = result.songsContinuation,
+                    videosContinuation = result.videosContinuation,
+                    isLoadingMore = false
                 )
             }
         } catch (_: CancellationException) {

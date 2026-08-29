@@ -143,7 +143,9 @@ class YouTubeMusicRepository @Inject constructor(
         return YouTubeSearchResult(
             songs = page.songs.toSongs(),
             albums = page.albums.mapNotNull { it.toAlbum() },
-            artists = page.artists.mapNotNull { it.toArtist() }
+            artists = page.artists.mapNotNull { it.toArtist() },
+            songsContinuation = page.songsContinuation,
+            videosContinuation = page.videosContinuation
         )
     }
 
@@ -218,6 +220,48 @@ class YouTubeMusicRepository @Inject constructor(
         runCatching { parse(this) }
             .onFailure { Timber.w(it, "InnerTube search parse failed for %s", query) }
             .getOrNull()
+
+    /**
+     * Continues the Songs and/or Videos shelf, whichever tokens are non-null.
+     *
+     * Songs and Videos are independent token chains from independent filtered searches, so
+     * each one continuing or running out is unrelated to the other. The returned [Song] list is
+     * only deduplicated within this page (songs before videos, so the catalogue entry keeps
+     * winning); the caller is the one holding the full accumulated result, so cross-page dedupe
+     * has to happen there.
+     */
+    suspend fun searchNextPage(
+        songsContinuation: String?,
+        videosContinuation: String?
+    ): YouTubeSearchNextPage? {
+        if (songsContinuation == null && videosContinuation == null) return null
+        return withContext(ytDispatcher) {
+            val country = Locale.getDefault().country.ifBlank { DEFAULT_COUNTRY }
+
+            suspend fun fetchContinuation(token: String): JsonObject? =
+                runCatching {
+                    innerTubeSearchClient.continuation(token, country, METADATA_LANGUAGE)
+                }.onFailure {
+                    Timber.w(it, "InnerTube search continuation failed")
+                }.getOrNull()
+
+            val songsDeferred = songsContinuation?.let { token -> async { fetchContinuation(token) } }
+            val videosDeferred = videosContinuation?.let { token -> async { fetchContinuation(token) } }
+
+            val songsShelf = songsDeferred?.await()
+                ?.parseShelfOrNull("continuation", InnerTubeSearchParser::parseSongsContinuation)
+            val videosShelf = videosDeferred?.await()
+                ?.parseShelfOrNull("continuation", InnerTubeSearchParser::parseSongsContinuation)
+
+            if (songsShelf == null && videosShelf == null) return@withContext null
+
+            YouTubeSearchNextPage(
+                songs = (songsShelf?.items.orEmpty() + videosShelf?.items.orEmpty()).toSongs(),
+                songsContinuation = songsShelf?.continuation,
+                videosContinuation = videosShelf?.continuation
+            )
+        }
+    }
 
     /**
      * Query-completion and directly-playable suggestions for the search box.
@@ -671,8 +715,22 @@ class YouTubeMusicRepository @Inject constructor(
     }
 
     private fun InnerTubeSongItem.toSong(): Song? {
-        val resolvedArtist = artistNameFrom(artistName) ?: return null
+        // artistName is already the parser's best-effort pick from the row, not a validated
+        // channel name, so passing it again as the fallback costs nothing observed live (346
+        // rows across 8 queries all carried one) but stops a row from being silently dropped if
+        // a future response shape ever leaves it blank.
+        val resolvedArtist = artistNameFrom(artistName, artistName)
+        if (resolvedArtist == null) {
+            Timber.d("InnerTube song dropped for missing artist: title=%s videoId=%s", title, videoId)
+            return null
+        }
         val artistId = artistChannelId?.let(YouTubeIds::artistId) ?: YouTubeIds.artistId(resolvedArtist)
+
+        // A Songs-shelf row carries its real album (title + MPRE browseId); a Videos row never
+        // does, since that run position holds a view count there instead. Only trust the pair
+        // together, so a title with no browseId can't produce an id that doesn't resolve.
+        val album = albumTitle
+        val albumBrowse = albumBrowseId
 
         return Song(
             id = YouTubeIds.songId(videoId).toString(),
@@ -680,8 +738,8 @@ class YouTubeMusicRepository @Inject constructor(
             artist = resolvedArtist,
             artistId = artistId,
             artists = listOf(ArtistRef(id = artistId, name = resolvedArtist, isPrimary = true)),
-            album = DEFAULT_ALBUM_NAME,
-            albumId = DEFAULT_ALBUM_ID,
+            album = if (album != null && albumBrowse != null) album else DEFAULT_ALBUM_NAME,
+            albumId = if (album != null && albumBrowse != null) YouTubeIds.albumId(albumBrowse) else DEFAULT_ALBUM_ID,
             albumArtist = resolvedArtist,
             path = "",
             contentUriString = "$URI_SCHEME://$videoId",

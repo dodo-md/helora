@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test
 /**
  * Fixtures under `test/resources/innertube/` are real InnerTube responses, not hand-written
  * JSON: captured live against WEB_REMIX (hl=en, gl=TR, query "radiohead creep") for each of the
- * four category filters plus `get_search_suggestions`, then trimmed to 2-3 items per shelf.
+ * four category filters, `get_search_suggestions`, and a Songs-shelf continuation (next page),
+ * then trimmed to 2-3 items per shelf.
  *
  * The previous fixtures asserted the parser against a `musicShelfRenderer` matched by an
  * English title ("Songs" / "Videos" / ...) inside `tabbedSearchResultsRenderer`. That shape
@@ -41,12 +42,16 @@ class InnerTubeSearchParserTest {
         assertThat(creep.artistChannelId).isEqualTo("UCr_iyUANcn9OX_yy9piYoLw")
         assertThat(creep.durationMs).isEqualTo(239_000L) // 3:59
         assertThat(creep.thumbnailUrl).contains("w120-h120")
+        assertThat(creep.albumTitle).isEqualTo("Creep")
+        assertThat(creep.albumBrowseId).isEqualTo("MPREb_TgQPwAzodvg")
 
         val acoustic = result.items[1]
         assertThat(acoustic.videoId).isEqualTo("4BX5xpB2DBM")
         assertThat(acoustic.title).isEqualTo("Creep (Acoustic)")
         assertThat(acoustic.artistName).isEqualTo("Radiohead")
         assertThat(acoustic.durationMs).isEqualTo(259_000L) // 4:19
+        assertThat(acoustic.albumTitle).isEqualTo("Creep EP")
+        assertThat(acoustic.albumBrowseId).isEqualTo("MPREb_35HQ88vJ9ck")
 
         val noSurprises = result.items[2]
         assertThat(noSurprises.videoId).isEqualTo("h1aN7BLHXfc")
@@ -54,6 +59,8 @@ class InnerTubeSearchParserTest {
         assertThat(noSurprises.artistName).isEqualTo("Juliana Chahayed")
         assertThat(noSurprises.artistChannelId).isEqualTo("UCVWc7eLT-M_Qjx2YzcYwwiA")
         assertThat(noSurprises.durationMs).isEqualTo(121_000L) // 2:01
+        assertThat(noSurprises.albumTitle).isEqualTo("No Surprises")
+        assertThat(noSurprises.albumBrowseId).isEqualTo("MPREb_5CwOdQdH8wq")
     }
 
     @Test
@@ -68,13 +75,16 @@ class InnerTubeSearchParserTest {
         assertThat(official.title).isEqualTo("Creep")
         assertThat(official.artistName).isEqualTo("Radiohead")
         assertThat(official.durationMs).isEqualTo(237_000L) // 3:57
-        // "1.5B views" must not be mistaken for the artist or the duration.
+        // "1.5B views" must not be mistaken for the artist, the duration, or an album.
+        assertThat(official.albumTitle).isNull()
+        assertThat(official.albumBrowseId).isNull()
 
         val liveCover = result.items[1]
         assertThat(liveCover.videoId).isEqualTo("US0CUegPr3g")
         assertThat(liveCover.title).isEqualTo("Radiohead - Creep (Best live performance)")
         assertThat(liveCover.artistName).isEqualTo("LuigyAguilar02")
         assertThat(liveCover.durationMs).isEqualTo(274_000L) // 4:34
+        assertThat(liveCover.albumTitle).isNull()
     }
 
     @Test
@@ -85,6 +95,36 @@ class InnerTubeSearchParserTest {
         assertThat(songs.items.map { it.videoId } + videos.items.map { it.videoId })
             .containsExactly("9RfVp-GhKfs", "4BX5xpB2DBM", "h1aN7BLHXfc", "XFkzRNyygfk", "US0CUegPr3g", "SLbSsv_2u4A")
             .inOrder()
+    }
+
+    @Test
+    fun `parses a continuation response, a different top-level shape from the first page`() {
+        val result = InnerTubeSearchParser.parseSongsContinuation(fixture("search_songs_continuation"))
+
+        assertThat(result.items).hasSize(3)
+        assertThat(result.continuation).isNotEmpty()
+
+        val first = result.items[0]
+        assertThat(first.videoId).isEqualTo("XX4EpkR-Sp4")
+        assertThat(first.title).isEqualTo("Climbing Up the Walls")
+        assertThat(first.artistName).isEqualTo("Radiohead")
+        assertThat(first.albumTitle).isEqualTo("OK Computer")
+        assertThat(first.albumBrowseId).isEqualTo("MPREb_yXhSI4FCUo6")
+
+        assertThat(result.items.map { it.videoId })
+            .containsExactly("XX4EpkR-Sp4", "jNY_wLukVW0", "Cj7JDmJ-OKc")
+            .inOrder()
+    }
+
+    @Test
+    fun `parseSongsContinuation on a first-page response finds nothing, the shapes do not overlap`() {
+        // musicShelfRenderer (first page) and musicShelfContinuation (next page) are different
+        // top-level keys on purpose; a continuation parse must not fall back to the first-page
+        // shape, or a bug in the token chain would silently re-show page one forever.
+        val result = InnerTubeSearchParser.parseSongsContinuation(fixture("search_songs"))
+
+        assertThat(result.items).isEmpty()
+        assertThat(result.continuation).isNull()
     }
 
     @Test

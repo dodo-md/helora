@@ -38,6 +38,24 @@ object InnerTubeSearchParser {
     fun parseArtists(root: JsonObject): ShelfResult<InnerTubeArtistItem> = parseShelf(root) { it.toArtistItem() }
 
     /**
+     * Parses a continuation response, i.e. the next page of a shelf.
+     *
+     * This is a genuinely different top-level shape from the first page: the shelf lives at
+     * `continuationContents.musicShelfContinuation` instead of a `musicShelfRenderer` under
+     * `sectionListRenderer.contents`. [shelves] and [singleMusicShelf] deliberately do not
+     * try to also cover this — conflating the two shapes into one lookup path is how the
+     * original empty-search bug shipped, so a continuation gets its own path instead.
+     */
+    fun parseSongsContinuation(root: JsonObject): ShelfResult<InnerTubeSongItem> =
+        parseContinuation(root) { it.toSongItem() }
+
+    private fun <T> parseContinuation(root: JsonObject, mapper: (JsonElement?) -> T?): ShelfResult<T> {
+        val shelf = root.path("continuationContents", "musicShelfContinuation").asJsonObjectOrNull()
+        val items = shelf?.getArray("contents")?.mapNotNull(mapper).orEmpty()
+        return ShelfResult(items, shelf?.continuationToken())
+    }
+
+    /**
      * Parses the mixed suggestions response: text completions to show as-is, and directly
      * playable entities mapped with the same [toSongItem] used for shelf songs.
      */
@@ -100,6 +118,8 @@ object InnerTubeSearchParser {
 
         var artistName: String? = null
         var artistChannelId: String? = null
+        var albumTitle: String? = null
+        var albumBrowseId: String? = null
         var durationMs = 0L
 
         for (run in flexColumns.getOrNull(1).columnRuns()) {
@@ -113,7 +133,12 @@ object InnerTubeSearchParser {
                     artistName = text
                     artistChannelId = browseId
                 }
-                browseId?.startsWith(ALBUM_BROWSE_PREFIX) == true -> Unit // album — search results use a shared pseudo-album
+                // Only a Songs-shelf row carries this run; a Videos row has a view count here
+                // instead, so albumTitle/albumBrowseId simply stay null for those.
+                browseId?.startsWith(ALBUM_BROWSE_PREFIX) == true -> {
+                    albumTitle = text
+                    albumBrowseId = browseId
+                }
                 artistName == null && !VIEW_COUNT_REGEX.matches(text) &&
                     text != SONG_TYPE_DESCRIPTOR && text != VIDEO_TYPE_DESCRIPTOR ->
                     artistName = text
@@ -126,7 +151,9 @@ object InnerTubeSearchParser {
             artistName = artistName.orEmpty(),
             artistChannelId = artistChannelId,
             durationMs = durationMs,
-            thumbnailUrl = renderer.bestThumbnailUrl()
+            thumbnailUrl = renderer.bestThumbnailUrl(),
+            albumTitle = albumTitle,
+            albumBrowseId = albumBrowseId
         )
     }
 

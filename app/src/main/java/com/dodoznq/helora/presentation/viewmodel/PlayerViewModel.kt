@@ -3981,6 +3981,11 @@ class PlayerViewModel @Inject constructor(
         youTubeSearchStateHolder.retry()
     }
 
+    /** Fetches one more page of YouTube songs; called when the results list nears its end. */
+    fun loadMoreYouTubeSearchResults() {
+        unifiedSearchStateHolder.loadMore()
+    }
+
     /**
      * Plays a YouTube track as a radio station: the track itself, then songs like it.
      *

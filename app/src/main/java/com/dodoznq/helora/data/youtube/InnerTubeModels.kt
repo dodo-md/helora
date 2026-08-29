@@ -1,13 +1,21 @@
 package com.dodoznq.helora.data.youtube
 
-/** One track from an InnerTube search response, before cleanup/mapping into [com.dodoznq.helora.data.model.Song]. */
+/**
+ * One track from an InnerTube search response, before cleanup/mapping into
+ * [com.dodoznq.helora.data.model.Song].
+ *
+ * [albumTitle] / [albumBrowseId] are only ever present for a Songs-shelf row; the Videos shelf
+ * carries a view count in that run position instead of an album, so both stay null there.
+ */
 data class InnerTubeSongItem(
     val videoId: String,
     val title: String,
     val artistName: String,
     val artistChannelId: String?,
     val durationMs: Long,
-    val thumbnailUrl: String?
+    val thumbnailUrl: String?,
+    val albumTitle: String? = null,
+    val albumBrowseId: String? = null
 )
 
 /** One album/single/EP from an InnerTube search response. */

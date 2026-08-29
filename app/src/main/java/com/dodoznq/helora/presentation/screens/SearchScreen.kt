@@ -464,7 +464,10 @@ fun SearchScreen(
                                     onLocalClick = onLocalClick,
                                     onYouTubeClick = onYouTubeClick,
                                     onMoreClick = handleSongMoreOptionsClick,
-                                    onRetryYouTube = remember(playerViewModel) { playerViewModel::retryYouTubeSearch }
+                                    onRetryYouTube = remember(playerViewModel) { playerViewModel::retryYouTubeSearch },
+                                    hasMoreYouTubeSongs = unifiedSearchState.hasMoreYouTubeSongs,
+                                    isYouTubeLoadingMore = unifiedSearchState.isYouTubeLoadingMore,
+                                    onLoadMoreYouTube = remember(playerViewModel) { playerViewModel::loadMoreYouTubeSearchResults }
                                 )
                             }
                         }

@@ -71,6 +71,31 @@ class InnerTubeSearchClient @Inject constructor(
     }
 
     /**
+     * Fetches the next page of a shelf, given the continuation token from its previous page.
+     *
+     * A continuation request carries no `query` and no `params` — the token alone identifies
+     * which search and which shelf to continue, which is also why the response shape differs
+     * (`continuationContents.musicShelfContinuation` instead of a fresh `musicShelfRenderer`).
+     *
+     * Blocking by contract — callers must confine this to an IO dispatcher.
+     */
+    fun continuation(token: String, country: String, language: String): JsonObject? {
+        val request = Request.Builder()
+            .url("$SEARCH_URL?prettyPrint=false")
+            .header("Origin", ORIGIN)
+            .header("Referer", "$ORIGIN/search")
+            .header("Cookie", "SOCS=CAI") // skips the EU consent interstitial
+            .post(continuationRequestBody(token, country, language))
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            val text = response.body?.string()
+            if (!response.isSuccessful || text.isNullOrBlank()) return null
+            return runCatching { JsonParser.parseString(text).asJsonObject }.getOrNull()
+        }
+    }
+
+    /**
      * Fetches text completions and directly playable suggestions for a partial [input].
      *
      * Blocking by contract — callers must confine this to an IO dispatcher.
@@ -114,6 +139,14 @@ class InnerTubeSearchClient @Inject constructor(
         val body = JsonObject().apply {
             add("context", clientContext(country, language))
             addProperty("input", input)
+        }
+        return body.toString().toRequestBody(JSON_MEDIA_TYPE)
+    }
+
+    private fun continuationRequestBody(token: String, country: String, language: String): RequestBody {
+        val body = JsonObject().apply {
+            add("context", clientContext(country, language))
+            addProperty("continuation", token)
         }
         return body.toString().toRequestBody(JSON_MEDIA_TYPE)
     }
