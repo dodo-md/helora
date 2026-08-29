@@ -787,12 +787,13 @@ fun SongListItemFavsWrapper(
     val isThisSongPlaying = remember(song.id, stablePlayerState.currentSong?.id, stablePlayerState.isPlaying) {
         song.id == stablePlayerState.currentSong?.id
     }
+    val displayArtist = remember(song.id) { song.displayArtist }
 
     SongListItemFavs(
         modifier = modifier,
         cardCorners = 0.dp,
         title = song.title,
-        artist = song.displayArtist,
+        artist = displayArtist,
         albumArtUrl = song.albumArtUriString,
         isPlaying = stablePlayerState.isPlaying,
         isCurrentSong = song.id == stablePlayerState.currentSong?.id,
