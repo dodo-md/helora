@@ -18,6 +18,11 @@ import javax.inject.Singleton
  * Anonymous: there is no login, and [API_KEY] is not a secret. It is the public WEB_REMIX
  * client key baked into music.youtube.com's page source; every browser that loads the site
  * sends it.
+ *
+ * The shared client's own interceptor pins `User-Agent: Helora/1.0 …` with `.header()`, which
+ * *replaces*. YouTube degrades or rejects unknown user agents, so a browser UA is appended here
+ * the same way [NewPipeOkHttpDownloader] does it: interceptors run in the order they were added
+ * and `newBuilder()` appends, so this one wins over the shared client's.
  */
 @Singleton
 class InnerTubeSearchClient @Inject constructor(
@@ -29,13 +34,19 @@ class InnerTubeSearchClient @Inject constructor(
         .readTimeout(20, TimeUnit.SECONDS)
         .writeTimeout(20, TimeUnit.SECONDS)
         .callTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor { chain ->
+            chain.proceed(
+                chain.request().newBuilder()
+                    .header("User-Agent", BROWSER_USER_AGENT)
+                    .build()
+            )
+        }
         .build()
 
     /** Blocking by contract — callers must confine this to an IO dispatcher. */
     fun search(query: String, country: String, language: String): JsonObject? {
         val request = Request.Builder()
             .url("$SEARCH_URL?key=$API_KEY&prettyPrint=false")
-            .header("User-Agent", BROWSER_USER_AGENT)
             .header("Origin", ORIGIN)
             .header("Referer", "$ORIGIN/search")
             .header("Cookie", "SOCS=CAI") // skips the EU consent interstitial
