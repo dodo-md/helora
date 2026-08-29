@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -83,6 +84,7 @@ import com.dodoznq.helora.presentation.components.SmartImage
 import com.dodoznq.helora.presentation.components.SmartImageListTargetSize
 import com.dodoznq.helora.presentation.components.SongInfoBottomSheet
 import com.dodoznq.helora.presentation.viewmodel.PlayerViewModel
+import com.dodoznq.helora.presentation.viewmodel.YouTubeSearchSuggestionsStateHolder
 import com.dodoznq.helora.ui.theme.LocalHeloraDarkTheme
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.PlaylistPlay
@@ -103,6 +105,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.media3.common.util.UnstableApi
@@ -188,6 +191,26 @@ fun SearchScreen(
         playerViewModel.performSearch(searchQuery)
     }
     val unifiedSearchState by playerViewModel.unifiedSearchState.collectAsStateWithLifecycle()
+    val searchSuggestions by playerViewModel.youTubeSearchSuggestions.collectAsStateWithLifecycle()
+    var isSearchBarFocused by remember { mutableStateOf(false) }
+    val showSuggestions by remember(searchQuery, searchSuggestions, isSearchBarFocused) {
+        derivedStateOf { isSearchBarFocused && searchQuery.isNotBlank() && !searchSuggestions.isEmpty }
+    }
+    val submitFromSuggestion: (String) -> Unit = remember(playerViewModel, keyboardController) {
+        { query: String ->
+            searchQuery = query
+            playerViewModel.updateSearchQuery(query)
+            playerViewModel.onSearchQuerySubmitted(query)
+            if (keyboardController != null) keyboardController.hide()
+        }
+    }
+    val playFromSuggestion: (Song) -> Unit = remember(playerViewModel, keyboardController) {
+        { song: Song ->
+            playerViewModel.playYouTubeSong(song)
+            playerViewModel.clearSearchSuggestions()
+            if (keyboardController != null) keyboardController.hide()
+        }
+    }
     val handleSongMoreOptionsClick = remember(playerViewModel) {
         { song: Song ->
             playerViewModel.selectSongForInfo(song)
@@ -263,7 +286,9 @@ fun SearchScreen(
                     DockedSearchBar(
                         inputField = {
                             SearchBarDefaults.InputField(
-                                modifier = Modifier.focusRequester(searchInputFocusRequester),
+                                modifier = Modifier
+                                    .focusRequester(searchInputFocusRequester)
+                                    .onFocusChanged { isSearchBarFocused = it.isFocused },
                                 query = searchQuery,
                                 onQueryChange = {
                                     searchQuery = it
@@ -275,7 +300,7 @@ fun SearchScreen(
                                     }
                                     keyboardController?.hide()
                                 },
-                                expanded = false,
+                                expanded = showSuggestions,
                                 onExpandedChange = {},
                                 placeholder = {
                                     Text(
@@ -317,7 +342,7 @@ fun SearchScreen(
                                 colors = searchBarInputFieldColors
                             )
                         },
-                        expanded = false,
+                        expanded = showSuggestions,
                         onExpandedChange = {},
                         modifier = Modifier
                             .clip(RoundedCornerShape(searchbarCornerRadius)),
@@ -326,7 +351,13 @@ fun SearchScreen(
                             dividerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                             inputFieldColors = searchBarInputFieldColors
                         ),
-                        content = {}
+                        content = {
+                            SearchSuggestionsDropdown(
+                                suggestions = searchSuggestions,
+                                onCompletionClick = submitFromSuggestion,
+                                onSongClick = playFromSuggestion
+                            )
+                        }
                     )
                 }
 
@@ -433,7 +464,10 @@ fun SearchScreen(
                                     onLocalClick = onLocalClick,
                                     onYouTubeClick = onYouTubeClick,
                                     onMoreClick = handleSongMoreOptionsClick,
-                                    onRetryYouTube = remember(playerViewModel) { playerViewModel::retryYouTubeSearch }
+                                    onRetryYouTube = remember(playerViewModel) { playerViewModel::retryYouTubeSearch },
+                                    hasMoreYouTubeSongs = unifiedSearchState.hasMoreYouTubeSongs,
+                                    isYouTubeLoadingMore = unifiedSearchState.isYouTubeLoadingMore,
+                                    onLoadMoreYouTube = remember(playerViewModel) { playerViewModel::loadMoreYouTubeSearchResults }
                                 )
                             }
                         }
@@ -546,6 +580,99 @@ fun SearchScreen(
                     playerViewModel = playerViewModel,
                 )
             }
+        }
+    }
+}
+
+/**
+ * Dropdown shown under the search field while typing: query completions first, then any
+ * entities YouTube Music offers as directly playable straight from the suggestion list.
+ */
+@Composable
+private fun SearchSuggestionsDropdown(
+    suggestions: YouTubeSearchSuggestionsStateHolder.State,
+    onCompletionClick: (String) -> Unit,
+    onSongClick: (Song) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 360.dp)
+    ) {
+        items(
+            suggestions.completions,
+            key = { "completion_$it" },
+            contentType = { "suggestion_completion" }
+        ) { completion ->
+            SuggestionCompletionRow(text = completion, onClick = { onCompletionClick(completion) })
+        }
+        items(
+            suggestions.songs,
+            key = { "suggestion_song_${it.id}" },
+            contentType = { "suggestion_song" }
+        ) { song ->
+            SuggestionSongRow(song = song, onClick = { onSongClick(song) })
+        }
+    }
+}
+
+@Composable
+private fun SuggestionCompletionRow(text: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) { detectTapGestures(onTap = { onClick() }) }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Search,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun SuggestionSongRow(song: Song, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) { detectTapGestures(onTap = { onClick() }) }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SmartImage(
+            model = song.albumArtUriString,
+            contentDescription = null,
+            targetSize = SmartImageListTargetSize,
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(8.dp))
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = song.title,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = song.artist,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

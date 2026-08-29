@@ -50,10 +50,20 @@ class NavidromeApiService @Inject constructor(
     @Volatile
     var onAuthMethodChanged: ((NavidromeAuthMethod) -> Unit)? = null
 
+    // The shared client's own interceptor pins User-Agent with .header(), which replaces.
+    // Appending this interceptor after newBuilder() makes it run last, so this UA wins —
+    // same fix as InnerTubeSearchClient/NewPipeOkHttpDownloader.
     private val okHttpClient: OkHttpClient = baseOkHttpClient.newBuilder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(15, TimeUnit.SECONDS)
+        .addInterceptor { chain ->
+            chain.proceed(
+                chain.request().newBuilder()
+                    .header("User-Agent", "Helora/${API_VERSION}")
+                    .build()
+            )
+        }
         .build()
 
     /**
@@ -148,7 +158,6 @@ class NavidromeApiService @Inject constructor(
                 val request = Request.Builder()
                     .url(url)
                     .header("Accept", "application/json")
-                    .header("User-Agent", "Helora/${API_VERSION}")
                     .get()
                     .build()
 

@@ -21,7 +21,29 @@ data class YouTubeArtistDetail(
 data class YouTubeSearchResult(
     val songs: List<Song> = emptyList(),
     val albums: List<Album> = emptyList(),
-    val artists: List<Artist> = emptyList()
+    val artists: List<Artist> = emptyList(),
+    val songsContinuation: String? = null,
+    val videosContinuation: String? = null
+)
+
+/**
+ * One more page of search songs, continuing the Songs and/or Videos shelf.
+ *
+ * A null continuation means that shelf's chain ended; the other can still have more.
+ */
+data class YouTubeSearchNextPage(
+    val songs: List<Song> = emptyList(),
+    val songsContinuation: String? = null,
+    val videosContinuation: String? = null
+)
+
+/**
+ * Autocomplete for the search box: plain text completions to fill the query, plus entities
+ * YouTube Music offers as directly playable from the suggestion list.
+ */
+data class YouTubeSearchSuggestions(
+    val completions: List<String> = emptyList(),
+    val songs: List<Song> = emptyList()
 )
 
 /**

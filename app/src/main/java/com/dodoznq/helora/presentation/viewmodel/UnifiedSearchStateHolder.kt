@@ -38,6 +38,8 @@ class UnifiedSearchStateHolder @Inject constructor(
         val rows: ImmutableList<UnifiedSearchRow> = persistentListOf(),
         val isYouTubeLoading: Boolean = false,
         val youTubeError: YouTubeSearchStateHolder.Error? = null,
+        val isYouTubeLoadingMore: Boolean = false,
+        val hasMoreYouTubeSongs: Boolean = false,
     )
 
     private val idleState = MutableStateFlow(UnifiedSearchState()).asStateFlow()
@@ -56,7 +58,9 @@ class UnifiedSearchStateHolder @Inject constructor(
             UnifiedSearchState(
                 rows = UnifiedSearchMerger.merge(localResults, youTubeState.songs),
                 isYouTubeLoading = youTubeState.isLoading,
-                youTubeError = youTubeState.error
+                youTubeError = youTubeState.error,
+                isYouTubeLoadingMore = youTubeState.isLoadingMore,
+                hasMoreYouTubeSongs = youTubeState.hasMoreSongs
             )
         }
             .flowOn(dispatcherProvider.default)
@@ -68,6 +72,11 @@ class UnifiedSearchStateHolder @Inject constructor(
     fun performSearch(query: String, filter: SearchFilterType) {
         searchStateHolder.performSearch(query)
         youTubeSearchStateHolder.performSearch(query, filter)
+    }
+
+    /** Fetches one more page of YouTube songs. Local results are not paginated. */
+    fun loadMore() {
+        youTubeSearchStateHolder.loadMore()
     }
 
     fun onCleared() {
