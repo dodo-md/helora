@@ -1,213 +1,153 @@
 package com.dodoznq.helora.data.youtube
 
 import com.google.common.truth.Truth.assertThat
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import org.junit.jupiter.api.Test
 
 /**
- * Fixtures mirror the shape of a real InnerTube `search` response closely enough to exercise the
- * parser's field paths, without depending on network access (unavailable in CI/unit tests).
+ * Fixtures under `test/resources/innertube/` are real InnerTube responses, not hand-written
+ * JSON: captured live against WEB_REMIX (hl=en, gl=TR, query "radiohead creep") for each of the
+ * four category filters plus `get_search_suggestions`, then trimmed to 2-3 items per shelf.
+ *
+ * The previous fixtures asserted the parser against a `musicShelfRenderer` matched by an
+ * English title ("Songs" / "Videos" / ...) inside `tabbedSearchResultsRenderer`. That shape
+ * does not exist for an unfiltered search — the live response has a `musicCardShelfRenderer`
+ * top result and bare `itemSectionRenderer` blocks with no shelf title at all, so the old
+ * fixtures exercised a code path YouTube never actually returns and every unit test passed
+ * while search itself returned nothing. A *filtered* search (params set per
+ * [InnerTubeSearchClient.SearchFilter]) is what actually carries a single titled
+ * `musicShelfRenderer`, which is the shape these fixtures capture.
  */
 class InnerTubeSearchParserTest {
 
-    private fun parse(json: String): InnerTubeSearchPage =
-        InnerTubeSearchParser.parse(JsonParser.parseString(json).asJsonObject)
-
-    /** A shelf entry containing a single `musicResponsiveListItemRenderer`. */
-    private fun shelf(title: String, vararg items: String): String =
-        """
-        {
-          "musicShelfRenderer": {
-            "title": { "runs": [ { "text": "$title" } ] },
-            "contents": [ ${items.joinToString(",")} ]
-          }
-        }
-        """.trimIndent()
-
-    private fun page(vararg shelves: String): String =
-        """
-        {
-          "contents": {
-            "tabbedSearchResultsRenderer": {
-              "tabs": [ {
-                "tabRenderer": {
-                  "content": {
-                    "sectionListRenderer": {
-                      "contents": [ ${shelves.joinToString(",")} ]
-                    }
-                  }
-                }
-              } ]
-            }
-          }
-        }
-        """.trimIndent()
-
-    private val officialSong = """
-        {
-          "musicResponsiveListItemRenderer": {
-            "flexColumns": [
-              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [ { "text": "Godspeed" } ] } } },
-              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [
-                  { "text": "Frank Ocean", "navigationEndpoint": { "browseEndpoint": { "browseId": "UCPuFkkoS8xR8U0lVDXQOTvw" } } },
-                  { "text": " • " },
-                  { "text": "Blonde", "navigationEndpoint": { "browseEndpoint": { "browseId": "MPREb_123456" } } },
-                  { "text": " • " },
-                  { "text": "3:33" }
-              ] } } }
-            ],
-            "thumbnail": { "musicThumbnailRenderer": { "thumbnail": { "thumbnails": [
-                { "url": "https://example.com/small.jpg", "width": 60, "height": 60 },
-                { "url": "https://example.com/large.jpg", "width": 120, "height": 120 }
-            ] } } },
-            "playlistItemData": { "videoId": "abc12345678" }
-          }
-        }
-    """.trimIndent()
-
-    // The upload this issue is about: a fan-made slowed/reverb edit, which YT Music files
-    // under "Videos" rather than "Songs", and which has no album — just an uploader channel.
-    private val communityUploadVideo = """
-        {
-          "musicResponsiveListItemRenderer": {
-            "flexColumns": [
-              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [ { "text": "Godspeed (Slowed + Reverb)" } ] } } },
-              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [
-                  { "text": "Chill Beats Channel", "navigationEndpoint": { "browseEndpoint": { "browseId": "UCzzzzzzzzzzzzzzzzzzzzzz" } } },
-                  { "text": " • " },
-                  { "text": "148K views" },
-                  { "text": " • " },
-                  { "text": "3:41" }
-              ] } } }
-            ],
-            "thumbnail": { "musicThumbnailRenderer": { "thumbnail": { "thumbnails": [
-                { "url": "https://example.com/video.jpg", "width": 120, "height": 120 }
-            ] } } },
-            "overlay": { "musicItemThumbnailOverlayRenderer": { "content": { "musicPlayButtonRenderer": {
-                "playNavigationEndpoint": { "watchEndpoint": { "videoId": "xyz98765432" } }
-            } } } }
-          }
-        }
-    """.trimIndent()
-
-    private val album = """
-        {
-          "musicResponsiveListItemRenderer": {
-            "flexColumns": [
-              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [ { "text": "Blonde" } ] } } },
-              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [
-                  { "text": "Album" },
-                  { "text": " • " },
-                  { "text": "Frank Ocean", "navigationEndpoint": { "browseEndpoint": { "browseId": "UCPuFkkoS8xR8U0lVDXQOTvw" } } },
-                  { "text": " • " },
-                  { "text": "2016" }
-              ] } } }
-            ],
-            "navigationEndpoint": { "browseEndpoint": { "browseId": "MPREb_123456" } },
-            "thumbnail": { "musicThumbnailRenderer": { "thumbnail": { "thumbnails": [
-                { "url": "https://example.com/album.jpg", "width": 120, "height": 120 }
-            ] } } }
-          }
-        }
-    """.trimIndent()
-
-    private val artist = """
-        {
-          "musicResponsiveListItemRenderer": {
-            "flexColumns": [
-              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [ { "text": "Frank Ocean" } ] } } },
-              { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [ { "text": "Artist" } ] } } }
-            ],
-            "navigationEndpoint": { "browseEndpoint": { "browseId": "UCPuFkkoS8xR8U0lVDXQOTvw" } },
-            "thumbnail": { "musicThumbnailRenderer": { "thumbnail": { "thumbnails": [
-                { "url": "https://example.com/artist.jpg", "width": 120, "height": 120 }
-            ] } } }
-          }
-        }
-    """.trimIndent()
-
-    @Test
-    fun `parses an official song from the Songs shelf`() {
-        val result = parse(page(shelf("Songs", officialSong)))
-
-        assertThat(result.songs).hasSize(1)
-        val song = result.songs.single()
-        assertThat(song.videoId).isEqualTo("abc12345678")
-        assertThat(song.title).isEqualTo("Godspeed")
-        assertThat(song.artistName).isEqualTo("Frank Ocean")
-        assertThat(song.artistChannelId).isEqualTo("UCPuFkkoS8xR8U0lVDXQOTvw")
-        assertThat(song.durationMs).isEqualTo(213_000L)
-        assertThat(song.thumbnailUrl).isEqualTo("https://example.com/large.jpg")
+    private fun fixture(name: String): JsonObject {
+        val stream = javaClass.classLoader?.getResourceAsStream("innertube/$name.json")
+            ?: error("Missing test fixture: innertube/$name.json")
+        return JsonParser.parseString(stream.bufferedReader().readText()).asJsonObject
     }
 
     @Test
-    fun `parses a community upload from the Videos shelf, with no album run to confuse it`() {
-        val result = parse(page(shelf("Videos", communityUploadVideo)))
+    fun `parses the Songs shelf from a real filtered search response`() {
+        val result = InnerTubeSearchParser.parseSongs(fixture("search_songs"))
 
-        assertThat(result.songs).hasSize(1)
-        val video = result.songs.single()
-        assertThat(video.videoId).isEqualTo("xyz98765432")
-        assertThat(video.title).isEqualTo("Godspeed (Slowed + Reverb)")
-        assertThat(video.artistName).isEqualTo("Chill Beats Channel")
-        assertThat(video.durationMs).isEqualTo(221_000L)
-        // "148K views" must not be mistaken for the artist or the duration.
+        assertThat(result.items).hasSize(3)
+        assertThat(result.continuation).isNotEmpty()
+
+        val creep = result.items[0]
+        assertThat(creep.videoId).isEqualTo("9RfVp-GhKfs")
+        assertThat(creep.title).isEqualTo("Creep")
+        assertThat(creep.artistName).isEqualTo("Radiohead")
+        assertThat(creep.artistChannelId).isEqualTo("UCr_iyUANcn9OX_yy9piYoLw")
+        assertThat(creep.durationMs).isEqualTo(239_000L) // 3:59
+        assertThat(creep.thumbnailUrl).contains("w120-h120")
+
+        val acoustic = result.items[1]
+        assertThat(acoustic.videoId).isEqualTo("4BX5xpB2DBM")
+        assertThat(acoustic.title).isEqualTo("Creep (Acoustic)")
+        assertThat(acoustic.artistName).isEqualTo("Radiohead")
+        assertThat(acoustic.durationMs).isEqualTo(259_000L) // 4:19
+
+        val noSurprises = result.items[2]
+        assertThat(noSurprises.videoId).isEqualTo("h1aN7BLHXfc")
+        assertThat(noSurprises.title).isEqualTo("No Surprises")
+        assertThat(noSurprises.artistName).isEqualTo("Juliana Chahayed")
+        assertThat(noSurprises.artistChannelId).isEqualTo("UCVWc7eLT-M_Qjx2YzcYwwiA")
+        assertThat(noSurprises.durationMs).isEqualTo(121_000L) // 2:01
     }
 
     @Test
-    fun `songs and videos shelves both feed the songs bucket`() {
-        val result = parse(page(shelf("Songs", officialSong), shelf("Videos", communityUploadVideo)))
+    fun `parses the Videos shelf, whose rows carry a view count instead of an album`() {
+        val result = InnerTubeSearchParser.parseSongs(fixture("search_videos"))
 
-        assertThat(result.songs.map { it.videoId }).containsExactly("abc12345678", "xyz98765432")
+        assertThat(result.items).hasSize(3)
+        assertThat(result.continuation).isNotEmpty()
+
+        val official = result.items[0]
+        assertThat(official.videoId).isEqualTo("XFkzRNyygfk")
+        assertThat(official.title).isEqualTo("Creep")
+        assertThat(official.artistName).isEqualTo("Radiohead")
+        assertThat(official.durationMs).isEqualTo(237_000L) // 3:57
+        // "1.5B views" must not be mistaken for the artist or the duration.
+
+        val liveCover = result.items[1]
+        assertThat(liveCover.videoId).isEqualTo("US0CUegPr3g")
+        assertThat(liveCover.title).isEqualTo("Radiohead - Creep (Best live performance)")
+        assertThat(liveCover.artistName).isEqualTo("LuigyAguilar02")
+        assertThat(liveCover.durationMs).isEqualTo(274_000L) // 4:34
     }
 
     @Test
-    fun `parses albums and artists into their own buckets`() {
-        val result = parse(page(shelf("Albums", album), shelf("Artists", artist)))
+    fun `songs and videos shelves are fetched and parsed independently`() {
+        val songs = InnerTubeSearchParser.parseSongs(fixture("search_songs"))
+        val videos = InnerTubeSearchParser.parseSongs(fixture("search_videos"))
 
-        assertThat(result.albums).hasSize(1)
-        val parsedAlbum = result.albums.single()
-        assertThat(parsedAlbum.browseId).isEqualTo("MPREb_123456")
-        assertThat(parsedAlbum.title).isEqualTo("Blonde")
-        assertThat(parsedAlbum.artistName).isEqualTo("Frank Ocean")
-
-        assertThat(result.artists).hasSize(1)
-        val parsedArtist = result.artists.single()
-        assertThat(parsedArtist.channelId).isEqualTo("UCPuFkkoS8xR8U0lVDXQOTvw")
-        assertThat(parsedArtist.name).isEqualTo("Frank Ocean")
+        assertThat(songs.items.map { it.videoId } + videos.items.map { it.videoId })
+            .containsExactly("9RfVp-GhKfs", "4BX5xpB2DBM", "h1aN7BLHXfc", "XFkzRNyygfk", "US0CUegPr3g", "SLbSsv_2u4A")
+            .inOrder()
     }
 
     @Test
-    fun `an unrecognized shelf is ignored rather than crashing the parse`() {
-        val result = parse(page(shelf("Podcasts", officialSong)))
+    fun `parses the Albums shelf, including a multi-artist release with no single artist channel`() {
+        val result = InnerTubeSearchParser.parseAlbums(fixture("search_albums"))
 
-        assertThat(result.songs).isEmpty()
-        assertThat(result.albums).isEmpty()
-        assertThat(result.artists).isEmpty()
+        assertThat(result.items).hasSize(3)
+        assertThat(result.continuation).isNotEmpty()
+
+        val ep = result.items[0]
+        assertThat(ep.browseId).isEqualTo("MPREb_TgQPwAzodvg")
+        assertThat(ep.title).isEqualTo("Creep")
+        assertThat(ep.artistName).isEqualTo("Radiohead")
+
+        // A various-artists release ("Naeleck, Haley Reinhart, & LNY TNZ") carries no
+        // browseId on its subtitle run, since it names several artists rather than one
+        // channel. The mapper must not crash or invent an artist for it.
+        val compilation = result.items[2]
+        assertThat(compilation.browseId).isEqualTo("MPREb_iQi1RivWZ7L")
+        assertThat(compilation.title).isEqualTo("Creep (Hardstyle Remix)")
+        assertThat(compilation.artistName).isEmpty()
     }
 
     @Test
-    fun `a response with no tabs or shelves parses to an empty page`() {
-        val result = parse("{}")
+    fun `parses the Artists shelf`() {
+        val result = InnerTubeSearchParser.parseArtists(fixture("search_artists"))
 
-        assertThat(result.songs).isEmpty()
-        assertThat(result.albums).isEmpty()
-        assertThat(result.artists).isEmpty()
+        assertThat(result.items).hasSize(3)
+        // Unlike songs/videos/albums, an Artists shelf carries no continuation in practice
+        // (there are rarely more than a handful of matching artist channels).
+        assertThat(result.continuation).isNull()
+
+        val radiohead = result.items[0]
+        assertThat(radiohead.channelId).isEqualTo("UCr_iyUANcn9OX_yy9piYoLw")
+        assertThat(radiohead.name).isEqualTo("Radiohead")
+
+        val thomYorke = result.items[1]
+        assertThat(thomYorke.channelId).isEqualTo("UCgXVrNtoMd3CusXrRMX3Tqg")
+        assertThat(thomYorke.name).isEqualTo("Thom Yorke")
     }
 
     @Test
-    fun `an item missing a video id is dropped rather than crashing`() {
-        val brokenItem = """
-            {
-              "musicResponsiveListItemRenderer": {
-                "flexColumns": [
-                  { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [ { "text": "No Id" } ] } } }
-                ]
-              }
-            }
-        """.trimIndent()
+    fun `a response with no shelf parses to an empty result rather than crashing`() {
+        val result = InnerTubeSearchParser.parseSongs(JsonParser.parseString("{}").asJsonObject)
 
-        val result = parse(page(shelf("Songs", brokenItem)))
+        assertThat(result.items).isEmpty()
+        assertThat(result.continuation).isNull()
+    }
 
-        assertThat(result.songs).isEmpty()
+    @Test
+    fun `parses search suggestions, both text completions and directly playable songs`() {
+        val result = InnerTubeSearchParser.parseSuggestions(fixture("suggestions"))
+
+        assertThat(result.completions).contains("radiohead creep")
+
+        assertThat(result.songs).isNotEmpty()
+        val creep = result.songs.first { it.videoId == "9RfVp-GhKfs" }
+        assertThat(creep.title).isEqualTo("Creep")
+        assertThat(creep.artistName).isEqualTo("Radiohead")
+        assertThat(creep.artistChannelId).isEqualTo("UCr_iyUANcn9OX_yy9piYoLw")
+        // The suggestion row carries a play count ("2.2B plays") rather than a duration, in
+        // the same run position a shelf-song's duration or view count would be — the parser
+        // must not mistake "Song" (the row's type descriptor) for the artist name either.
+        assertThat(creep.durationMs).isEqualTo(0L)
     }
 }

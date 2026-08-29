@@ -31,9 +31,26 @@ data class InnerTubeArtistItem(
  * [songs] merges the "Songs" shelf (official catalogue uploads) and the "Videos" shelf
  * (community uploads, fan edits, remixes, slowed/sped versions) — YouTube Music keeps these
  * in separate shelves, but the app's search treats them as the same kind of result.
+ *
+ * Each shelf's continuation token is kept around unused for a follow-up paging change; nothing
+ * here fetches a next page yet.
  */
 data class InnerTubeSearchPage(
     val songs: List<InnerTubeSongItem> = emptyList(),
     val albums: List<InnerTubeAlbumItem> = emptyList(),
-    val artists: List<InnerTubeArtistItem> = emptyList()
+    val artists: List<InnerTubeArtistItem> = emptyList(),
+    val songsContinuation: String? = null,
+    val videosContinuation: String? = null,
+    val albumsContinuation: String? = null
+)
+
+/**
+ * A parsed `get_search_suggestions` response.
+ *
+ * [completions] are plain text query completions, meant to fill the search box on tap.
+ * [songs] are entities YouTube Music offers as directly playable from the suggestion list.
+ */
+data class InnerTubeSuggestions(
+    val completions: List<String> = emptyList(),
+    val songs: List<InnerTubeSongItem> = emptyList()
 )

@@ -5,19 +5,22 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 
 /**
- * Parses an InnerTube `search` response body into [InnerTubeSearchPage].
+ * Parses a *filtered* InnerTube `search` response body (one issued with a
+ * [InnerTubeSearchClient.SearchFilter] `params` value).
  *
- * YouTube Music's "All" search groups results into shelves labelled by the same category
- * names it shows in its own UI ("Songs", "Videos", "Albums", "Artists", ...). Shelves are
- * matched by that label rather than by position, since position varies with what the query
- * actually matched.
+ * An unfiltered search groups results into a `musicCardShelfRenderer` top result plus bare
+ * `itemSectionRenderer` blocks with no category label at all, so there is nothing to parse a
+ * page out of. A filtered response is different: it carries exactly one `musicShelfRenderer`
+ * in `sectionListRenderer.contents`, and that shelf is taken regardless of its title — the
+ * filter already pins the category, so matching on the title would be redundant and would
+ * make parsing depend on `hl`.
  */
 object InnerTubeSearchParser {
 
-    private const val SONGS_SHELF = "Songs"
-    private const val VIDEOS_SHELF = "Videos"
-    private val ALBUM_SHELVES = setOf("Albums", "Singles", "EPs")
-    private const val ARTISTS_SHELF = "Artists"
+    // Not shelf titles here — a search suggestion's song row carries a "Song"/"Video" type
+    // descriptor in the same run position a shelf-song's duration or view count would be.
+    private const val SONG_TYPE_DESCRIPTOR = "Song"
+    private const val VIDEO_TYPE_DESCRIPTOR = "Video"
 
     private const val ARTIST_CHANNEL_PREFIX = "UC"
     private const val ALBUM_BROWSE_PREFIX = "MPRE"
@@ -25,33 +28,56 @@ object InnerTubeSearchParser {
     private val DURATION_REGEX = Regex("^\\d{1,2}(:\\d{2}){1,2}$")
     private val VIEW_COUNT_REGEX = Regex("^[\\d.,]+[KMB]?\\s*views?$|^no\\s+views$", RegexOption.IGNORE_CASE)
 
-    fun parse(root: JsonObject): InnerTubeSearchPage {
+    /** [items] mapped from the shelf's contents, plus its continuation token if it has one. */
+    data class ShelfResult<T>(val items: List<T>, val continuation: String?)
+
+    fun parseSongs(root: JsonObject): ShelfResult<InnerTubeSongItem> = parseShelf(root) { it.toSongItem() }
+
+    fun parseAlbums(root: JsonObject): ShelfResult<InnerTubeAlbumItem> = parseShelf(root) { it.toAlbumItem() }
+
+    fun parseArtists(root: JsonObject): ShelfResult<InnerTubeArtistItem> = parseShelf(root) { it.toArtistItem() }
+
+    /**
+     * Parses the mixed suggestions response: text completions to show as-is, and directly
+     * playable entities mapped with the same [toSongItem] used for shelf songs.
+     */
+    fun parseSuggestions(root: JsonObject): InnerTubeSuggestions {
+        val completions = mutableListOf<String>()
         val songs = mutableListOf<InnerTubeSongItem>()
-        val albums = mutableListOf<InnerTubeAlbumItem>()
-        val artists = mutableListOf<InnerTubeArtistItem>()
 
-        for (shelf in shelves(root)) {
-            val renderer = shelf.asJsonObjectOrNull()?.getObject("musicShelfRenderer") ?: continue
-            val title = renderer.path("title", "runs")
-                .asJsonArrayOrNull()?.firstOrNull().asJsonObjectOrNull()
-                ?.get("text").asStringOrNull().orEmpty()
-            val items = renderer.getArray("contents") ?: continue
-
-            when {
-                title == SONGS_SHELF || title == VIDEOS_SHELF ->
-                    items.mapNotNullTo(songs) { it.toSongItem() }
-                title in ALBUM_SHELVES -> items.mapNotNullTo(albums) { it.toAlbumItem() }
-                title == ARTISTS_SHELF -> items.mapNotNullTo(artists) { it.toArtistItem() }
+        for (section in root.getArray("contents") ?: JsonArray()) {
+            for (entry in section.asJsonObjectOrNull()
+                ?.getObject("searchSuggestionsSectionRenderer")?.getArray("contents") ?: JsonArray()) {
+                val entryObject = entry.asJsonObjectOrNull() ?: continue
+                entryObject.getObject("searchSuggestionRenderer")?.let { suggestion ->
+                    val text = suggestion.path("suggestion", "runs").asJsonArrayOrNull()
+                        ?.joinToString("") { it.asJsonObjectOrNull()?.get("text").asStringOrNull().orEmpty() }
+                    if (!text.isNullOrBlank()) completions += text
+                }
+                entry.toSongItem()?.let { songs += it }
             }
         }
 
-        return InnerTubeSearchPage(songs = songs, albums = albums, artists = artists)
+        return InnerTubeSuggestions(completions = completions, songs = songs)
     }
 
+    private fun <T> parseShelf(root: JsonObject, mapper: (JsonElement?) -> T?): ShelfResult<T> {
+        val shelf = singleMusicShelf(root)
+        val items = shelf?.getArray("contents")?.mapNotNull(mapper).orEmpty()
+        return ShelfResult(items, shelf?.continuationToken())
+    }
+
+    private fun singleMusicShelf(root: JsonObject): JsonObject? =
+        shelves(root).firstNotNullOfOrNull { it.asJsonObjectOrNull()?.getObject("musicShelfRenderer") }
+
+    private fun JsonObject.continuationToken(): String? =
+        getArray("continuations")?.firstOrNull().asJsonObjectOrNull()
+            ?.path("nextContinuationData", "continuation").asStringOrNull()
+
     /**
-     * The shelves live at different paths depending on whether the response carries search
-     * category tabs (the normal "All" search) or not (some anonymous/region variants inline
-     * a single section list) — both are handled defensively since it costs nothing.
+     * The shelf lives at different paths depending on whether the response carries search
+     * category tabs (the normal shape) or not (some anonymous/region variants inline a single
+     * section list) — both are handled defensively since it costs nothing.
      */
     private fun shelves(root: JsonObject): JsonArray {
         root.path("contents", "tabbedSearchResultsRenderer", "tabs")
@@ -89,7 +115,7 @@ object InnerTubeSearchParser {
                 }
                 browseId?.startsWith(ALBUM_BROWSE_PREFIX) == true -> Unit // album — search results use a shared pseudo-album
                 artistName == null && !VIEW_COUNT_REGEX.matches(text) &&
-                    text != SONGS_SHELF.removeSuffix("s") && text != VIDEOS_SHELF.removeSuffix("s") ->
+                    text != SONG_TYPE_DESCRIPTOR && text != VIDEO_TYPE_DESCRIPTOR ->
                     artistName = text
             }
         }

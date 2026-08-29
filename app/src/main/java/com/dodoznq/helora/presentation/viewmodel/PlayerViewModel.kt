@@ -274,6 +274,7 @@ class PlayerViewModel @Inject constructor(
     private val libraryStateHolder: LibraryStateHolder,
     private val remoteTrackCache: RemoteTrackCache,
     private val youTubeSearchStateHolder: YouTubeSearchStateHolder,
+    private val youTubeSearchSuggestionsStateHolder: YouTubeSearchSuggestionsStateHolder,
     private val unifiedSearchStateHolder: UnifiedSearchStateHolder,
     private val youTubeMusicRepository: YouTubeMusicRepository,
     private val radioQueueExtender: RadioQueueExtender,
@@ -1051,6 +1052,14 @@ class PlayerViewModel @Inject constructor(
 
     fun updateSearchQuery(query: String) {
         searchQuery = query
+        youTubeSearchSuggestionsStateHolder.request(query)
+    }
+
+    val youTubeSearchSuggestions: StateFlow<YouTubeSearchSuggestionsStateHolder.State> =
+        youTubeSearchSuggestionsStateHolder.state
+
+    fun clearSearchSuggestions() {
+        youTubeSearchSuggestionsStateHolder.clear()
     }
 
     private var mediaController: MediaController? = null
@@ -1651,6 +1660,7 @@ class PlayerViewModel @Inject constructor(
 
             searchStateHolder.initialize(viewModelScope)
             youTubeSearchStateHolder.initialize(viewModelScope)
+            youTubeSearchSuggestionsStateHolder.initialize(viewModelScope)
             unifiedSearchStateHolder.initialize(viewModelScope)
 
             viewModelScope.launch {
@@ -3953,6 +3963,7 @@ class PlayerViewModel @Inject constructor(
 
     fun onSearchQuerySubmitted(query: String) {
         searchStateHolder.onSearchQuerySubmitted(query)
+        youTubeSearchSuggestionsStateHolder.clear()
     }
 
     fun performSearch(query: String) {
@@ -4102,6 +4113,7 @@ class PlayerViewModel @Inject constructor(
         themeStateHolder.onCleared()
         searchStateHolder.onCleared()
         youTubeSearchStateHolder.onCleared()
+        youTubeSearchSuggestionsStateHolder.onCleared()
         unifiedSearchStateHolder.onCleared()
         libraryStateHolder.onCleared()
         sleepTimerStateHolder.onCleared()

@@ -25,6 +25,15 @@ data class YouTubeSearchResult(
 )
 
 /**
+ * Autocomplete for the search box: plain text completions to fill the query, plus entities
+ * YouTube Music offers as directly playable from the suggestion list.
+ */
+data class YouTubeSearchSuggestions(
+    val completions: List<String> = emptyList(),
+    val songs: List<Song> = emptyList()
+)
+
+/**
  * One slice of an open radio station, plus the cursor for the next slice.
  *
  * [stationUrl] is carried along because NewPipe needs the originating URL to fetch further

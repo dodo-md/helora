@@ -4,7 +4,12 @@ import com.dodoznq.helora.data.model.Album
 import com.dodoznq.helora.data.model.Artist
 import com.dodoznq.helora.data.model.ArtistRef
 import com.dodoznq.helora.data.model.Song
+import com.dodoznq.helora.data.youtube.InnerTubeSearchClient.SearchFilter.ALBUMS
+import com.dodoznq.helora.data.youtube.InnerTubeSearchClient.SearchFilter.ARTISTS
+import com.dodoznq.helora.data.youtube.InnerTubeSearchClient.SearchFilter.SONGS
+import com.dodoznq.helora.data.youtube.InnerTubeSearchClient.SearchFilter.VIDEOS
 import com.dodoznq.helora.utils.ArtistNameMatching
+import com.google.gson.JsonObject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.CoroutineScope
@@ -123,16 +128,18 @@ class YouTubeMusicRepository @Inject constructor(
     // ─── Search ────────────────────────────────────────────────────────
 
     /**
-     * Runs one InnerTube search and buckets the response into songs / albums / artists.
+     * Runs one search per category shelf and buckets the results into songs / albums / artists.
      *
      * This talks to YouTube Music's own `search` endpoint directly rather than through
-     * NewPipeExtractor. The "Songs" shelf alone is YT Music's official-release catalogue, which
+     * NewPipeExtractor, and it has to be filtered per category: an unfiltered search returns a
+     * top-result card plus untitled item sections, with no "Songs"/"Albums"/"Artists" shelf to
+     * key parsing off. The "Songs" shelf alone is YT Music's official-release catalogue, which
      * is why a plain NewPipe `MUSIC_SONGS` search used to miss user uploads, fan edits, remixes
      * and slowed/sped versions entirely — those live in the "Videos" shelf instead, so
      * [searchSongs] merges both.
      */
     suspend fun search(query: String): YouTubeSearchResult {
-        val page = fetchSearchPage(query) ?: return YouTubeSearchResult()
+        val page = fetchSearchPage(query, ALL_FILTERS) ?: return YouTubeSearchResult()
         return YouTubeSearchResult(
             songs = page.songs.toSongs(),
             albums = page.albums.mapNotNull { it.toAlbum() },
@@ -141,13 +148,13 @@ class YouTubeMusicRepository @Inject constructor(
     }
 
     suspend fun searchSongs(query: String): List<Song> =
-        fetchSearchPage(query)?.songs.orEmpty().toSongs()
+        fetchSearchPage(query, SONG_FILTERS)?.songs.orEmpty().toSongs()
 
     suspend fun searchAlbums(query: String): List<Album> =
-        fetchSearchPage(query)?.albums.orEmpty().mapNotNull { it.toAlbum() }
+        fetchSearchPage(query, ALBUM_FILTERS)?.albums.orEmpty().mapNotNull { it.toAlbum() }
 
     suspend fun searchArtists(query: String): List<Artist> =
-        fetchSearchPage(query)?.artists.orEmpty().mapNotNull { it.toArtist() }
+        fetchSearchPage(query, ARTIST_FILTERS)?.artists.orEmpty().mapNotNull { it.toArtist() }
 
     /**
      * Deduplicated, cleaned-up songs from a raw InnerTube page.
@@ -160,19 +167,77 @@ class YouTubeMusicRepository @Inject constructor(
     private fun List<InnerTubeSongItem>.toSongs(): List<Song> =
         mapNotNull { it.toSong() }.distinctBy { trackKey(it.title, it.artist) }
 
-    private suspend fun fetchSearchPage(query: String): InnerTubeSearchPage? {
+    /**
+     * Fetches only the shelves [filters] asks for, one InnerTube request each, run concurrently
+     * since they are otherwise-independent network calls.
+     */
+    private suspend fun fetchSearchPage(
+        query: String,
+        filters: Set<InnerTubeSearchClient.SearchFilter>
+    ): InnerTubeSearchPage? {
         if (query.isBlank()) return null
         return withContext(ytDispatcher) {
             val country = Locale.getDefault().country.ifBlank { DEFAULT_COUNTRY }
-            val root = runCatching {
-                innerTubeSearchClient.search(query, country, METADATA_LANGUAGE)
-            }.onFailure {
-                Timber.w(it, "InnerTube search failed for %s", query)
-            }.getOrNull() ?: return@withContext null
 
-            runCatching { InnerTubeSearchParser.parse(root) }
-                .onFailure { Timber.w(it, "InnerTube search parse failed for %s", query) }
-                .getOrNull()
+            suspend fun fetchShelf(filter: InnerTubeSearchClient.SearchFilter): JsonObject? =
+                runCatching {
+                    innerTubeSearchClient.search(query, country, METADATA_LANGUAGE, filter.params)
+                }.onFailure {
+                    Timber.w(it, "InnerTube search failed for %s (%s)", query, filter)
+                }.getOrNull()
+
+            val songsDeferred = SONGS.takeIf { it in filters }?.let { async { fetchShelf(it) } }
+            val videosDeferred = VIDEOS.takeIf { it in filters }?.let { async { fetchShelf(it) } }
+            val albumsDeferred = ALBUMS.takeIf { it in filters }?.let { async { fetchShelf(it) } }
+            val artistsDeferred = ARTISTS.takeIf { it in filters }?.let { async { fetchShelf(it) } }
+
+            val songsShelf = songsDeferred?.await()?.parseShelfOrNull(query, InnerTubeSearchParser::parseSongs)
+            val videosShelf = videosDeferred?.await()?.parseShelfOrNull(query, InnerTubeSearchParser::parseSongs)
+            val albumsShelf = albumsDeferred?.await()?.parseShelfOrNull(query, InnerTubeSearchParser::parseAlbums)
+            val artistsShelf = artistsDeferred?.await()?.parseShelfOrNull(query, InnerTubeSearchParser::parseArtists)
+
+            if (songsShelf == null && videosShelf == null && albumsShelf == null && artistsShelf == null) {
+                return@withContext null
+            }
+
+            InnerTubeSearchPage(
+                songs = songsShelf?.items.orEmpty() + videosShelf?.items.orEmpty(),
+                albums = albumsShelf?.items.orEmpty(),
+                artists = artistsShelf?.items.orEmpty(),
+                songsContinuation = songsShelf?.continuation,
+                videosContinuation = videosShelf?.continuation,
+                albumsContinuation = albumsShelf?.continuation
+            )
+        }
+    }
+
+    private fun <T> JsonObject.parseShelfOrNull(
+        query: String,
+        parse: (JsonObject) -> InnerTubeSearchParser.ShelfResult<T>
+    ): InnerTubeSearchParser.ShelfResult<T>? =
+        runCatching { parse(this) }
+            .onFailure { Timber.w(it, "InnerTube search parse failed for %s", query) }
+            .getOrNull()
+
+    /**
+     * Query-completion and directly-playable suggestions for the search box.
+     *
+     * No failure logging here, unlike [search]: this backs keystroke-driven autocomplete, where
+     * a dropped or failed request is meant to be invisible rather than worth a log line.
+     */
+    suspend fun searchSuggestions(input: String): YouTubeSearchSuggestions? {
+        if (input.isBlank()) return null
+        return withContext(ytDispatcher) {
+            val country = Locale.getDefault().country.ifBlank { DEFAULT_COUNTRY }
+            val root = runCatching {
+                innerTubeSearchClient.suggestions(input, country, METADATA_LANGUAGE)
+            }.getOrNull() ?: return@withContext null
+            val parsed = runCatching { InnerTubeSearchParser.parseSuggestions(root) }
+                .getOrNull() ?: return@withContext null
+            YouTubeSearchSuggestions(
+                completions = parsed.completions,
+                songs = parsed.songs.mapNotNull { it.toSong() }
+            )
         }
     }
 
@@ -682,6 +747,11 @@ class YouTubeMusicRepository @Inject constructor(
         private const val STREAM_INFO_TTL_MS = 5L * 60 * 1000
 
         private val TRACK_TABS = setOf(ChannelTabs.TRACKS, ChannelTabs.VIDEOS)
+
+        private val SONG_FILTERS = setOf(SONGS, VIDEOS)
+        private val ALBUM_FILTERS = setOf(ALBUMS)
+        private val ARTIST_FILTERS = setOf(ARTISTS)
+        private val ALL_FILTERS = setOf(SONGS, VIDEOS, ALBUMS, ARTISTS)
 
         private val VIDEO_ID_REGEX = Regex("^[A-Za-z0-9_-]{11}$")
 

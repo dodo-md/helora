@@ -43,14 +43,24 @@ class InnerTubeSearchClient @Inject constructor(
         }
         .build()
 
-    /** Blocking by contract — callers must confine this to an IO dispatcher. */
-    fun search(query: String, country: String, language: String): JsonObject? {
+    /**
+     * Runs one InnerTube search, optionally scoped to a category shelf via [params].
+     *
+     * An unfiltered search (params == null) groups results into a `musicCardShelfRenderer`
+     * top result plus bare `itemSectionRenderer` blocks with no shelf title at all — there is
+     * no "Songs"/"Albums"/"Artists" grouping to key off. A filtered search is the only shape
+     * that returns exactly one `musicShelfRenderer`, which is why every caller here passes a
+     * [SearchFilter].
+     *
+     * Blocking by contract — callers must confine this to an IO dispatcher.
+     */
+    fun search(query: String, country: String, language: String, params: String? = null): JsonObject? {
         val request = Request.Builder()
             .url("$SEARCH_URL?key=$API_KEY&prettyPrint=false")
             .header("Origin", ORIGIN)
             .header("Referer", "$ORIGIN/search")
             .header("Cookie", "SOCS=CAI") // skips the EU consent interstitial
-            .post(requestBody(query, country, language))
+            .post(requestBody(query, country, language, params))
             .build()
 
         client.newCall(request).execute().use { response ->
@@ -60,23 +70,65 @@ class InnerTubeSearchClient @Inject constructor(
         }
     }
 
-    private fun requestBody(query: String, country: String, language: String): RequestBody {
+    /**
+     * Fetches text completions and directly playable suggestions for a partial [input].
+     *
+     * Blocking by contract — callers must confine this to an IO dispatcher.
+     */
+    fun suggestions(input: String, country: String, language: String): JsonObject? {
+        val request = Request.Builder()
+            .url("$SUGGESTIONS_URL?key=$API_KEY&prettyPrint=false")
+            .header("Origin", ORIGIN)
+            .header("Referer", "$ORIGIN/search")
+            .header("Cookie", "SOCS=CAI") // skips the EU consent interstitial
+            .post(suggestionsRequestBody(input, country, language))
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            val text = response.body?.string()
+            if (!response.isSuccessful || text.isNullOrBlank()) return null
+            return runCatching { JsonParser.parseString(text).asJsonObject }.getOrNull()
+        }
+    }
+
+    private fun clientContext(country: String, language: String): JsonObject {
         val clientContext = JsonObject().apply {
             addProperty("clientName", "WEB_REMIX")
             addProperty("clientVersion", CLIENT_VERSION)
             addProperty("hl", language)
             addProperty("gl", country)
         }
-        val context = JsonObject().apply { add("client", clientContext) }
+        return JsonObject().apply { add("client", clientContext) }
+    }
+
+    private fun requestBody(query: String, country: String, language: String, params: String?): RequestBody {
         val body = JsonObject().apply {
-            add("context", context)
+            add("context", clientContext(country, language))
             addProperty("query", query)
+            if (params != null) addProperty("params", params)
         }
         return body.toString().toRequestBody(JSON_MEDIA_TYPE)
     }
 
+    private fun suggestionsRequestBody(input: String, country: String, language: String): RequestBody {
+        val body = JsonObject().apply {
+            add("context", clientContext(country, language))
+            addProperty("input", input)
+        }
+        return body.toString().toRequestBody(JSON_MEDIA_TYPE)
+    }
+
+    /** WEB_REMIX `params` values for the search category filters, captured from a live search. */
+    enum class SearchFilter(val params: String) {
+        SONGS("EgWKAQIIAWoKEAkQBRAKEAMQBA%3D%3D"),
+        VIDEOS("EgWKAQIQAWoKEAkQBRAKEAMQBA%3D%3D"),
+        ALBUMS("EgWKAQIYAWoKEAkQBRAKEAMQBA%3D%3D"),
+        ARTISTS("EgWKAQIgAWoKEAkQBRAKEAMQBA%3D%3D")
+    }
+
     private companion object {
         const val SEARCH_URL = "https://music.youtube.com/youtubei/v1/search"
+        const val SUGGESTIONS_URL = "https://music.youtube.com/youtubei/v1/music/get_search_suggestions"
         const val ORIGIN = "https://music.youtube.com"
 
         // Public WEB_REMIX InnerTube client key, shared by every YouTube Music web client.
