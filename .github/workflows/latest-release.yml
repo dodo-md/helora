@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    # Docs-only and CI-only merges shouldn't ship a new alpha. Use the manual
-    # trigger below to build one from a workflow change when needed.
     paths-ignore:
       - "**.md"
       - "docs/**"
@@ -20,7 +18,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: alpha-release
+  group: latest-release
   cancel-in-progress: false
 
 jobs:
@@ -31,18 +29,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Compute alpha version
+      - name: Compute release version
         id: version
         run: |
           BASE_VERSION="$(grep '^APP_VERSION_NAME=' gradle.properties | cut -d= -f2)"
           BASE_CODE="$(grep '^APP_VERSION_CODE=' gradle.properties | cut -d= -f2)"
-          ALPHA_VERSION="${BASE_VERSION}-alpha.${{ github.run_number }}"
-          # Keeps version codes ordered across stable bumps: 0.2.0 alphas sit in the
-          # 2xxxxx range, 0.3.0 alphas in 3xxxxx, so alpha updates always install.
-          ALPHA_CODE="$(( BASE_CODE * 100000 + ${{ github.run_number }} ))"
-          echo "name=$ALPHA_VERSION" >> "$GITHUB_OUTPUT"
-          echo "code=$ALPHA_CODE" >> "$GITHUB_OUTPUT"
-          echo "tag=v$ALPHA_VERSION" >> "$GITHUB_OUTPUT"
+
+          RELEASE_VERSION="$BASE_VERSION"
+          RELEASE_CODE="$(( BASE_CODE * 100000 + 99999 ))"
+
+          echo "name=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "code=$RELEASE_CODE" >> "$GITHUB_OUTPUT"
+          echo "tag=v$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+
+          echo "Release version: $RELEASE_VERSION"
+          echo "Release code: $RELEASE_CODE"
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -53,11 +54,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6.2.0
 
-      # A release signed with a different key cannot install over the last one, and
-      # there is no way back once a wrong signature has been published. So the key
-      # comes from repo secrets and a missing secret fails the run: the old fallback
-      # generated a throwaway key per run, which silently shipped releases that could
-      # never update each other.
       - name: Set up signing keystore
         env:
           CI_KEYSTORE_B64: ${{ secrets.CI_KEYSTORE_B64 }}
@@ -71,38 +67,81 @@ jobs:
               exit 1
             fi
           done
+
           printf '%s' "$CI_KEYSTORE_B64" | base64 -d > helora-release.jks
+
           {
             echo "storeFile=helora-release.jks"
             echo "storePassword=$CI_KEYSTORE_PASSWORD"
             echo "keyAlias=$CI_KEYSTORE_ALIAS"
-            # Most keystores reuse the store password for the key.
             echo "keyPassword=${CI_KEY_PASSWORD:-$CI_KEYSTORE_PASSWORD}"
           } > keystore.properties
 
       - name: Build release APKs
-        run: >
-          ./gradlew :app:assembleRelease
-          -Phelora.enableAbiSplits=true
-          -PAPP_VERSION_NAME=${{ steps.version.outputs.name }}
-          -PAPP_VERSION_CODE=${{ steps.version.outputs.code }}
+        run: |
+          ./gradlew :app:assembleRelease \
+            -Phelora.enableAbiSplits=true \
+            -PAPP_VERSION_NAME="${{ steps.version.outputs.name }}" \
+            -PAPP_VERSION_CODE="${{ steps.version.outputs.code }}"
 
       - name: Verify and rename split APKs
         run: |
           BUILD_TOOLS_VERSION="$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+
           mkdir -p release-apks
+
           for abi in arm64-v8a armeabi-v7a; do
             apk="app/build/outputs/apk/release/app-$abi-release.apk"
-            "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aapt2" dump badging "$apk" >/dev/null
-            "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner" verify --verbose "$apk"
-            cp "$apk" "release-apks/Helora-${{ steps.version.outputs.name }}-$abi.apk"
+
+            "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aapt2" \
+              dump badging "$apk" >/dev/null
+
+            "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner" \
+              verify --verbose "$apk"
+
+            cp "$apk" \
+              "release-apks/Helora-${{ steps.version.outputs.name }}-$abi.apk"
           done
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >
-          gh release create "${{ steps.version.outputs.tag }}"
-          --generate-notes
-          --title "helora ${{ steps.version.outputs.name }} 🌌"
-          release-apks/*.apk
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --generate-notes \
+            --title "helora ${{ steps.version.outputs.name }} 🌌" \
+            release-apks/*.apk
+
+      - name: Bump version for next release
+        id: next-version
+        run: |
+          CURRENT_VERSION="${{ steps.version.outputs.name }}"
+          CURRENT_CODE="$(grep '^APP_VERSION_CODE=' gradle.properties | cut -d= -f2)"
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+          NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+          NEXT_CODE=$((CURRENT_CODE + 1))
+
+          sed -i \
+            "s/^APP_VERSION_NAME=.*/APP_VERSION_NAME=$NEXT_VERSION/" \
+            gradle.properties
+
+          sed -i \
+            "s/^APP_VERSION_CODE=.*/APP_VERSION_CODE=$NEXT_CODE/" \
+            gradle.properties
+
+          echo "name=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "code=$NEXT_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add gradle.properties
+
+          git commit \
+            -m "chore: bump version to ${{ steps.next-version.outputs.name }} [skip ci]"
+
+          git push
