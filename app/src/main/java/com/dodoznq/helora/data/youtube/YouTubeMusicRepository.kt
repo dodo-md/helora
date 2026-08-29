@@ -14,20 +14,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.schabi.newpipe.extractor.Image
-import org.schabi.newpipe.extractor.InfoItem
 import org.schabi.newpipe.extractor.MediaFormat
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.Page
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.channel.ChannelInfo
-import org.schabi.newpipe.extractor.channel.ChannelInfoItem
 import org.schabi.newpipe.extractor.channel.tabs.ChannelTabInfo
 import org.schabi.newpipe.extractor.channel.tabs.ChannelTabs
 import org.schabi.newpipe.extractor.localization.ContentCountry
@@ -35,8 +32,6 @@ import org.schabi.newpipe.extractor.localization.Localization
 import org.schabi.newpipe.extractor.playlist.PlaylistInfo
 import org.schabi.newpipe.extractor.playlist.PlaylistInfoItem
 import org.schabi.newpipe.extractor.services.youtube.YoutubeParsingHelper
-import org.schabi.newpipe.extractor.search.SearchInfo
-import org.schabi.newpipe.extractor.services.youtube.linkHandler.YoutubeSearchQueryHandlerFactory
 import org.schabi.newpipe.extractor.stream.DeliveryMethod
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
@@ -48,17 +43,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Anonymous YouTube Music access via NewPipeExtractor.
+ * Anonymous YouTube Music access.
  *
- * NewPipe is entirely blocking and its signature deobfuscation evaluates JavaScript through
- * Rhino, so every call here is confined to [ytDispatcher] and stream extraction is additionally
- * gated by a small semaphore — YouTube rate-limits concurrent extraction aggressively.
+ * Search and metadata parsing talk to the InnerTube `search` endpoint directly (see
+ * [InnerTubeSearchClient]). Playback stream resolution, album/artist detail lookups and radio
+ * still go through NewPipeExtractor, which is entirely blocking and evaluates JavaScript through
+ * Rhino for signature deobfuscation — so every NewPipe call here is confined to [ytDispatcher],
+ * and stream extraction is additionally gated by a small semaphore, since YouTube rate-limits
+ * concurrent extraction aggressively.
  *
  * There is no login: everything this class exposes is public YouTube data.
  */
 @Singleton
 class YouTubeMusicRepository @Inject constructor(
-    private val downloader: NewPipeOkHttpDownloader
+    private val downloader: NewPipeOkHttpDownloader,
+    private val innerTubeSearchClient: InnerTubeSearchClient
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -124,55 +123,58 @@ class YouTubeMusicRepository @Inject constructor(
     // ─── Search ────────────────────────────────────────────────────────
 
     /**
-     * Runs the songs / albums / artists searches concurrently. Each is isolated so one
-     * extractor failure degrades that section only instead of blanking the whole result.
+     * Runs one InnerTube search and buckets the response into songs / albums / artists.
+     *
+     * This talks to YouTube Music's own `search` endpoint directly rather than through
+     * NewPipeExtractor. The "Songs" shelf alone is YT Music's official-release catalogue, which
+     * is why a plain NewPipe `MUSIC_SONGS` search used to miss user uploads, fan edits, remixes
+     * and slowed/sped versions entirely — those live in the "Videos" shelf instead, so
+     * [searchSongs] merges both.
      */
     suspend fun search(query: String): YouTubeSearchResult {
-        if (query.isBlank()) return YouTubeSearchResult()
-        ensureInit()
-
-        return coroutineScope {
-            val songs = async { runCatching { searchSongs(query) }.getOrElse { emptyList() } }
-            val albums = async { runCatching { searchAlbums(query) }.getOrElse { emptyList() } }
-            val artists = async { runCatching { searchArtists(query) }.getOrElse { emptyList() } }
-
-            YouTubeSearchResult(
-                songs = songs.await(),
-                albums = albums.await(),
-                artists = artists.await()
-            )
-        }
+        val page = fetchSearchPage(query) ?: return YouTubeSearchResult()
+        return YouTubeSearchResult(
+            songs = page.songs.toSongs(),
+            albums = page.albums.mapNotNull { it.toAlbum() },
+            artists = page.artists.mapNotNull { it.toArtist() }
+        )
     }
 
     suspend fun searchSongs(query: String): List<Song> =
-        searchItems(query, YoutubeSearchQueryHandlerFactory.MUSIC_SONGS)
-            .filterIsInstance<StreamInfoItem>()
-            .mapNotNull { it.toSong() }
-            // YouTube lists the same recording once per album edition — searching "Numb"
-            // returns it three times over Meteora, the anniversary edition and a reissue.
-            // Results are ranked, so the first of each group is the one to keep.
-            .distinctBy { trackKey(it.title, it.artist) }
+        fetchSearchPage(query)?.songs.orEmpty().toSongs()
 
     suspend fun searchAlbums(query: String): List<Album> =
-        searchItems(query, YoutubeSearchQueryHandlerFactory.MUSIC_ALBUMS)
-            .filterIsInstance<PlaylistInfoItem>()
-            .mapNotNull { it.toAlbum() }
+        fetchSearchPage(query)?.albums.orEmpty().mapNotNull { it.toAlbum() }
 
     suspend fun searchArtists(query: String): List<Artist> =
-        searchItems(query, YoutubeSearchQueryHandlerFactory.MUSIC_ARTISTS)
-            .filterIsInstance<ChannelInfoItem>()
-            .mapNotNull { it.toArtist() }
+        fetchSearchPage(query)?.artists.orEmpty().mapNotNull { it.toArtist() }
 
-    private suspend fun searchItems(query: String, contentFilter: String): List<InfoItem> =
-        withContext(ytDispatcher) {
-            ensureInit()
-            val service = ServiceList.YouTube
-            // NOTE: MUSIC_ARTISTS is deliberately absent from getAvailableContentFilter(),
-            // but fromQuery() does not validate against that list and both getUrl() and
-            // YoutubeMusicSearchExtractor handle it. Verified against v0.26.5.
-            val handler = service.searchQHFactory.fromQuery(query, listOf(contentFilter), "")
-            SearchInfo.getInfo(service, handler).relatedItems.orEmpty()
+    /**
+     * Deduplicated, cleaned-up songs from a raw InnerTube page.
+     *
+     * YouTube lists the same recording once per album edition, and again once per upload
+     * (a "Song" catalogue entry and a "Video" upload of the same track) — searching "Numb"
+     * would otherwise return it several times over. Results are ranked, so the first of each
+     * group is the one to keep.
+     */
+    private fun List<InnerTubeSongItem>.toSongs(): List<Song> =
+        mapNotNull { it.toSong() }.distinctBy { trackKey(it.title, it.artist) }
+
+    private suspend fun fetchSearchPage(query: String): InnerTubeSearchPage? {
+        if (query.isBlank()) return null
+        return withContext(ytDispatcher) {
+            val country = Locale.getDefault().country.ifBlank { DEFAULT_COUNTRY }
+            val root = runCatching {
+                innerTubeSearchClient.search(query, country, METADATA_LANGUAGE)
+            }.onFailure {
+                Timber.w(it, "InnerTube search failed for %s", query)
+            }.getOrNull() ?: return@withContext null
+
+            runCatching { InnerTubeSearchParser.parse(root) }
+                .onFailure { Timber.w(it, "InnerTube search parse failed for %s", query) }
+                .getOrNull()
         }
+    }
 
     // ─── Detail lookups ────────────────────────────────────────────────
 
@@ -603,13 +605,53 @@ class YouTubeMusicRepository @Inject constructor(
         )
     }
 
-    private fun ChannelInfoItem.toArtist(): Artist? {
-        val channelId = channelIdOrNull(url) ?: return null
+    private fun InnerTubeSongItem.toSong(): Song? {
+        val resolvedArtist = artistNameFrom(artistName) ?: return null
+        val artistId = artistChannelId?.let(YouTubeIds::artistId) ?: YouTubeIds.artistId(resolvedArtist)
+
+        return Song(
+            id = YouTubeIds.songId(videoId).toString(),
+            title = cleanTrackTitle(title, resolvedArtist).ifBlank { return null },
+            artist = resolvedArtist,
+            artistId = artistId,
+            artists = listOf(ArtistRef(id = artistId, name = resolvedArtist, isPrimary = true)),
+            album = DEFAULT_ALBUM_NAME,
+            albumId = DEFAULT_ALBUM_ID,
+            albumArtist = resolvedArtist,
+            path = "",
+            contentUriString = "$URI_SCHEME://$videoId",
+            albumArtUriString = thumbnailUrl,
+            duration = durationMs,
+            // YouTube publishes no genre. Left null rather than filed under a placeholder,
+            // which used to collapse the entire catalogue into one bucket and one theme colour.
+            genre = null,
+            mimeType = null,
+            bitrate = null,
+            sampleRate = null,
+            ytVideoId = videoId
+        )
+    }
+
+    private fun InnerTubeAlbumItem.toAlbum(): Album? {
+        return Album(
+            id = YouTubeIds.albumId(browseId),
+            title = stripReleaseTypePrefix(title).ifBlank { return null },
+            artist = artistName,
+            year = 0,
+            dateAdded = 0L,
+            albumArtUriString = thumbnailUrl,
+            songCount = 0,
+            albumArtist = artistName.takeIf { it.isNotBlank() },
+            ytmBrowseId = browseId
+        )
+    }
+
+    private fun InnerTubeArtistItem.toArtist(): Artist? {
         return Artist(
             id = YouTubeIds.artistId(channelId),
-            name = stripTopicSuffix(name.orEmpty()).ifBlank { return null },
+            name = stripTopicSuffix(name).ifBlank { return null },
             songCount = 0,
-            imageUrl = thumbnails.bestUrl(),
+            imageUrl = thumbnailUrl,
             ytmChannelId = channelId
         )
     }
